@@ -27,7 +27,7 @@ export default function UploadPage() {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("platform", platform);
-    setStatus("Uploading...");
+    setStatus("Processing...");
 
     try {
       const res = await fetch("http://localhost:8000/upload", {
@@ -37,9 +37,9 @@ export default function UploadPage() {
 
       if (res.ok) {
         const data = await res.json();
-        setStatus(`File uploaded successfully! Inserted: ${data.inserted || 0}`);
+        setStatus(`File processed successfully! Processed: ${data.rows_processed || 0} rows. Columns: ${data.columns?.length || 0}`);
       } else {
-        setStatus("Upload failed");
+        setStatus("Processing failed");
       }
     } catch (err) {
       console.error(err);
@@ -50,7 +50,7 @@ export default function UploadPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
       <div className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md text-black">
-        <h1 className="text-xl font-semibold mb-4 text-center">Upload CSV</h1>
+        <h1 className="text-xl font-semibold mb-4 text-center">Process CSV</h1>
 
         <label className="block mb-2">Select Platform:</label>
         <select
@@ -73,7 +73,7 @@ export default function UploadPage() {
           onClick={handleUpload}
           className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition"
         >
-          Upload
+          Process CSV
         </button>
 
         {status && <p className="mt-4 text-center text-black">{status}</p>}

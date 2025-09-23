@@ -1,5 +1,5 @@
 MAPPINGS = {
-    "shopee": {
+    "Shopee": {
         "Date": "date",
         "Page Views": "page_views",
         "Visitors": "unique_visitors",
@@ -19,7 +19,7 @@ MAPPINGS = {
         # Lazada-only metrics → Shopee doesn’t provide them
         # We'll fill with None when uploading
     },
-    "lazada": {
+    "Lazada": {
         "Date": "date",
         "Pageviews": "page_views",
         "Visitors": "unique_visitors",

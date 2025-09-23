@@ -4,17 +4,15 @@ import pandas as pd
 from dotenv import load_dotenv
 import io
 
-from app.etl import transform, load
+from app.etl import process_csv_file
 
-# Load environment variables
 load_dotenv()
 
 app = FastAPI()
 
-# Allow frontend to talk to backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # for dev, allow all. In prod, restrict to your frontend URL
+    allow_origins=["*"],   
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,24 +25,27 @@ async def upload_csv(
 ):
     """
     Upload CSV file + platform ("Lazada" or "Shopee"),
-    transform with mapping, and load into Supabase.
+    transform with mapping, and return DataFrame info (without saving to DB).
     """
     try:
-        # Read file into pandas DataFrame
+        
         contents = await file.read()
-        df = pd.read_csv(io.BytesIO(contents))
-
-        # Transform data
-        transformed_df = transform(df, platform)
-
-        # Load into Supabase
-        response = load(transformed_df)
-
-        return {
-            "status": "success",
-            "platform": platform,
-            "rows_inserted": len(transformed_df),
-            "response": str(response),
-        }
+        file_like = io.StringIO(contents.decode("utf-8"))
+        
+        # process 
+        result = process_csv_file(file_like, platform, save_to_db=False)
+        
+        if result["status"] == "success":
+            df = result["dataframe"]
+            return {
+                "message": f"Processed {result['rows_processed']} rows from {platform}",
+                "rows_processed": result["rows_processed"],
+                "columns": list(df.columns),
+                "sample_data": df.head(3).to_dict('records') if len(df) > 0 else [],
+                "dataframe_shape": df.shape
+            }
+        else:
+            return {"status": "error", "message": result["detail"]}
+            
     except Exception as e:
         return {"status": "error", "message": str(e)}
