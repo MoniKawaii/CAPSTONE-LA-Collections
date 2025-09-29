@@ -12,9 +12,6 @@ def get_combined_transactions():
     print("Fetching standardized data from transformation codes...")
     shopee_df = get_shopee_transactions()
     lazada_df = get_lazada_transactions()
-    
-    shopee_df['source'] = 'Shopee'
-    lazada_df['source'] = 'Lazada'
 
     combined_df = pd.concat([shopee_df, lazada_df], ignore_index=True)
     

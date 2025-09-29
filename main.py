@@ -41,7 +41,7 @@ async def upload_csv(
                 "message": f"Processed {result['rows_processed']} rows from {platform}",
                 "rows_processed": result["rows_processed"],
                 "columns": list(df.columns),
-                "sample_data": df.head(3).to_dict('records') if len(df) > 0 else [],
+                "data": df.to_dict('records'),  # Return all data
                 "dataframe_shape": df.shape
             }
         else:
