@@ -1,0 +1,239 @@
+{
+  "info": {
+    "name": "Lazada OAuth Token Setup",
+    "description": "Collection for obtaining Lazada OAuth tokens with Postman callback",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "oauth2",
+    "oauth2": [
+      {
+        "key": "accessToken",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "addTokenTo",
+        "value": "header",
+        "type": "string"
+      },
+      {
+        "key": "callBackUrl",
+        "value": "https://oauth.pstmn.io/v1/callback",
+        "type": "string"
+      },
+      {
+        "key": "authUrl",
+        "value": "https://auth.lazada.com/oauth/authorize",
+        "type": "string"
+      },
+      {
+        "key": "accessTokenUrl",
+        "value": "https://auth.lazada.com/rest/auth/token/create",
+        "type": "string"
+      },
+      {
+        "key": "clientId",
+        "value": "{{LAZADA_APP_KEY}}",
+        "type": "string"
+      },
+      {
+        "key": "clientSecret",
+        "value": "{{LAZADA_APP_SECRET}}",
+        "type": "string"
+      },
+      {
+        "key": "scope",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "requestAccessTokenLocally",
+        "value": false,
+        "type": "boolean"
+      },
+      {
+        "key": "grant_type",
+        "value": "authorization_code",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "LAZADA_APP_KEY",
+      "value": "YOUR_APP_KEY_HERE",
+      "type": "string"
+    },
+    {
+      "key": "LAZADA_APP_SECRET",
+      "value": "YOUR_APP_SECRET_HERE",
+      "type": "string"
+    },
+    {
+      "key": "lazada_base_url",
+      "value": "https://api.lazada.com/rest",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Get OAuth Tokens",
+      "request": {
+        "auth": {
+          "type": "oauth2",
+          "oauth2": [
+            {
+              "key": "accessToken",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "key": "addTokenTo",
+              "value": "header",
+              "type": "string"
+            },
+            {
+              "key": "callBackUrl",
+              "value": "https://oauth.pstmn.io/v1/callback",
+              "type": "string"
+            },
+            {
+              "key": "authUrl",
+              "value": "https://auth.lazada.com/oauth/authorize",
+              "type": "string"
+            },
+            {
+              "key": "accessTokenUrl",
+              "value": "https://auth.lazada.com/rest/auth/token/create",
+              "type": "string"
+            },
+            {
+              "key": "clientId",
+              "value": "{{LAZADA_APP_KEY}}",
+              "type": "string"
+            },
+            {
+              "key": "clientSecret",
+              "value": "{{LAZADA_APP_SECRET}}",
+              "type": "string"
+            },
+            {
+              "key": "scope",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "key": "requestAccessTokenLocally",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "key": "grant_type",
+              "value": "authorization_code",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{lazada_base_url}}/seller/get",
+          "host": [
+            "{{lazada_base_url}}"
+          ],
+          "path": [
+            "seller",
+            "get"
+          ]
+        },
+        "description": "Test endpoint to trigger OAuth flow. Click 'Get New Access Token' in Authorization tab."
+      }
+    },
+    {
+      "name": "2. Test API Call - Get Seller Info",
+      "request": {
+        "auth": {
+          "type": "oauth2"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{lazada_base_url}}/seller/get",
+          "host": [
+            "{{lazada_base_url}}"
+          ],
+          "path": [
+            "seller",
+            "get"
+          ]
+        },
+        "description": "Test the obtained tokens by fetching seller information."
+      }
+    },
+    {
+      "name": "3. Manual Token Exchange",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"client_id\": \"{{LAZADA_APP_KEY}}\",\n  \"client_secret\": \"{{LAZADA_APP_SECRET}}\",\n  \"code\": \"YOUR_AUTHORIZATION_CODE_HERE\",\n  \"grant_type\": \"authorization_code\"\n}"
+        },
+        "url": {
+          "raw": "https://auth.lazada.com/rest/auth/token/create",
+          "protocol": "https",
+          "host": [
+            "auth",
+            "lazada",
+            "com"
+          ],
+          "path": [
+            "rest",
+            "auth",
+            "token",
+            "create"
+          ]
+        },
+        "description": "Alternative manual method to exchange authorization code for tokens."
+      }
+    },
+    {
+      "name": "4. Refresh Access Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"client_id\": \"{{LAZADA_APP_KEY}}\",\n  \"client_secret\": \"{{LAZADA_APP_SECRET}}\",\n  \"refresh_token\": \"YOUR_REFRESH_TOKEN_HERE\",\n  \"grant_type\": \"refresh_token\"\n}"
+        },
+        "url": {
+          "raw": "https://auth.lazada.com/rest/auth/token/refresh",
+          "protocol": "https",
+          "host": [
+            "auth",
+            "lazada",
+            "com"
+          ],
+          "path": [
+            "rest",
+            "auth",
+            "token",
+            "refresh"
+          ]
+        },
+        "description": "Refresh an expired access token using the refresh token."
+      }
+    }
+  ]
+}
