@@ -5,10 +5,30 @@ from dotenv import load_dotenv
 import io
 
 from app.etl import process_csv_file
+from app.routes import router
+from app.token_scheduler import start_scheduler, stop_scheduler
 
 load_dotenv()
 
-app = FastAPI()
+app = FastAPI(
+    title="LA Collections API",
+    description="API for Lazada and Shopee data processing with automatic token management",
+    version="1.0.0"
+)
+
+# Include routes
+app.include_router(router)
+
+# Add startup and shutdown events for token scheduler
+@app.on_event("startup")
+async def startup_event():
+    """Start background services on app startup"""
+    await start_scheduler()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Clean up on app shutdown"""
+    await stop_scheduler()
 
 app.add_middleware(
     CORSMiddleware,
