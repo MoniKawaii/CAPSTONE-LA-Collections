@@ -216,6 +216,17 @@ class LazadaOAuthService:
         created_at = self.current_tokens.get('created_at', 0)
         expires_in = self.current_tokens.get('expires_in', 3600)
         
+        # Handle different date formats
+        if isinstance(created_at, str):
+            try:
+                # Try to parse as datetime string
+                from datetime import datetime
+                created_dt = datetime.strptime(created_at, '%Y-%m-%d %H:%M:%S')
+                created_at = int(created_dt.timestamp())
+            except ValueError:
+                # If parsing fails, assume token is expired
+                return True
+        
         # Consider token expired if it expires in next 5 minutes
         expiry_time = created_at + expires_in - 300  # 5 min buffer
         current_time = int(time.time())
