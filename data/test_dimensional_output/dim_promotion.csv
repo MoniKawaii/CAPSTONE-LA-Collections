@@ -1,0 +1,5 @@
+promotion_id,promotion_name,promotion_type,discount_type,discount_value,start_date,end_date,status,description,voucher_code
+PROMO_NONE,No Promotion,none,none,0.0,,,active,No promotion applied,
+PROMO_NEWCUST15,New Customer 15% Off,voucher,percentage,15.0,2024-01-01T00:00:00+08:00,2024-12-31T23:59:59+08:00,active,15% discount for new customers,NEWCUST15
+PROMO_SUMMER10,Summer Sale 10% Off,voucher,percentage,10.0,2024-01-01T00:00:00+08:00,2024-08-31T23:59:59+08:00,active,10% discount for summer collection,SUMMER10
+PROMO_nan,Voucher nan,voucher,unknown,0.0,,,used,Voucher code: nan,

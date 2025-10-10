@@ -1,0 +1,2 @@
+promotion_id,promotion_name,promotion_type,discount_type,discount_value,start_date,end_date,status,description
+PROMO_NONE,No Promotion,none,none,0.0,,,active,No promotion applied

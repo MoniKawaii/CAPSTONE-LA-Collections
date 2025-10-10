@@ -154,6 +154,13 @@ def save_tokens_to_file(token_data: dict, filename: str = 'lazada_tokens.json') 
         # Add timestamp if not present
         if 'created_at' not in token_data:
             token_data['created_at'] = int(time.time())
+        
+        # If filename is just a basename, save in the lazada directory
+        if not os.path.dirname(filename):
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            lazada_dir = os.path.join(script_dir, '..', 'app', 'lazada')
+            os.makedirs(lazada_dir, exist_ok=True)
+            filename = os.path.join(lazada_dir, filename)
             
         with open(filename, 'w') as f:
             json.dump(token_data, f, indent=2)
@@ -176,6 +183,12 @@ def load_tokens_from_file(filename: str = 'lazada_tokens.json') -> dict:
         dict or None: Token data if found
     """
     try:
+        # If filename is just a basename, look in the lazada directory
+        if not os.path.dirname(filename):
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            lazada_dir = os.path.join(script_dir, '..', 'app', 'lazada')
+            filename = os.path.join(lazada_dir, filename)
+        
         if os.path.exists(filename):
             with open(filename, 'r') as f:
                 tokens = json.load(f)

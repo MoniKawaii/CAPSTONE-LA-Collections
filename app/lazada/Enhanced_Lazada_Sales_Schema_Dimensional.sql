@@ -58,18 +58,10 @@ CREATE TABLE "Dim_Products" (
   "product_sku" varchar,
   "shop_sku" varchar,
   "category" varchar,
-  "subcategory" varchar,
-  "brand" varchar,
   "last_price" decimal(10,2),
-  "cost_price" decimal(10,2),
-  "margin_percentage" decimal(5,2),
+  "cost_price" decimal(10,2), 
   "product_image_url" text,
   "product_detail_url" text,
-  "weight" decimal(8,2),
-  "dimensions" varchar,
-  "color_family" varchar,
-  "size" varchar,
-  "material" varchar,
   "total_sales_quantity" int DEFAULT 0,
   "total_sales_amount" decimal(12,2) DEFAULT 0,
   "average_selling_price" decimal(10,2),
@@ -119,8 +111,6 @@ CREATE TABLE "Orders" (
   "order_date" timestamp NOT NULL,
   "order_status" varchar NOT NULL,
   "payment_method" varchar,
-  "shipping_address" text,
-  "billing_address" text,
   
   -- PRICE CALCULATIONS (as per Lazada formula)
   "order_total_price" decimal(10,2) NOT NULL, -- Original price (excluding discounts)
@@ -129,12 +119,9 @@ CREATE TABLE "Orders" (
   "voucher_platform" decimal(10,2) DEFAULT 0,
   "voucher_total" decimal(10,2) DEFAULT 0, -- Total voucher discount
   "buyer_paid_price" decimal(10,2) NOT NULL, -- Final amount: price - voucher + shipping_fee
-  
   "items_count" int DEFAULT 0,
   "warehouse_code" varchar,
   "tracking_code" varchar,
-  "promised_shipping_date" date,
-  "actual_delivery_date" date,
   "cancellation_reason" varchar,
   "platform" varchar DEFAULT 'Lazada',
   "platform_region" varchar DEFAULT 'Philippines',
@@ -237,7 +224,6 @@ CREATE TABLE "Fact_Sales" (
   "discount_amount" decimal(12,2) DEFAULT 0,
   "net_sales_amount" decimal(12,2) NOT NULL, -- After discounts
   "shipping_revenue" decimal(10,2) DEFAULT 0,
-  "tax_amount" decimal(10,2) DEFAULT 0,
   "profit_amount" decimal(12,2), -- If cost data available
   
   -- SEMI-ADDITIVE MEASURES

@@ -1,0 +1,3 @@
+customer_id,customer_name,email,phone,billing_address,billing_city,billing_region,billing_country,billing_postcode,shipping_address,shipping_city,shipping_region,shipping_country,shipping_postcode,customer_since,last_order_date,total_orders
+CUST_Juan_Dela Cruz,Juan Dela Cruz,juan@email.com,09123456789,123 Main St,Manila,,Philippines,1000,123 Main St,Manila,,Philippines,1000,2024-01-15T10:30:00+08:00,2024-01-15T12:00:00+08:00,1
+CUST_Maria_Santos,Maria Santos,maria@email.com,09187654321,456 Side St,Quezon City,,Philippines,1100,456 Side St,Quezon City,,Philippines,1100,2024-01-16T14:15:00+08:00,2024-01-16T15:30:00+08:00,1

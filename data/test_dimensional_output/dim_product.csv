@@ -1,0 +1,4 @@
+product_id,sku,product_name,shop_sku,product_main_sku,variation,category,brand,status,weight,dimensions,created_at,updated_at
+PROD_LACOL-SHIRT-001,LACOL-SHIRT-001,LA Collections Cotton T-Shirt,SHIRT001,SHIRT-MAIN-001,"Size: L, Color: Blue",Fashion > Men > Clothing > T-Shirts,LA Collections,active,0.3,25x20x3,2025-10-10T15:19:15.953387,2025-10-10T15:19:15.953387
+PROD_LACOL-PANTS-002,LACOL-PANTS-002,LA Collections Denim Jeans,PANTS002,PANTS-MAIN-002,"Size: 32, Color: Dark Blue",Fashion > Men > Clothing > Jeans,LA Collections,active,0.6,35x25x5,2025-10-10T15:19:15.953387,2025-10-10T15:19:15.953387
+PROD_LACOL-DRESS-003,LACOL-DRESS-003,LA Collections Summer Dress,DRESS003,DRESS-MAIN-003,"Size: M, Color: Red",Fashion > Women > Clothing > Dresses,LA Collections,active,0.4,30x25x4,2025-10-10T15:19:15.953387,2025-10-10T15:19:15.953387
