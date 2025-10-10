@@ -15,7 +15,7 @@ load_dotenv()
 
 def load_tokens():
     """Load tokens from JSON file"""
-    with open('lazada_tokens.json', 'r') as f:
+    with open('app/lazada/lazada_tokens.json', 'r') as f:
         return json.load(f)
 
 def test_token():

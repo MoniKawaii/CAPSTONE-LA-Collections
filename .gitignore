@@ -5,7 +5,8 @@
 .env.staging
 
 # API tokens and secrets
-lazada_tokens.json
+# Tokens and API keys
+app/lazada/lazada_tokens.json
 shopee_tokens.json
 *_tokens.json
 

@@ -32,17 +32,17 @@ class LazadaOAuthService:
         
         # Lazada API endpoints (Philippines)
         self.api_url = 'https://api.lazada.com.ph/rest'
-        self.auth_url = 'https://auth.lazada.com/rest'
+        self.auth_url = 'https://auth.lazada.com/oauth/authorize?response_type=code&force_auth=true&redirect_uri=https://dagmar-hittable-acceptingly.ngrok-free.dev/lazada/callback&client_id=135073'
         
         # Initialize client
         self.client = LazopClient(self.api_url, self.app_key, self.app_secret)
         
         # Token storage
-        self.tokens_file = 'lazada_tokens.json'
+        self.tokens_file = 'app/lazada/lazada_tokens.json'
         self.current_tokens = self.load_tokens()
         
-        # ngrok tunnel
-        self.tunnel_url = None
+        # ngrok tunnel - set to your specific ngrok URL
+        self.tunnel_url = "https://dagmar-hittable-acceptingly.ngrok-free.dev"
         
     def setup_ngrok_tunnel(self, port: int = 8000) -> str:
         """
@@ -82,10 +82,9 @@ class LazadaOAuthService:
         Returns:
             str: Authorization URL
         """
-        if not redirect_uri and self.tunnel_url:
-            redirect_uri = f"{self.tunnel_url}/lazada/callback"
-        elif not redirect_uri:
-            raise ValueError("redirect_uri required when ngrok tunnel not established")
+        # Use the specific ngrok callback URL if not provided
+        if not redirect_uri:
+            redirect_uri = "https://dagmar-hittable-acceptingly.ngrok-free.dev/lazada/callback"
         
         # OAuth parameters
         params = {

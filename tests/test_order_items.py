@@ -15,7 +15,7 @@ load_dotenv()
 
 def load_tokens():
     """Load tokens from JSON file"""
-    with open('lazada_tokens.json', 'r') as f:
+    with open('app/lazada/lazada_tokens.json', 'r') as f:
         return json.load(f)
 
 def test_order_items_api():
@@ -78,9 +78,9 @@ def test_order_items_api():
                                 print(f"  {key}: {value}")
                                 
                         # Save full response for analysis
-                        with open('order_items_sample.json', 'w') as f:
+                        with open('app/lazada/order_items_sample.json', 'w') as f:
                             json.dump(body, f, indent=2)
-                        print(f"\n💾 Full response saved to: order_items_sample.json")
+                        print(f"\n💾 Full response saved to: app/lazada/order_items_sample.json")
                     else:
                         print("📊 Response Body:", body)
             else:

@@ -11,39 +11,37 @@ This script extracts data from multiple Lazada APIs including:
 
 import json
 import asyncio
+import sys
+import os
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Tuple
-from lazop_sdk import LazopClient, LazopRequest
-import os
+
+# Add the app directory to the path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'app'))
+
+from lazada_service import LazadaOAuthService
 from dotenv import load_dotenv
 
 load_dotenv()
 
 class LazadaDimensionalETL:
     def __init__(self):
-        self.app_key = os.getenv('LAZADA_APP_KEY')
-        self.app_secret = os.getenv('LAZADA_APP_SECRET')
-        self.client = LazopClient('https://api.lazada.com.ph/rest', self.app_key, self.app_secret)
-        
-        # Use the provided access token directly
-        self.access_token = "50000601410cNTkuepxEvx1d75ecf3k7ijT3LWviiIvpWFtzIGbHqsEtxTBUxSb8"
+        # Use the existing Lazada service
+        self.lazada_service = LazadaOAuthService()
         
     async def get_orders(self, days_back: int = 90) -> Dict[str, Any]:
-        """Get orders data"""
+        """Get orders data using the Lazada service"""
         print("🔍 Fetching orders...")
         
         try:
-            request = LazopRequest('/orders/get', 'GET')
-            request.add_api_param('created_after', '2024-01-01T00:00:00+08:00')
-            request.add_api_param('limit', '100')
+            # Use the existing service method
+            orders_data = await self.lazada_service.get_orders()
             
-            response = self.client.execute(request, self.access_token)
-            
-            if response.code == '0':
-                print(f"✅ Orders retrieved: {response.body.get('data', {}).get('count', 0)} orders")
-                return response.body
+            if orders_data:
+                print(f"✅ Orders retrieved: {len(orders_data.get('orders', []))} orders")
+                return orders_data
             else:
-                print(f"❌ Failed to get orders: {response.message or 'Unknown error'}")
+                print(f"❌ Failed to get orders")
                 return {}
                 
         except Exception as e:
