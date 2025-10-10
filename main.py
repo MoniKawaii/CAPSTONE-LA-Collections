@@ -4,7 +4,7 @@ import pandas as pd
 from dotenv import load_dotenv
 import io
 
-from app.etl import process_csv_file
+from app.csv_etl import process_csv_file
 from app.routes import router
 from app.token_scheduler import start_scheduler, stop_scheduler
 
@@ -18,6 +18,11 @@ app = FastAPI(
 
 # Include routes
 app.include_router(router)
+
+# Add a simple root endpoint for testing
+@app.get("/")
+async def root():
+    return {"message": "LA Collections API is running", "status": "online"}
 
 # Add startup and shutdown events for token scheduler
 @app.on_event("startup")

@@ -4,7 +4,7 @@ from fastapi import APIRouter, UploadFile, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 import pandas as pd
 import io
-from app.etl import process_csv_file
+from app.csv_etl import process_csv_file
 from app.lazada_service import lazada_service
 from app.lazada_data_service import lazada_data_service
 

@@ -11,7 +11,7 @@ from typing import List, Dict, Any, Optional
 import logging
 
 from app.lazada_service import lazada_service
-from app.etl import process_csv_file
+from app.csv_etl import process_csv_file
 from app.supabase_client import get_supabase_client
 
 # Setup logging

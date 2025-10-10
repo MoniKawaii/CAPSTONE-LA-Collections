@@ -2,7 +2,7 @@
 Helper functions to work with processed CSV data as DataFrames
 """
 import pandas as pd
-from app.etl import process_csv_file
+from app.csv_etl import process_csv_file
 
 def get_dataframe_from_csv(file_path: str, platform: str) -> pd.DataFrame:
     """

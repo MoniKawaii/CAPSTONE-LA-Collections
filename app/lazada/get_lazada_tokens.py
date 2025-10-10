@@ -24,6 +24,50 @@ from tests.lazada_test import (
 # Load environment variables
 load_dotenv()
 
+def get_valid_token():
+    """
+    Get a valid access token - automatically refreshes if needed
+    Use this before any API call for hands-free token management
+    
+    Returns:
+        str or None: Valid access token, or None if unable to get one
+    """
+    tokens = load_tokens_from_file()
+    
+    if not tokens:
+        print("No tokens found. Generate new tokens first.")
+        return None
+    
+    # Check if token expires within next 5 minutes
+    if is_token_expired(tokens):
+        print("Token expiring soon, refreshing automatically...")
+        
+        refresh_result = refresh_access_token(tokens['refresh_token'])
+        
+        if refresh_result['success']:
+            # Update tokens
+            tokens.update({
+                'access_token': refresh_result['access_token'],
+                'refresh_token': refresh_result.get('refresh_token', tokens['refresh_token']),
+                'expires_in': refresh_result['expires_in'],
+                'created_at': refresh_result['created_at']
+            })
+            
+            # Save updated tokens
+            if save_tokens_to_file(tokens):
+                print("Token refreshed and saved automatically!")
+                return tokens['access_token']
+            else:
+                print("Failed to save refreshed token")
+                return None
+        else:
+            print(f"Auto-refresh failed: {refresh_result['error']}")
+            print("   You may need to generate new tokens using option 1")
+            return None
+    else:
+        print("Token is valid")
+        return tokens['access_token']
+
 def get_auth_url():
     """Generate the correct authorization URL for your app"""
     app_key = os.getenv('LAZADA_APP_KEY', '135073')
@@ -72,11 +116,11 @@ def get_auth_code_from_user():
         auth_code = input("Enter auth code: ").strip()
         
         if not auth_code:
-            print("❌ Auth code cannot be empty. Please try again.")
+            print("Auth code cannot be empty. Please try again.")
             continue
             
         if len(auth_code) < 10:
-            print("❌ Auth code seems too short. Please check and try again.")
+            print("Auth code seems too short. Please check and try again.")
             continue
             
         # Confirm with user
@@ -89,43 +133,7 @@ def get_auth_code_from_user():
             print("Let's try again...")
             continue
 
-def update_env_file_tokens(token_data):
-    """Update .env file with new tokens"""
-    env_path = '.env'
-    
-    # Read current .env file
-    if os.path.exists(env_path):
-        with open(env_path, 'r') as f:
-            lines = f.readlines()
-    else:
-        lines = []
-    
-    # Update token lines
-    updated_lines = []
-    access_token_updated = False
-    refresh_token_updated = False
-    
-    for line in lines:
-        if line.startswith('LAZADA_ACCESS_TOKEN='):
-            updated_lines.append(f"LAZADA_ACCESS_TOKEN={token_data['access_token']}\n")
-            access_token_updated = True
-        elif line.startswith('LAZADA_REFRESH_TOKEN=') and 'refresh_token' in token_data:
-            updated_lines.append(f"LAZADA_REFRESH_TOKEN={token_data['refresh_token']}\n")
-            refresh_token_updated = True
-        else:
-            updated_lines.append(line)
-    
-    # Add tokens if they weren't in the file
-    if not access_token_updated:
-        updated_lines.append(f"LAZADA_ACCESS_TOKEN={token_data['access_token']}\n")
-    if not refresh_token_updated and 'refresh_token' in token_data:
-        updated_lines.append(f"LAZADA_REFRESH_TOKEN={token_data['refresh_token']}\n")
-    
-    # Write back to .env file
-    with open(env_path, 'w') as f:
-        f.writelines(updated_lines)
-    
-    print("✅ Updated .env file with new tokens")
+
 
 def generate_new_tokens():
     """Interactive token generation process"""
@@ -155,12 +163,6 @@ def generate_new_tokens():
         # Save tokens to JSON file
         if save_tokens_to_file(token_result):
             print("✅ Tokens saved to lazada_tokens.json")
-        
-        # Update .env file
-        try:
-            update_env_file_tokens(token_result)
-        except Exception as e:
-            print(f"⚠️ Could not update .env file: {e}")
         
         # Test token refresh
         print(f"\n🔄 Testing token refresh...")
@@ -253,11 +255,12 @@ def main_menu():
         print("Choose an option:")
         print("1. 🆕 Generate new tokens (paste auth code)")
         print("2. 🔍 Test saved tokens")
-        print("3. 📋 Show authorization URL only")
-        print("4. ❌ Exit")
+        print("3. � Get valid token (auto-refresh if needed)")
+        print("4. �📋 Show authorization URL only")
+        print("5. ❌ Exit")
         print()
         
-        choice = input("Enter your choice (1-4): ").strip()
+        choice = input("Enter your choice (1-5): ").strip()
         
         if choice == "1":
             success = generate_new_tokens()
@@ -269,14 +272,24 @@ def main_menu():
             input("\nPress Enter to continue...")
         
         elif choice == "3":
-            print("\n📋 AUTHORIZATION URL:")
+            print("\n� TESTING GET_VALID_TOKEN FUNCTION:")
+            print("-" * 40)
+            access_token = get_valid_token()
+            if access_token:
+                print(f"✅ Got valid access token: {access_token[:20]}...")
+            else:
+                print("❌ Failed to get valid access token")
+            input("\nPress Enter to continue...")
+        
+        elif choice == "4":
+            print("\n�📋 AUTHORIZATION URL:")
             print("-" * 30)
             print(get_auth_url())
             print()
             print("Copy this URL and open it in your browser to get the auth code.")
             input("\nPress Enter to continue...")
         
-        elif choice == "4":
+        elif choice == "5":
             print("\n👋 Goodbye!")
             break
         
