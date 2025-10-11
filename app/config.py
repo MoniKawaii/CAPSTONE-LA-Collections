@@ -1,9 +1,7 @@
-# Config (Supabase DB URL, env variables)
+# KEYS
+# access tokens
+# env connections
+# base urls for api calling
 
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-SUPABASE_DB_URL = os.getenv("SUPABASE_DB_URL")
-
+# Table struc
+# empty df for each table

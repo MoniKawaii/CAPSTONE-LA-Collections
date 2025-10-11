@@ -1,0 +1,13 @@
+Structure for each file
+
+imports
+
+shopee shit
+
+lazada shit
+
+merge
+
+cleansing
+
+df
