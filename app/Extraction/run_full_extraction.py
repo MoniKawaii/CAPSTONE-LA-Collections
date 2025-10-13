@@ -25,14 +25,17 @@ def main():
     
     extractor = LazadaDataExtractor()
     
-    print("\n📋 Extraction Menu:")
+    print("📋 Extraction Menu:")
     print("1. Extract ALL historical data (products + orders from April 2020)")
     print("2. Extract recent data only (last 30 days)")
     print("3. Extract products only")
     print("4. Extract orders only (custom date range)")
-    print("5. Check existing data")
+    print("5. Extract order items only (requires existing orders)")
+    print("6. Extract traffic metrics (2020-04-01 to 2025-04-30)")
+    print("7. Extract product details (requires existing products)")
+    print("8. Check existing data")
     
-    choice = input("\n👆 Choose option (1-5): ").strip()
+    choice = input("\n👆 Choose option (1-8): ").strip()
     
     if choice == "1":
         print("\n🎯 FULL HISTORICAL EXTRACTION STARTING...")
@@ -116,6 +119,74 @@ def main():
         print(f"📞 API calls used: {extractor.api_calls_made}")
         
     elif choice == "5":
+        print("\n📦 ORDER ITEMS EXTRACTION...")
+        print("📋 This will extract detailed item information for all existing orders")
+        
+        # Check if orders exist
+        orders = extractor.extract_all_orders(start_fresh=False)
+        if not orders:
+            print("❌ No orders found. Please extract orders first (option 1 or 4)")
+            return
+        
+        print(f"📊 Found {len(orders)} orders to process")
+        confirm = input("Continue with order items extraction? (y/n): ").strip().lower()
+        if confirm != 'y':
+            print("❌ Extraction cancelled")
+            return
+        
+        order_items = extractor.extract_all_order_items(orders_data=orders, start_fresh=True)
+        print(f"✅ Order items extracted: {len(order_items)}")
+        print(f"📞 API calls used: {extractor.api_calls_made}")
+        
+    elif choice == "6":
+        print("\n📊 TRAFFIC METRICS EXTRACTION...")
+        print("📅 Choose extraction mode:")
+        print("1. Monthly aggregates (2022-10-01 to 2025-04-30) - Recommended")
+        print("2. Single period (2020-04-01 to 2025-04-30) - Legacy")
+        
+        mode = input("Choose mode (1 or 2): ").strip()
+        
+        if mode == "1":
+            print("📅 Extracting monthly traffic metrics from 2022-10-01 to 2025-04-30")
+            traffic_data = extractor.extract_traffic_metrics(
+                start_date='2022-10-01', 
+                end_date='2025-04-30', 
+                start_fresh=True,
+                monthly_aggregate=True
+            )
+        else:
+            print("📅 Extracting single period traffic metrics from 2020-04-01 to 2025-04-30")
+            traffic_data = extractor.extract_traffic_metrics(
+                start_date='2020-04-01', 
+                end_date='2025-04-30', 
+                start_fresh=True,
+                monthly_aggregate=False
+            )
+        
+        print(f"✅ Traffic metrics extracted: {len(traffic_data)} records")
+        print(f"📞 API calls used: {extractor.api_calls_made}")
+        
+    elif choice == "7":
+        print("\n📦 PRODUCT DETAILS EXTRACTION...")
+        print("📋 This will extract detailed information for all existing products")
+        
+        # Check if products exist
+        products = extractor.extract_all_products(start_fresh=False)
+        if not products:
+            print("❌ No products found. Please extract products first (option 1 or 3)")
+            return
+        
+        print(f"📊 Found {len(products)} products to process")
+        confirm = input("Continue with product details extraction? (y/n): ").strip().lower()
+        if confirm != 'y':
+            print("❌ Extraction cancelled")
+            return
+        
+        product_details = extractor.extract_product_details(start_fresh=True)
+        print(f"✅ Product details extracted: {len(product_details)}")
+        print(f"📞 API calls used: {extractor.api_calls_made}")
+        
+    elif choice == "8":
         print("\n📊 CHECKING EXISTING DATA...")
         
         # Check products
@@ -136,6 +207,9 @@ def main():
     print("📁 Files created:")
     print("   - lazada_products_raw.json")
     print("   - lazada_orders_raw.json")
+    print("   - lazada_multiple_order_items_raw.json")
+    print("   - lazada_productitem_raw.json")
+    print("   - lazada_reportoverview_raw.json")
     print("\n✨ You can now run your ETL pipeline to process this data!")
 
 if __name__ == "__main__":

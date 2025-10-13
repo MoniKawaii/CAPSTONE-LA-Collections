@@ -1,0 +1,4497 @@
+[
+  {
+    "created_time": "1669820028679",
+    "updated_time": "1760074016345",
+    "images": [
+      "https://ph-live.slatic.net/p/469810c86f68e2239be1e17ea7323da6.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 2,
+        "Images": [],
+        "SellerSku": "LAV",
+        "ShopSku": "3464151195_PH-17808092447",
+        "special_time_format": "yyyy-MM-dd HH:mm:ss",
+        "Url": "https://www.lazada.com.ph/-i3464151195-s17808092447.html",
+        "saleProp": {},
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 2,
+            "totalQuantity": 2,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 2
+          }
+        ],
+        "package_width": "9.00",
+        "special_to_time": "2023-01-01 00:00:00",
+        "special_from_time": "2022-11-30 00:00:00",
+        "package_height": "15.00",
+        "fblWarehouseInventories": [],
+        "special_price": 310.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "9.00",
+        "special_from_date": "2022-11-30",
+        "Available": 2,
+        "package_weight": "1.31",
+        "SkuId": 17808092447,
+        "special_to_date": "2023-01-01"
+      }
+    ],
+    "item_id": 3464151195,
+    "variation": {},
+    "trialProduct": false,
+    "primary_category": 22490,
+    "marketImages": [],
+    "attributes": {
+      "description": "<article class=\"lzd-article\"><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span>1 Liter/ 1000mL</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span>Perfect for humidifiers, diffusers and room spray. </span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p></article>",
+      "brand": "No Brand",
+      "pattern": "Plain",
+      "material": "C",
+      "scent": "Lavendar",
+      "home_fragrance_type": "HUMIDIFIER",
+      "name": "L.A. Collections Lavender Humidifer / Diffuser / Linen Spray",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1752677181287",
+    "updated_time": "1759100198734",
+    "images": [
+      "https://ph-live.slatic.net/p/a1b9cdbb3ff5288d161cd2d959db590e.jpg",
+      "https://ph-live.slatic.net/p/3e6f10dde4108e580ea659a8f67cf7db.jpg",
+      "https://ph-live.slatic.net/p/6f6a76eacb2b40ee595bd49a2908297e.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 2,
+        "Images": [],
+        "SellerSku": "5175120341-1752677181110-0",
+        "ShopSku": "5175120341_PH-30683243468",
+        "Url": "https://www.lazada.com.ph/-i5175120341-s30683243468.html",
+        "saleProp": {},
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 2,
+            "totalQuantity": 2,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 2
+          }
+        ],
+        "package_width": "10.00",
+        "package_height": "10.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 649.0,
+        "channelInventories": [],
+        "package_length": "10.00",
+        "Available": 2,
+        "package_weight": "0.999",
+        "SkuId": 30683243468
+      }
+    ],
+    "item_id": 5175120341,
+    "variation": {},
+    "trialProduct": false,
+    "primary_category": 7539,
+    "marketImages": [],
+    "attributes": {
+      "description": "<article class=\"lzd-article\" style=\"white-space:break-spaces\"><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span style=\"color:rgb(51, 51, 51);font-size:10.5pt\">-500mL Capacity</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span style=\"color:rgb(51, 51, 51);font-size:10.5pt\">-Good for L.A. Collections Waterbased and Pure Oil Scents</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span style=\"color:rgb(51, 51, 51);font-size:10.5pt\">-No Cotton Filters/Cotton Sticks needed</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span style=\"color:rgb(51, 51, 51);font-size:10.5pt\">-Auto Shut Off</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span style=\"color:rgb(51, 51, 51);font-size:10.5pt\">- 7 LED Colors</span></p></article>",
+      "humidifier_features": "12V DC Charging,Portable",
+      "brand": "LA Collections",
+      "humidifier_type": "Ultrasonic",
+      "capacity": "500 ML",
+      "warranty_type": "Local Supplier Warranty",
+      "name": "LED 500mL Ultrasonic Diffuser for Essential Oils/ Waterbased Scent with Remote",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1681483587980",
+    "updated_time": "1760268716118",
+    "images": [
+      "https://ph-live.slatic.net/p/d3ff1e37512e123d0b449d6921912185.jpg",
+      "https://ph-live.slatic.net/p/e2f7c0af4570addb1470ab4e23b42811.jpg",
+      "https://ph-live.slatic.net/p/3686b850d892d60421bef25f452ed4c2.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/Sbbb682d57f1c4c34aad52c9c6811f4dco.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 15,
+        "Images": [],
+        "Variation3": "Bubble Gum",
+        "SellerSku": "3730272243-1681483587441-13",
+        "ShopSku": "3730272243_PH-19667622968",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622968.html",
+        "saleProp": {
+          "Variation3": "Bubble Gum"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 15,
+            "totalQuantity": 15,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 15
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 15,
+        "package_weight": "0.5",
+        "SkuId": 19667622968
+      },
+      {
+        "Status": "active",
+        "quantity": 8,
+        "Images": [],
+        "Variation3": "Melon Cucumber",
+        "SellerSku": "3730272243-1681483587441-12",
+        "ShopSku": "3730272243_PH-19667622967",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622967.html",
+        "saleProp": {
+          "Variation3": "Melon Cucumber"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 8,
+            "totalQuantity": 8,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 8
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 8,
+        "package_weight": "0.5",
+        "SkuId": 19667622967
+      },
+      {
+        "Status": "active",
+        "quantity": 2,
+        "Images": [],
+        "Variation3": "Eucalyptus",
+        "SellerSku": "3730272243-1681483587441-14",
+        "ShopSku": "3730272243_PH-19667622969",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622969.html",
+        "saleProp": {
+          "Variation3": "Eucalyptus"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 2,
+            "totalQuantity": 2,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 2
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 2,
+        "package_weight": "0.5",
+        "SkuId": 19667622969
+      },
+      {
+        "Status": "active",
+        "quantity": 0,
+        "Images": [],
+        "Variation3": "White Tea",
+        "SellerSku": "3730272243-1681483587441-6",
+        "ShopSku": "3730272243_PH-19667622961",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622961.html",
+        "saleProp": {
+          "Variation3": "White Tea"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 0,
+            "totalQuantity": 0,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 0
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 0,
+        "package_weight": "0.5",
+        "SkuId": 19667622961
+      },
+      {
+        "Status": "active",
+        "quantity": 15,
+        "Images": [],
+        "Variation3": "Conrad",
+        "SellerSku": "3730272243-1681483587441-5",
+        "ShopSku": "3730272243_PH-19667622960",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622960.html",
+        "saleProp": {
+          "Variation3": "Conrad"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 15,
+            "totalQuantity": 15,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 15
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 15,
+        "package_weight": "0.5",
+        "SkuId": 19667622960
+      },
+      {
+        "Status": "active",
+        "quantity": 10,
+        "Images": [],
+        "Variation3": "Solaire",
+        "SellerSku": "3730272243-1681483587441-4",
+        "ShopSku": "3730272243_PH-19667622959",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622959.html",
+        "saleProp": {
+          "Variation3": "Solaire"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 10,
+            "totalQuantity": 10,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 10
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 10,
+        "package_weight": "0.5",
+        "SkuId": 19667622959
+      },
+      {
+        "Status": "active",
+        "quantity": 4,
+        "Images": [],
+        "Variation3": "Fresh Linen",
+        "SellerSku": "3730272243-1681483587441-11",
+        "ShopSku": "3730272243_PH-19667622966",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622966.html",
+        "saleProp": {
+          "Variation3": "Fresh Linen"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 4,
+            "totalQuantity": 4,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 4
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 4,
+        "package_weight": "0.5",
+        "SkuId": 19667622966
+      },
+      {
+        "Status": "active",
+        "quantity": 0,
+        "Images": [],
+        "Variation3": "Marriott",
+        "SellerSku": "3730272243-1681483587441-3",
+        "ShopSku": "3730272243_PH-19667622958",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622958.html",
+        "saleProp": {
+          "Variation3": "Marriott"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 0,
+            "totalQuantity": 0,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 0
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 0,
+        "package_weight": "0.5",
+        "SkuId": 19667622958
+      },
+      {
+        "Status": "active",
+        "quantity": 13,
+        "Images": [],
+        "Variation3": "Lavender",
+        "SellerSku": "3730272243-1681483587441-10",
+        "ShopSku": "3730272243_PH-19667622965",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622965.html",
+        "saleProp": {
+          "Variation3": "Lavender"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 13,
+            "totalQuantity": 13,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 13
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 13,
+        "package_weight": "0.5",
+        "SkuId": 19667622965
+      },
+      {
+        "Status": "active",
+        "quantity": 73,
+        "Images": [],
+        "Variation3": "Okada",
+        "SellerSku": "3730272243-1681483587441-2",
+        "ShopSku": "3730272243_PH-19667622957",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622957.html",
+        "saleProp": {
+          "Variation3": "Okada"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 73,
+            "totalQuantity": 73,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 73
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 73,
+        "package_weight": "0.5",
+        "SkuId": 19667622957
+      },
+      {
+        "Status": "active",
+        "quantity": 54,
+        "Images": [],
+        "Variation3": "Fresh Bamboo",
+        "SellerSku": "3730272243-1681483587441-1",
+        "ShopSku": "3730272243_PH-19667622956",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622956.html",
+        "saleProp": {
+          "Variation3": "Fresh Bamboo"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 54,
+            "totalQuantity": 54,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 54
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 54,
+        "package_weight": "0.5",
+        "SkuId": 19667622956
+      },
+      {
+        "Status": "active",
+        "quantity": 41,
+        "Images": [],
+        "Variation3": "Shangrila",
+        "SellerSku": "3730272243-1681483587441-0",
+        "ShopSku": "3730272243_PH-19667622955",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622955.html",
+        "saleProp": {
+          "Variation3": "Shangrila"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 41,
+            "totalQuantity": 41,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 41
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 41,
+        "package_weight": "0.5",
+        "SkuId": 19667622955
+      },
+      {
+        "Status": "active",
+        "quantity": 10,
+        "Images": [],
+        "Variation3": "Cherry Blossom",
+        "SellerSku": "3730272243-1681483587441-9",
+        "ShopSku": "3730272243_PH-19667622964",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622964.html",
+        "saleProp": {
+          "Variation3": "Cherry Blossom"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 10,
+            "totalQuantity": 10,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 10
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 10,
+        "package_weight": "0.5",
+        "SkuId": 19667622964
+      },
+      {
+        "Status": "active",
+        "quantity": 7,
+        "Images": [],
+        "Variation3": "Green Tea",
+        "SellerSku": "3730272243-1681483587441-8",
+        "ShopSku": "3730272243_PH-19667622963",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622963.html",
+        "saleProp": {
+          "Variation3": "Green Tea"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 7,
+            "totalQuantity": 7,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 7
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 7,
+        "package_weight": "0.5",
+        "SkuId": 19667622963
+      },
+      {
+        "Status": "active",
+        "quantity": 6,
+        "Images": [],
+        "Variation3": "Marine Squash",
+        "SellerSku": "3730272243-1681483587441-7",
+        "ShopSku": "3730272243_PH-19667622962",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s19667622962.html",
+        "saleProp": {
+          "Variation3": "Marine Squash"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 6,
+            "totalQuantity": 6,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 6
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 6,
+        "package_weight": "0.5",
+        "SkuId": 19667622962
+      },
+      {
+        "Status": "active",
+        "quantity": 1,
+        "Images": [],
+        "Variation3": "Cool Water",
+        "SellerSku": "3730272243-1733841443741-14",
+        "ShopSku": "3730272243_PH-27949490276",
+        "Url": "https://www.lazada.com.ph/-i3730272243-s27949490276.html",
+        "saleProp": {
+          "Variation3": "Cool Water"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 1,
+            "totalQuantity": 1,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 1
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 1,
+        "package_weight": "0.5",
+        "SkuId": 27949490276
+      }
+    ],
+    "item_id": 3730272243,
+    "variation": {
+      "Variation1": {
+        "name": "Variation3",
+        "label": "Variation3",
+        "hasImage": false,
+        "customize": true,
+        "options": [
+          "Shangrila",
+          "Fresh Bamboo",
+          "Okada",
+          "Marriott",
+          "Solaire",
+          "Conrad",
+          "White Tea",
+          "Marine Squash",
+          "Green Tea",
+          "Cherry Blossom",
+          "Lavender",
+          "Fresh Linen",
+          "Melon Cucumber",
+          "Eucalyptus",
+          "Cool Water",
+          "Bubble Gum"
+        ]
+      }
+    },
+    "trialProduct": false,
+    "primary_category": 8632,
+    "marketImages": [],
+    "attributes": {
+      "description": "<article class=\"lzd-article\" style=\"white-space:break-spaces\"><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span>Transform your daily commute into a spa-like experience with our hanging diffuser for cars. Infuse your vehicle with your favorite aromatherapy scents, promoting relaxation and reducing stress while on the go. Enjoy the benefits of essential oils wherever you go with our convenient and stylish car diffusers.</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span>Same scents as waterbased scents. </span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span>10mL Glass Bottle</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span>Good for 1 month</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span>Safe for Kids 👶</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span>Safe for Pets 🐾</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span>Can also be used for Homes and Offices </span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span>Sealed. Guaranteed no spill during shipment.</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span>Same day / Next day ship out! </span></p></article>",
+      "brand": "LA Collections",
+      "name": "10mL Hanging Car Diffuser by LA Collections",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1681442263687",
+    "updated_time": "1758285576351",
+    "images": [
+      "https://ph-live.slatic.net/p/3515bafd9f30e70d94d53d3ec14553e8.jpg",
+      "https://ph-live.slatic.net/p/7425ce913848cb007b9408fbf43f9030.jpg",
+      "https://ph-live.slatic.net/p/f11f23fd1064338cb9aaa4430d89d8aa.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/S24bf438c6b8746539733644f0bcc685ec.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 5,
+        "Images": [],
+        "Variation3": "Marriott",
+        "SellerSku": "3727967121-1681442263070-15",
+        "ShopSku": "3727967121_PH-19653362648",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362648.html",
+        "saleProp": {
+          "Variation1": "100mL",
+          "Variation3": "Marriott"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 5,
+            "totalQuantity": 5,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 5
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 790.0,
+        "channelInventories": [],
+        "Variation1": "100mL",
+        "package_length": "8.00",
+        "Available": 5,
+        "package_weight": "0.5",
+        "SkuId": 19653362648
+      },
+      {
+        "Status": "active",
+        "quantity": 9,
+        "Images": [],
+        "Variation3": "Marriott",
+        "SellerSku": "3727967121-1681442263070-14",
+        "ShopSku": "3727967121_PH-19653362647",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362647.html",
+        "saleProp": {
+          "Variation1": "50mL",
+          "Variation3": "Marriott"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 9,
+            "totalQuantity": 9,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 9
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 490.0,
+        "channelInventories": [],
+        "Variation1": "50mL",
+        "package_length": "8.00",
+        "Available": 9,
+        "package_weight": "0.5",
+        "SkuId": 19653362647
+      },
+      {
+        "Status": "active",
+        "quantity": 5,
+        "Images": [],
+        "Variation3": "Cherry Blossom",
+        "SellerSku": "3727967121-1681442263070-17",
+        "ShopSku": "3727967121_PH-19653362650",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362650.html",
+        "saleProp": {
+          "Variation1": "100mL",
+          "Variation3": "Cherry Blossom"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 5,
+            "totalQuantity": 5,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 5
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 790.0,
+        "channelInventories": [],
+        "Variation1": "100mL",
+        "package_length": "8.00",
+        "Available": 5,
+        "package_weight": "0.5",
+        "SkuId": 19653362650
+      },
+      {
+        "Status": "active",
+        "quantity": 4,
+        "Images": [],
+        "Variation3": "Cherry Blossom",
+        "SellerSku": "3727967121-1681442263070-16",
+        "ShopSku": "3727967121_PH-19653362649",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362649.html",
+        "saleProp": {
+          "Variation1": "50mL",
+          "Variation3": "Cherry Blossom"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 4,
+            "totalQuantity": 4,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 4
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 490.0,
+        "channelInventories": [],
+        "Variation1": "50mL",
+        "package_length": "8.00",
+        "Available": 4,
+        "package_weight": "0.5",
+        "SkuId": 19653362649
+      },
+      {
+        "Status": "active",
+        "quantity": 2,
+        "Images": [],
+        "Variation3": "Irish Spring",
+        "SellerSku": "3727967121-1736834990776-18",
+        "ShopSku": "3727967121_PH-28520892252",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s28520892252.html",
+        "saleProp": {
+          "Variation1": "50mL",
+          "Variation3": "Irish Spring"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 2,
+            "totalQuantity": 2,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 2
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 490.0,
+        "channelInventories": [],
+        "Variation1": "50mL",
+        "package_length": "8.00",
+        "Available": 2,
+        "package_weight": "0.5",
+        "SkuId": 28520892252
+      },
+      {
+        "Status": "active",
+        "quantity": 5,
+        "Images": [],
+        "Variation3": "Irish Spring",
+        "SellerSku": "3727967121-1736834990776-19",
+        "ShopSku": "3727967121_PH-28520892253",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s28520892253.html",
+        "saleProp": {
+          "Variation1": "100mL",
+          "Variation3": "Irish Spring"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 5,
+            "totalQuantity": 5,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 5
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 790.0,
+        "channelInventories": [],
+        "Variation1": "100mL",
+        "package_length": "8.00",
+        "Available": 5,
+        "package_weight": "0.5",
+        "SkuId": 28520892253
+      },
+      {
+        "Status": "active",
+        "quantity": 0,
+        "Images": [],
+        "Variation3": "Shangri-La",
+        "SellerSku": "3727967121-1681442263070-0",
+        "ShopSku": "3727967121_PH-19653362633",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362633.html",
+        "saleProp": {
+          "Variation1": "50mL",
+          "Variation3": "Shangri-La"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 0,
+            "totalQuantity": 0,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 0
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 490.0,
+        "channelInventories": [],
+        "Variation1": "50mL",
+        "package_length": "8.00",
+        "Available": 0,
+        "package_weight": "0.5",
+        "SkuId": 19653362633
+      },
+      {
+        "Status": "active",
+        "quantity": 0,
+        "Images": [],
+        "Variation3": "Solaire",
+        "SellerSku": "3727967121-1681442263070-4",
+        "ShopSku": "3727967121_PH-19653362637",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362637.html",
+        "saleProp": {
+          "Variation1": "50mL",
+          "Variation3": "Solaire"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 0,
+            "totalQuantity": 0,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 0
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 490.0,
+        "channelInventories": [],
+        "Variation1": "50mL",
+        "package_length": "8.00",
+        "Available": 0,
+        "package_weight": "0.5",
+        "SkuId": 19653362637
+      },
+      {
+        "Status": "active",
+        "quantity": 2,
+        "Images": [],
+        "Variation3": "Okada",
+        "SellerSku": "3727967121-1681442263070-3",
+        "ShopSku": "3727967121_PH-19653362636",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362636.html",
+        "saleProp": {
+          "Variation1": "100mL",
+          "Variation3": "Okada"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 2,
+            "totalQuantity": 2,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 2
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 790.0,
+        "channelInventories": [],
+        "Variation1": "100mL",
+        "package_length": "8.00",
+        "Available": 2,
+        "package_weight": "0.5",
+        "SkuId": 19653362636
+      },
+      {
+        "Status": "active",
+        "quantity": 55,
+        "Images": [],
+        "Variation3": "Okada",
+        "SellerSku": "3727967121-1681442263070-2",
+        "ShopSku": "3727967121_PH-19653362635",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362635.html",
+        "saleProp": {
+          "Variation1": "50mL",
+          "Variation3": "Okada"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 55,
+            "totalQuantity": 55,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 55
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 490.0,
+        "channelInventories": [],
+        "Variation1": "50mL",
+        "package_length": "8.00",
+        "Available": 55,
+        "package_weight": "0.5",
+        "SkuId": 19653362635
+      },
+      {
+        "Status": "active",
+        "quantity": 3,
+        "Images": [],
+        "Variation3": "Shangri-La",
+        "SellerSku": "3727967121-1681442263070-1",
+        "ShopSku": "3727967121_PH-19653362634",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362634.html",
+        "saleProp": {
+          "Variation1": "100mL",
+          "Variation3": "Shangri-La"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 3,
+            "totalQuantity": 3,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 3
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 790.0,
+        "channelInventories": [],
+        "Variation1": "100mL",
+        "package_length": "8.00",
+        "Available": 3,
+        "package_weight": "0.5",
+        "SkuId": 19653362634
+      },
+      {
+        "Status": "active",
+        "quantity": 0,
+        "Images": [],
+        "Variation3": "White Tea",
+        "SellerSku": "3727967121-1681442263070-8",
+        "ShopSku": "3727967121_PH-19653362641",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362641.html",
+        "saleProp": {
+          "Variation1": "50mL",
+          "Variation3": "White Tea"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 0,
+            "totalQuantity": 0,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 0
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 490.0,
+        "channelInventories": [],
+        "Variation1": "50mL",
+        "package_length": "8.00",
+        "Available": 0,
+        "package_weight": "0.5",
+        "SkuId": 19653362641
+      },
+      {
+        "Status": "active",
+        "quantity": 3,
+        "Images": [],
+        "Variation3": "Green Tea",
+        "SellerSku": "3727967121-1681442263070-7",
+        "ShopSku": "3727967121_PH-19653362640",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362640.html",
+        "saleProp": {
+          "Variation1": "100mL",
+          "Variation3": "Green Tea"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 3,
+            "totalQuantity": 3,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 3
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 790.0,
+        "channelInventories": [],
+        "Variation1": "100mL",
+        "package_length": "8.00",
+        "Available": 3,
+        "package_weight": "0.5",
+        "SkuId": 19653362640
+      },
+      {
+        "Status": "active",
+        "quantity": 0,
+        "Images": [],
+        "Variation3": "Green Tea",
+        "SellerSku": "3727967121-1681442263070-6",
+        "ShopSku": "3727967121_PH-19653362639",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362639.html",
+        "saleProp": {
+          "Variation1": "50mL",
+          "Variation3": "Green Tea"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 0,
+            "totalQuantity": 0,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 0
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 490.0,
+        "channelInventories": [],
+        "Variation1": "50mL",
+        "package_length": "8.00",
+        "Available": 0,
+        "package_weight": "0.5",
+        "SkuId": 19653362639
+      },
+      {
+        "Status": "active",
+        "quantity": 5,
+        "Images": [],
+        "Variation3": "Solaire",
+        "SellerSku": "3727967121-1681442263070-5",
+        "ShopSku": "3727967121_PH-19653362638",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362638.html",
+        "saleProp": {
+          "Variation1": "100mL",
+          "Variation3": "Solaire"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 5,
+            "totalQuantity": 5,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 5
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 790.0,
+        "channelInventories": [],
+        "Variation1": "100mL",
+        "package_length": "8.00",
+        "Available": 5,
+        "package_weight": "0.5",
+        "SkuId": 19653362638
+      },
+      {
+        "Status": "active",
+        "quantity": 11,
+        "Images": [],
+        "Variation3": "Fresh Bamboo",
+        "SellerSku": "3727967121-1681442263070-11",
+        "ShopSku": "3727967121_PH-19653362644",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362644.html",
+        "saleProp": {
+          "Variation1": "100mL",
+          "Variation3": "Fresh Bamboo"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 11,
+            "totalQuantity": 11,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 11
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 790.0,
+        "channelInventories": [],
+        "Variation1": "100mL",
+        "package_length": "8.00",
+        "Available": 11,
+        "package_weight": "0.5",
+        "SkuId": 19653362644
+      },
+      {
+        "Status": "active",
+        "quantity": 26,
+        "Images": [],
+        "Variation3": "Fresh Bamboo",
+        "SellerSku": "3727967121-1681442263070-10",
+        "ShopSku": "3727967121_PH-19653362643",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362643.html",
+        "saleProp": {
+          "Variation1": "50mL",
+          "Variation3": "Fresh Bamboo"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 26,
+            "totalQuantity": 26,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 26
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 490.0,
+        "channelInventories": [],
+        "Variation1": "50mL",
+        "package_length": "8.00",
+        "Available": 26,
+        "package_weight": "0.5",
+        "SkuId": 19653362643
+      },
+      {
+        "Status": "active",
+        "quantity": 5,
+        "Images": [],
+        "Variation3": "Conrad",
+        "SellerSku": "3727967121-1681442263070-13",
+        "ShopSku": "3727967121_PH-19653362646",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362646.html",
+        "saleProp": {
+          "Variation1": "100mL",
+          "Variation3": "Conrad"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 5,
+            "totalQuantity": 5,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 5
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 790.0,
+        "channelInventories": [],
+        "Variation1": "100mL",
+        "package_length": "8.00",
+        "Available": 5,
+        "package_weight": "0.5",
+        "SkuId": 19653362646
+      },
+      {
+        "Status": "active",
+        "quantity": 3,
+        "Images": [],
+        "Variation3": "White Tea",
+        "SellerSku": "3727967121-1681442263070-9",
+        "ShopSku": "3727967121_PH-19653362642",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362642.html",
+        "saleProp": {
+          "Variation1": "100mL",
+          "Variation3": "White Tea"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 3,
+            "totalQuantity": 3,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 3
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 790.0,
+        "channelInventories": [],
+        "Variation1": "100mL",
+        "package_length": "8.00",
+        "Available": 3,
+        "package_weight": "0.5",
+        "SkuId": 19653362642
+      },
+      {
+        "Status": "active",
+        "quantity": 29,
+        "Images": [],
+        "Variation3": "Conrad",
+        "SellerSku": "3727967121-1681442263070-12",
+        "ShopSku": "3727967121_PH-19653362645",
+        "Url": "https://www.lazada.com.ph/-i3727967121-s19653362645.html",
+        "saleProp": {
+          "Variation1": "50mL",
+          "Variation3": "Conrad"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 29,
+            "totalQuantity": 29,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 29
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 490.0,
+        "channelInventories": [],
+        "Variation1": "50mL",
+        "package_length": "8.00",
+        "Available": 29,
+        "package_weight": "0.5",
+        "SkuId": 19653362645
+      }
+    ],
+    "item_id": 3727967121,
+    "variation": {
+      "Variation1": {
+        "name": "Variation3",
+        "label": "Variation3",
+        "hasImage": false,
+        "customize": true,
+        "options": [
+          "Shangri-La",
+          "Okada",
+          "Solaire",
+          "Green Tea",
+          "White Tea",
+          "Fresh Bamboo",
+          "Conrad",
+          "Marriott",
+          "Cherry Blossom",
+          "Irish Spring"
+        ]
+      },
+      "Variation2": {
+        "name": "Variation1",
+        "label": "Variation1",
+        "hasImage": false,
+        "customize": true,
+        "options": [
+          "50mL",
+          "100mL"
+        ]
+      }
+    },
+    "trialProduct": false,
+    "primary_category": 22490,
+    "marketImages": [],
+    "attributes": {
+      "brand": "LA Collections",
+      "material": "Essential Oil",
+      "scent": "Scented",
+      "home_fragrance_type": "Essential Oil",
+      "name": "LA Collections Pure Oil Reed Diffuser",
+      "Hazmat": "Battery/Flammable/Liquid",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1756911824043",
+    "updated_time": "1756918169540",
+    "images": [
+      "https://filebroker-cdn.lazada.com.ph/kf/S76707145303c4a109d9b27cbcf857af0L.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/S25e13e56e5a345e098fcb48d03ac4534m.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 4999,
+        "Images": [],
+        "SellerSku": "5226953157-1756911823912-0",
+        "ShopSku": "5226953157_PH-30970753543",
+        "Url": "https://www.lazada.com.ph/-i5226953157-s30970753543.html",
+        "saleProp": {},
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 4999,
+            "totalQuantity": 4999,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 4999
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "25.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "8.00",
+        "Available": 4999,
+        "package_weight": "1.26",
+        "SkuId": 30970753543
+      }
+    ],
+    "item_id": 5226953157,
+    "variation": {},
+    "trialProduct": false,
+    "primary_category": 22490,
+    "marketImages": [],
+    "attributes": {
+      "brand": "No Brand",
+      "material": "Not Specified",
+      "scent": "Scented",
+      "name": "1L Conrad Waterbased Humidifier / Diffuser/ Linen Spray Scent",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1736809929856",
+    "updated_time": "1759394960994",
+    "images": [
+      "https://filebroker-cdn.lazada.com.ph/kf/Sc3d0976ec9b0462e807cd52f3e727b63t.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 42,
+        "Images": [],
+        "SellerSku": "4896157465-1736809929400-4",
+        "ShopSku": "4896157465_PH-28517434720",
+        "Url": "https://www.lazada.com.ph/-i4896157465-s28517434720.html",
+        "saleProp": {
+          "Scent": "Solaire"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 42,
+            "totalQuantity": 42,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 42
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "23.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "8.00",
+        "Available": 42,
+        "package_weight": "1.299",
+        "Scent": "Solaire",
+        "SkuId": 28517434720
+      },
+      {
+        "Status": "active",
+        "quantity": 46,
+        "Images": [],
+        "SellerSku": "4896157465-1736809929400-6",
+        "ShopSku": "4896157465_PH-28517434722",
+        "Url": "https://www.lazada.com.ph/-i4896157465-s28517434722.html",
+        "saleProp": {
+          "Scent": "Irish Spring"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 46,
+            "totalQuantity": 46,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 46
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "23.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "8.00",
+        "Available": 46,
+        "package_weight": "1.299",
+        "Scent": "Irish Spring",
+        "SkuId": 28517434722
+      },
+      {
+        "Status": "active",
+        "quantity": 48,
+        "Images": [],
+        "SellerSku": "4896157465-1747799557908-9",
+        "ShopSku": "4896157465_PH-30052318342",
+        "Url": "https://www.lazada.com.ph/-i4896157465-s30052318342.html",
+        "saleProp": {
+          "Scent": "Conrad"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 48,
+            "totalQuantity": 48,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 48
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "23.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "8.00",
+        "Available": 48,
+        "package_weight": "1.299",
+        "Scent": "Conrad",
+        "SkuId": 30052318342
+      },
+      {
+        "Status": "active",
+        "quantity": 48,
+        "Images": [],
+        "SellerSku": "4896157465-1736809929400-5",
+        "ShopSku": "4896157465_PH-28517434721",
+        "Url": "https://www.lazada.com.ph/-i4896157465-s28517434721.html",
+        "saleProp": {
+          "Scent": "Green Tea"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 48,
+            "totalQuantity": 48,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 48
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "23.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "8.00",
+        "Available": 48,
+        "package_weight": "1.299",
+        "Scent": "Green Tea",
+        "SkuId": 28517434721
+      },
+      {
+        "Status": "active",
+        "quantity": 23,
+        "Images": [],
+        "SellerSku": "4896157465-1736809929399-0",
+        "ShopSku": "4896157465_PH-28517434716",
+        "Url": "https://www.lazada.com.ph/-i4896157465-s28517434716.html",
+        "saleProp": {
+          "Scent": "Shangrila"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 23,
+            "totalQuantity": 23,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 23
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "23.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "8.00",
+        "Available": 23,
+        "package_weight": "1.299",
+        "Scent": "Shangrila",
+        "SkuId": 28517434716
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "4896157465-1736809929400-7",
+        "ShopSku": "4896157465_PH-28517434723",
+        "Url": "https://www.lazada.com.ph/-i4896157465-s28517434723.html",
+        "saleProp": {
+          "Scent": "Melon Cucumber"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "23.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "8.00",
+        "Available": 50,
+        "package_weight": "1.299",
+        "Scent": "Melon Cucumber",
+        "SkuId": 28517434723
+      },
+      {
+        "Status": "active",
+        "quantity": 42,
+        "Images": [],
+        "SellerSku": "4896157465-1736809929399-1",
+        "ShopSku": "4896157465_PH-28517434717",
+        "Url": "https://www.lazada.com.ph/-i4896157465-s28517434717.html",
+        "saleProp": {
+          "Scent": "Okada"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 42,
+            "totalQuantity": 42,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 42
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "23.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "8.00",
+        "Available": 42,
+        "package_weight": "1.299",
+        "Scent": "Okada",
+        "SkuId": 28517434717
+      },
+      {
+        "Status": "active",
+        "quantity": 43,
+        "Images": [],
+        "SellerSku": "4896157465-1736809929399-2",
+        "ShopSku": "4896157465_PH-28517434718",
+        "Url": "https://www.lazada.com.ph/-i4896157465-s28517434718.html",
+        "saleProp": {
+          "Scent": "Bamboo"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 43,
+            "totalQuantity": 43,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 43
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "23.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "8.00",
+        "Available": 43,
+        "package_weight": "1.299",
+        "Scent": "Bamboo",
+        "SkuId": 28517434718
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "4896157465-1745417099708-8",
+        "ShopSku": "4896157465_PH-29745528311",
+        "Url": "https://www.lazada.com.ph/-i4896157465-s29745528311.html",
+        "saleProp": {
+          "Scent": "Nectarine"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "23.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "8.00",
+        "Available": 50,
+        "package_weight": "1.299",
+        "Scent": "Nectarine",
+        "SkuId": 29745528311
+      },
+      {
+        "Status": "active",
+        "quantity": 37,
+        "Images": [],
+        "SellerSku": "4896157465-1736809929399-3",
+        "ShopSku": "4896157465_PH-28517434719",
+        "Url": "https://www.lazada.com.ph/-i4896157465-s28517434719.html",
+        "saleProp": {
+          "Scent": "Marriott"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 37,
+            "totalQuantity": 37,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 37
+          }
+        ],
+        "package_width": "8.00",
+        "package_height": "23.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "8.00",
+        "Available": 37,
+        "package_weight": "1.299",
+        "Scent": "Marriott",
+        "SkuId": 28517434719
+      }
+    ],
+    "item_id": 4896157465,
+    "variation": {
+      "Variation1": {
+        "name": "Scent",
+        "label": "Scent",
+        "hasImage": false,
+        "customize": true,
+        "options": [
+          "Okada",
+          "Bamboo",
+          "Marriott",
+          "Solaire",
+          "Green Tea",
+          "Irish Spring",
+          "Melon Cucumber",
+          "Shangrila",
+          "Nectarine",
+          "Conrad"
+        ]
+      }
+    },
+    "trialProduct": false,
+    "primary_category": 22490,
+    "marketImages": [],
+    "attributes": {
+      "brand": "LA Collections",
+      "material": "Not Specified",
+      "name": "1L Waterbased Humidifier Scent",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1707704430757",
+    "updated_time": "1759503109589",
+    "images": [
+      "https://filebroker-cdn.lazada.sg/kf/Sf8e6545f8a5e4d9896ad80e30f159868v.png",
+      "https://filebroker-cdn.lazada.sg/kf/Sf114ecc1313943ec80f22d3943ba1d52J.png"
+    ],
+    "skus": [
+      {
+        "Status": "inactive",
+        "quantity": 0,
+        "Size": "Small",
+        "Images": [],
+        "SellerSku": "4338109406-1707704430453-0",
+        "ShopSku": "4338109406_PH-24338704396",
+        "Url": "https://www.lazada.com.ph/-i4338109406-s24338704396.html",
+        "saleProp": {
+          "Size": "Small"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 0,
+            "totalQuantity": 0,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 0
+          }
+        ],
+        "package_width": "9.00",
+        "package_height": "20.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 350.0,
+        "channelInventories": [],
+        "package_length": "9.00",
+        "Available": 0,
+        "package_weight": "1.32",
+        "SkuId": 24338704396
+      },
+      {
+        "Status": "active",
+        "quantity": 25,
+        "Size": "Large",
+        "Images": [],
+        "SellerSku": "4338109406-1707704430453-1",
+        "ShopSku": "4338109406_PH-24338704397",
+        "Url": "https://www.lazada.com.ph/-i4338109406-s24338704397.html",
+        "saleProp": {
+          "Size": "Large"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 25,
+            "totalQuantity": 25,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 25
+          }
+        ],
+        "package_width": "9.00",
+        "package_height": "20.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 350.0,
+        "channelInventories": [],
+        "package_length": "9.00",
+        "Available": 25,
+        "package_weight": "1.32",
+        "SkuId": 24338704397
+      }
+    ],
+    "item_id": 4338109406,
+    "variation": {
+      "Variation1": {
+        "name": "Size",
+        "label": "Size",
+        "hasImage": false,
+        "customize": true,
+        "options": [
+          "Small",
+          "Large"
+        ]
+      }
+    },
+    "trialProduct": false,
+    "primary_category": 7539,
+    "marketImages": [],
+    "attributes": {
+      "description": "Enhance the ambiance of your living space with the refreshing aroma of green tea. This scent for humidifiers is specially formulated to create a soothing and relaxing environment. Simply add a few drops to your humidifier and enjoy the calming scent of green tea throughout your home. The natural fragrance will help to relieve stress and promote a sense of well-being. Suitable for use in any type of humidifier, this green tea scent is a must-have for anyone looking to create a peaceful atmosphere.",
+      "humidifier_features": "Aromatherapy",
+      "brand": "LA Collections",
+      "room_size": "30-90 sq meters",
+      "capacity": "1",
+      "warranty_type": "No Warranty",
+      "name": "Green Tea Scent for Humidifier",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1715173662752",
+    "updated_time": "1759704954235",
+    "images": [
+      "https://ph-live.slatic.net/p/03ee0ef066b4d467f4059374680fd8cc.jpg",
+      "https://ph-live.slatic.net/p/f391f9704e7eb0d0b1bf62a4b09539f3.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 293,
+        "Images": [],
+        "SellerSku": "WT",
+        "ShopSku": "4435102730_PH-25090520619",
+        "Url": "https://www.lazada.com.ph/-i4435102730-s25090520619.html",
+        "saleProp": {},
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 293,
+            "totalQuantity": 293,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 293
+          }
+        ],
+        "package_width": "9.00",
+        "package_height": "14.00",
+        "fblWarehouseInventories": [],
+        "special_price": 388.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "9.00",
+        "Available": 293,
+        "package_weight": "1.28",
+        "SkuId": 25090520619
+      }
+    ],
+    "item_id": 4435102730,
+    "variation": {},
+    "trialProduct": false,
+    "primary_category": 22490,
+    "marketImages": [
+      "https://ph-live-01.slatic.net/p/f391f9704e7eb0d0b1bf62a4b09539f3.jpg"
+    ],
+    "attributes": {
+      "short_description": "<article class=\"lzd-article\"><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span>It is designed to provide a soothing and refreshing atmosphere in your home or office. The white tea scent adds a calming and pleasant aroma to the air, creating a relaxing environment. With a capacity of 1 liter, this humidifier and diffuser can effectively moisturize the air for a long period of time. It is perfect for use in bedrooms, living rooms, and other spaces where you want to improve air quality and create a peaceful ambiance.</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p></article>",
+      "description": "<article class=\"lzd-article\"><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span style=\"color:rgb(51, 51, 51);font-size:10.5pt\">(COD) 1 Liter White Tea Waterbased Essential Oil for Humidifiers</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span>Inspired by White Tea & Ginger Scent</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span style=\"color:rgb(51, 51, 51);font-size:10.5pt\">Perfect for:</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span style=\"color:rgb(51, 51, 51);font-size:10.5pt\">- Humidifiers</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span style=\"color:rgb(51, 51, 51);font-size:10.5pt\">- Room Spray</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span style=\"color:rgb(51, 51, 51);font-size:10.5pt\">- Linen Spray</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span></span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span style=\"color:rgb(51, 51, 51);font-size:10.5pt\">long lasting smell. </span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span style=\"color:rgb(51, 51, 51);font-size:10.5pt\">guaranteed no leaks and spillage.</span></p><p style=\"line-height:1.7;text-align:left;text-indent:0;margin-left:0;margin-top:0;margin-bottom:0\"><span style=\"color:rgb(51, 51, 51);font-size:10.5pt\">all bottles are sealed and protected with Bubble wrap and corrugated boxes.</span></p></article>",
+      "brand": "LA Collections",
+      "scent": "White Tea and Ginger",
+      "home_fragrance_type": "HUMIDIFIER",
+      "name": "1 Liter Waterbased White Tea Scent for Humidifier and Diffuser",
+      "Hazmat": "None",
+      "promotion_whitebkg_image": [
+        "https://ph-live-01.slatic.net/p/f391f9704e7eb0d0b1bf62a4b09539f3.jpg"
+      ],
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1713947322165",
+    "updated_time": "1740139769116",
+    "images": [
+      "https://sg-test-11.slatic.net/p/6634dc2037c3640ae3a73cdabbcc1758.jpg",
+      "https://sg-test-11.slatic.net/p/bd8bf9a7717abd16d0c8b7ee03a2bfa0.jpg",
+      "https://sg-test-11.slatic.net/p/b0aedf47b0b69b634bfc738f825f04c6.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 0,
+        "Images": [
+          "https://sg-test-11.slatic.net/p/6634dc2037c3640ae3a73cdabbcc1758.jpg",
+          "https://sg-test-11.slatic.net/p/bd8bf9a7717abd16d0c8b7ee03a2bfa0.jpg",
+          "https://sg-test-11.slatic.net/p/b0aedf47b0b69b634bfc738f825f04c6.jpg"
+        ],
+        "SellerSku": "w180",
+        "Quantity": "60s (180pcs)",
+        "ShopSku": "4419425595_PH-24903327418",
+        "Url": "https://www.lazada.com.ph/-i4419425595-s24903327418.html",
+        "saleProp": {
+          "Quantity": "60s (180pcs)"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 0,
+            "totalQuantity": 0,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 0
+          }
+        ],
+        "package_width": "10.0",
+        "package_height": "18.0",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 289.0,
+        "channelInventories": [],
+        "package_length": "16.0",
+        "Available": 0,
+        "package_weight": "0.75",
+        "SkuId": 24903327418
+      },
+      {
+        "Status": "active",
+        "quantity": 0,
+        "Images": [
+          "https://sg-test-11.slatic.net/p/bd8bf9a7717abd16d0c8b7ee03a2bfa0.jpg",
+          "https://sg-test-11.slatic.net/p/6634dc2037c3640ae3a73cdabbcc1758.jpg",
+          "https://sg-test-11.slatic.net/p/b0aedf47b0b69b634bfc738f825f04c6.jpg"
+        ],
+        "SellerSku": "w90",
+        "Quantity": "30s (90pcs)",
+        "ShopSku": "4419425595_PH-24903327419",
+        "Url": "https://www.lazada.com.ph/-i4419425595-s24903327419.html",
+        "saleProp": {
+          "Quantity": "30s (90pcs)"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 0,
+            "totalQuantity": 0,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 0
+          }
+        ],
+        "package_width": "10.0",
+        "package_height": "18.0",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 210.0,
+        "channelInventories": [],
+        "package_length": "16.0",
+        "Available": 0,
+        "package_weight": "0.75",
+        "SkuId": 24903327419
+      }
+    ],
+    "item_id": 4419425595,
+    "variation": {
+      "Variation1": {
+        "name": "Quantity",
+        "label": "Quantity",
+        "hasImage": true,
+        "customize": true,
+        "options": [
+          "60s (180pcs)",
+          "30s (90pcs)"
+        ]
+      }
+    },
+    "trialProduct": false,
+    "primary_category": 18986,
+    "marketImages": [],
+    "attributes": {
+      "short_description": "<div><p>Fluffy Wet Wipes 60 Sheets<br /><br />Our wet wipes are made from natural, biodegradable materials that are gentle on the skin and the environment. They come in a convenient, portable package and are perfect for quick cleanups on the go. Whether you&#39;re at the gym, out for a run, or traveling, Fluffy Wet Wipes will leave you feeling refreshed and clean.<br /><br />- Sheets per pack: 60 sheets&nbsp;<br />- Total Sheets per Bundle: 180 sheets<br />- Fragrance: Fragrance-free&nbsp;<br />- Paraben: Paraben-free&nbsp;<br />- GSM: 50 GSM&nbsp;<br />- Biodegradable: Yes&nbsp;<br />- Certification: FSC certified&nbsp;<br />- Hypoallergenic: Yes&nbsp;<br />- Packaging: 3-in-1 packaging (convenient and compact)&nbsp;<br /><br />COD AVAILABLE - ON HAND - FAST DELIVERY</p></div>",
+      "description": "<div><p>Fluffy Wet Wipes 60 Sheets<br /><br />Our wet wipes are made from natural, biodegradable materials that are gentle on the skin and the environment. They come in a convenient, portable package and are perfect for quick cleanups on the go. Whether you&#39;re at the gym, out for a run, or traveling, Fluffy Wet Wipes will leave you feeling refreshed and clean.<br /><br />- Sheets per pack: 60 sheets&nbsp;<br />- Total Sheets per Bundle: 180 sheets<br />- Fragrance: Fragrance-free&nbsp;<br />- Paraben: Paraben-free&nbsp;<br />- GSM: 50 GSM&nbsp;<br />- Biodegradable: Yes&nbsp;<br />- Certification: FSC certified&nbsp;<br />- Hypoallergenic: Yes&nbsp;<br />- Packaging: 3-in-1 packaging (convenient and compact)&nbsp;<br /><br />COD AVAILABLE - ON HAND - FAST DELIVERY</p></div>",
+      "brand": "FLUFFY",
+      "Types_of_wipes": "Fragrance-free Wipes",
+      "name": "Fluffy Fragrance-Free Wet Wipes 60's Pack of 3 (180 Sheets Total)",
+      "source": "asc",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1700561024440",
+    "updated_time": "1744104438303",
+    "images": [
+      "https://sg-live-01.slatic.net/p/2610f6a4788d218090ee2bed81b87a54.png",
+      "https://sg-live-01.slatic.net/p/3f65bbcb4a30c00831d576e23d80b3cb.png",
+      "https://sg-live-01.slatic.net/p/071a905797c6df7a21de3de5651bac73.png"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 0,
+        "Images": [],
+        "SellerSku": "4235474277-1700561024158-0",
+        "ShopSku": "4235474277_PH-23589299653",
+        "Url": "https://www.lazada.com.ph/-i4235474277-s23589299653.html",
+        "saleProp": {
+          "size": "other:5 Kilos"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 0,
+            "totalQuantity": 0,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 0
+          }
+        ],
+        "package_width": "30.00",
+        "package_height": "15.00",
+        "fblWarehouseInventories": [],
+        "size": "other:5 Kilos",
+        "special_price": 0.0,
+        "price": 450.0,
+        "channelInventories": [],
+        "package_length": "15.00",
+        "Available": 0,
+        "package_weight": "5",
+        "SkuId": 23589299653
+      }
+    ],
+    "item_id": 4235474277,
+    "variation": {
+      "Variation1": {
+        "name": "size",
+        "label": "size",
+        "hasImage": false,
+        "customize": true,
+        "options": [
+          "other:5 Kilos"
+        ]
+      }
+    },
+    "trialProduct": false,
+    "primary_category": 24428,
+    "marketImages": [],
+    "attributes": {
+      "description": "Introducing our high-quality laundry detergent in a convenient 5-kilo pack. This detergent is manufactured by the leading members-only brand, known for its exceptional cleaning power and ability to restore color vibrancy. Say goodbye to dull and faded clothes with our powerful laundry detergent. It effectively removes tough stains and leaves your garments looking fresh and vibrant. Suitable for all types of fabrics, this detergent is a must-have for every household. Experience the difference with our laundry detergent!",
+      "brand": "No Brand",
+      "name": "Pure Shield Laundry Detergent 5 Kilos",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1730374880201",
+    "updated_time": "1730375452530",
+    "images": [
+      "https://filebroker-cdn.lazada.com.ph/kf/S11bb532490094bfcacfd969318fc38e6v.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "inactive",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "4739531372-1730374879783-8",
+        "ShopSku": "4739531372_PH-27396082339",
+        "Url": "https://www.lazada.com.ph/-i4739531372-s27396082339.html",
+        "saleProp": {
+          "Scent": "Green Tea by EA"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "10.00",
+        "package_height": "25.00",
+        "fblWarehouseInventories": [],
+        "special_price": 1275.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "10.00",
+        "Available": 50,
+        "package_weight": "4.5",
+        "Scent": "Green Tea by EA",
+        "SkuId": 27396082339
+      },
+      {
+        "Status": "inactive",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "4739531372-1730374879782-7",
+        "ShopSku": "4739531372_PH-27396082338",
+        "Url": "https://www.lazada.com.ph/-i4739531372-s27396082338.html",
+        "saleProp": {
+          "Scent": "Peppermint"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "10.00",
+        "package_height": "25.00",
+        "fblWarehouseInventories": [],
+        "special_price": 1275.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "10.00",
+        "Available": 50,
+        "package_weight": "4.5",
+        "Scent": "Peppermint",
+        "SkuId": 27396082338
+      },
+      {
+        "Status": "inactive",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "4739531372-1730374879782-6",
+        "ShopSku": "4739531372_PH-27396082337",
+        "Url": "https://www.lazada.com.ph/-i4739531372-s27396082337.html",
+        "saleProp": {
+          "Scent": "White Tea"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "10.00",
+        "package_height": "25.00",
+        "fblWarehouseInventories": [],
+        "special_price": 1275.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "10.00",
+        "Available": 50,
+        "package_weight": "4.5",
+        "Scent": "White Tea",
+        "SkuId": 27396082337
+      },
+      {
+        "Status": "inactive",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "4739531372-1730374879782-5",
+        "ShopSku": "4739531372_PH-27396082336",
+        "Url": "https://www.lazada.com.ph/-i4739531372-s27396082336.html",
+        "saleProp": {
+          "Scent": "Lavender"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "10.00",
+        "package_height": "25.00",
+        "fblWarehouseInventories": [],
+        "special_price": 1275.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "10.00",
+        "Available": 50,
+        "package_weight": "4.5",
+        "Scent": "Lavender",
+        "SkuId": 27396082336
+      },
+      {
+        "Status": "inactive",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "4739531372-1730374879782-4",
+        "ShopSku": "4739531372_PH-27396082335",
+        "Url": "https://www.lazada.com.ph/-i4739531372-s27396082335.html",
+        "saleProp": {
+          "Scent": "Conrad"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "10.00",
+        "package_height": "25.00",
+        "fblWarehouseInventories": [],
+        "special_price": 1275.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "10.00",
+        "Available": 50,
+        "package_weight": "4.5",
+        "Scent": "Conrad",
+        "SkuId": 27396082335
+      },
+      {
+        "Status": "inactive",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "4739531372-1730374879782-3",
+        "ShopSku": "4739531372_PH-27396082334",
+        "Url": "https://www.lazada.com.ph/-i4739531372-s27396082334.html",
+        "saleProp": {
+          "Scent": "Solaire"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "10.00",
+        "package_height": "25.00",
+        "fblWarehouseInventories": [],
+        "special_price": 1275.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "10.00",
+        "Available": 50,
+        "package_weight": "4.5",
+        "Scent": "Solaire",
+        "SkuId": 27396082334
+      },
+      {
+        "Status": "inactive",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "4739531372-1730374879782-2",
+        "ShopSku": "4739531372_PH-27396082333",
+        "Url": "https://www.lazada.com.ph/-i4739531372-s27396082333.html",
+        "saleProp": {
+          "Scent": "Marriott"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "10.00",
+        "package_height": "25.00",
+        "fblWarehouseInventories": [],
+        "special_price": 1275.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "10.00",
+        "Available": 50,
+        "package_weight": "4.5",
+        "Scent": "Marriott",
+        "SkuId": 27396082333
+      },
+      {
+        "Status": "inactive",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "4739531372-1730374879782-1",
+        "ShopSku": "4739531372_PH-27396082332",
+        "Url": "https://www.lazada.com.ph/-i4739531372-s27396082332.html",
+        "saleProp": {
+          "Scent": "Okada"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "10.00",
+        "package_height": "25.00",
+        "fblWarehouseInventories": [],
+        "special_price": 1275.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "10.00",
+        "Available": 50,
+        "package_weight": "4.5",
+        "Scent": "Okada",
+        "SkuId": 27396082332
+      },
+      {
+        "Status": "inactive",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "4739531372-1730374879781-0",
+        "ShopSku": "4739531372_PH-27396082331",
+        "Url": "https://www.lazada.com.ph/-i4739531372-s27396082331.html",
+        "saleProp": {
+          "Scent": "Fresh Bamboo"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "10.00",
+        "package_height": "25.00",
+        "fblWarehouseInventories": [],
+        "special_price": 1275.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "10.00",
+        "Available": 50,
+        "package_weight": "4.5",
+        "Scent": "Fresh Bamboo",
+        "SkuId": 27396082331
+      },
+      {
+        "Status": "inactive",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "4739531372-1730374879783-9",
+        "ShopSku": "4739531372_PH-27396082340",
+        "Url": "https://www.lazada.com.ph/-i4739531372-s27396082340.html",
+        "saleProp": {
+          "Scent": "Shangrila"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "10.00",
+        "package_height": "25.00",
+        "fblWarehouseInventories": [],
+        "special_price": 1275.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "10.00",
+        "Available": 50,
+        "package_weight": "4.5",
+        "Scent": "Shangrila",
+        "SkuId": 27396082340
+      }
+    ],
+    "item_id": 4739531372,
+    "variation": {
+      "Variation1": {
+        "name": "Scent",
+        "label": "Scent",
+        "hasImage": false,
+        "customize": true,
+        "options": [
+          "Fresh Bamboo",
+          "Okada",
+          "Marriott",
+          "Solaire",
+          "Conrad",
+          "Lavender",
+          "White Tea",
+          "Peppermint",
+          "Green Tea by EA",
+          "Shangrila"
+        ]
+      }
+    },
+    "trialProduct": false,
+    "primary_category": 7539,
+    "marketImages": [],
+    "attributes": {
+      "description": "<p>Same Scent Quality, Bigger Size!</p><p></p><p>Ideal for Industrial and Office Use! </p><p></p><p></p><p></p><p>Introducing our new 1-gallon humidifier scent, now available due to popular demand! Elevate your space with refreshing fragrances designed to enhance your environment. Our specially curated scents are crafted to bring a sense of calm and freshness to any room. With a gallon-sized capacity, enjoy long-lasting aromatherapy benefits throughout your home or office. Experience the essence of relaxation with our new humidifier scent.</p>",
+      "brand": "LA Collections",
+      "humidifier_type": "Ultrasonic",
+      "capacity": "4",
+      "warranty_type": "No Warranty",
+      "name": "1 Gallon Waterbased Humidifier & Diffuser Scent",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "InActive"
+  },
+  {
+    "created_time": "1738556579567",
+    "updated_time": "1758851106683",
+    "images": [
+      "https://filebroker-cdn.lazada.com.ph/kf/Sb2ac9f90d638450f91e9836901f9b5b03.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 20,
+        "Images": [],
+        "SellerSku": "4921156480-1738556579317-0",
+        "ShopSku": "4921156480_PH-28672858926",
+        "Url": "https://www.lazada.com.ph/-i4921156480-s28672858926.html",
+        "saleProp": {},
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 20,
+            "totalQuantity": 20,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 20
+          }
+        ],
+        "package_width": "23.00",
+        "package_height": "8.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 380.0,
+        "channelInventories": [],
+        "package_length": "8.00",
+        "Available": 20,
+        "package_weight": "1.285",
+        "SkuId": 28672858926
+      }
+    ],
+    "item_id": 4921156480,
+    "variation": {},
+    "trialProduct": false,
+    "primary_category": 22490,
+    "marketImages": [],
+    "attributes": {
+      "description": "<p>1 liter Citronella Water Based Humidifier Scent</p><p></p><p></p><p></p><p>Anti Mosquito</p><p></p><p></p><p></p><p>Can be used as:</p><p></p><p>- Humidifier Scent</p><p></p><p>- Linen Spray</p><p></p><p>- Room Spray</p><p></p><p>- Car Carpet Spray</p><p></p><p></p><p></p><p></p><p></p><p>Will ship a day after you order. 😊</p><p></p><p></p><p></p><p></p><p></p><p>Sealed bottle. No leaks.</p>",
+      "brand": "LA Collections",
+      "material": "Plastic",
+      "scent": "CITRONELLA",
+      "home_fragrance_type": "Essential Oil",
+      "name": "1L Waterbased CITRONELLA Scent by LA Collections",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1617524415543",
+    "updated_time": "1760099167413",
+    "images": [
+      "https://filebroker-cdn.lazada.com.ph/kf/Sbd5c510e7d7c44ae90ed9928837cd91ad.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/S2538707e16fc49e1847d66d4c970010du.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/H27ce0c9ce4c74279bf8b6dcce8ecc841A.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 4985,
+        "Images": [],
+        "SellerSku": "1856986844-1617524415466-0",
+        "ShopSku": "1856986844_PH-7871040075",
+        "Url": "https://www.lazada.com.ph/-i1856986844-s7871040075.html",
+        "saleProp": {},
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 4985,
+            "totalQuantity": 4985,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 4985
+          }
+        ],
+        "package_width": "9.00",
+        "package_height": "25.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 350.0,
+        "channelInventories": [],
+        "package_length": "9.00",
+        "scent": "marriott",
+        "Available": 4985,
+        "package_weight": "1.22",
+        "SkuId": 7871040075
+      }
+    ],
+    "item_id": 1856986844,
+    "variation": {
+      "Variation1": {
+        "name": "Volume (ml)",
+        "label": "Volume (ml)",
+        "hasImage": false,
+        "customize": false,
+        "options": [
+          "1000"
+        ]
+      },
+      "Variation2": {
+        "name": "scent",
+        "label": "Scent",
+        "hasImage": false,
+        "customize": false,
+        "options": [
+          "marriott"
+        ]
+      }
+    },
+    "trialProduct": false,
+    "primary_category": 22490,
+    "marketImages": [],
+    "attributes": {
+      "description": "Best Selling Waterbased Humidifier Scent on SH0P33<br><br>Marriott Hotel Scents Water Based<p dir=\"ltr\">\n<span style=\"font-size:14px\" ;=\"\">✔ Humidifier/Diffuser Scent (mix with water)</span><br>\n<span style=\"font-size:14px\" ;=\"\">✔ Room Spray</span><br>\n<span style=\"font-size:14px\" ;=\"\">✔ Linen Spray ( BedSheets, Curtains , Pillows, Couches) </span><br>\n<span style=\"font-size:14px\" ;=\"\">✔ Car Interior Spray</span></p>\n<p dir=\"ltr\"><span style=\"font-size:14px\" ;=\"\">SHIPPING:</span><br>\n<span style=\"font-size:14px\" ;=\"\">Same day ship out(cut off at 6am)</span><br>\n<span style=\"font-size:14px\" ;=\"\">Metro Manila orders usually arrive a day after ship out (still depends kay courier)</span><br>\n<span style=\"font-size:14px\" ;=\"\">Orders that were confirmed on Saturday and Sunday will be shipped out on Monday. 😊</span></p>\n<p dir=\"ltr\"><span style=\"font-size:14px\" ;=\"\">CHOOSE J&T FOR FASTER SHIPPING</span></p>\n<p dir=\"ltr\"><span style=\"font-size:14px\" ;=\"\">PACKAGING:</span><br>\n<span style=\"font-size:14px\" ;=\"\">Bubble wrap + Custom box</span><br>\n<span style=\"font-size:14px\" ;=\"\">All bottles are individually sealed to ensure no leakage. </span></p>\n<p dir=\"ltr\"><span style=\"font-size:14px\" ;=\"\">Feel free to ask me questions. Will respond as soon as I can. 😊</span></p>\n<p dir=\"ltr\"><span style=\"font-size:14px\" ;=\"\">1000 ML</span><br>\n<span style=\"font-size:14px\" ;=\"\">Legit</span></p>",
+      "brand": "No Brand",
+      "material": "C",
+      "scent": "marriott",
+      "home_fragrance_type": "Essential Oil",
+      "name": "LA COLLECTIONS MARRIOTT Hotel Waterbased Diffuser Scent",
+      "source": "asc",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1707399141263",
+    "updated_time": "1759991549529",
+    "images": [
+      "https://filebroker-cdn.lazada.com.ph/kf/Sd3ea4886ab454fbf805805b48156728bS.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/S2811deab879a47d89e4791d6a625ab962.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 9,
+        "Images": [],
+        "SellerSku": "4337079607-1707399140729-9",
+        "ShopSku": "4337079607_PH-24334600891",
+        "Url": "https://www.lazada.com.ph/-i4337079607-s24334600891.html",
+        "saleProp": {
+          "Scent": "Cherry Blossom"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 9,
+            "totalQuantity": 9,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 9
+          }
+        ],
+        "package_width": "20.00",
+        "package_height": "32.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "20.00",
+        "Available": 9,
+        "package_weight": "4.8",
+        "Scent": "Cherry Blossom",
+        "SkuId": 24334600891
+      },
+      {
+        "Status": "active",
+        "quantity": 8,
+        "Images": [],
+        "SellerSku": "4337079607-1707399140728-8",
+        "ShopSku": "4337079607_PH-24334600890",
+        "Url": "https://www.lazada.com.ph/-i4337079607-s24334600890.html",
+        "saleProp": {
+          "Scent": "Cotton Blossom"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 8,
+            "totalQuantity": 8,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 8
+          }
+        ],
+        "package_width": "20.00",
+        "package_height": "32.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "20.00",
+        "Available": 8,
+        "package_weight": "4.8",
+        "Scent": "Cotton Blossom",
+        "SkuId": 24334600890
+      },
+      {
+        "Status": "active",
+        "quantity": 8,
+        "Images": [],
+        "SellerSku": "4337079607-1707399140728-6",
+        "ShopSku": "4337079607_PH-24334600888",
+        "Url": "https://www.lazada.com.ph/-i4337079607-s24334600888.html",
+        "saleProp": {
+          "Scent": "Peppermint"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 8,
+            "totalQuantity": 8,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 8
+          }
+        ],
+        "package_width": "20.00",
+        "package_height": "32.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "20.00",
+        "Available": 8,
+        "package_weight": "4.8",
+        "Scent": "Peppermint",
+        "SkuId": 24334600888
+      },
+      {
+        "Status": "active",
+        "quantity": 8,
+        "Images": [],
+        "SellerSku": "4337079607-1707399140728-7",
+        "ShopSku": "4337079607_PH-24334600889",
+        "Url": "https://www.lazada.com.ph/-i4337079607-s24334600889.html",
+        "saleProp": {
+          "Scent": "Eucalyptus"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 8,
+            "totalQuantity": 8,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 8
+          }
+        ],
+        "package_width": "20.00",
+        "package_height": "32.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "20.00",
+        "Available": 8,
+        "package_weight": "4.8",
+        "Scent": "Eucalyptus",
+        "SkuId": 24334600889
+      },
+      {
+        "Status": "active",
+        "quantity": 7,
+        "Images": [],
+        "SellerSku": "4337079607-1707399140728-4",
+        "ShopSku": "4337079607_PH-24334600886",
+        "Url": "https://www.lazada.com.ph/-i4337079607-s24334600886.html",
+        "saleProp": {
+          "Scent": "Solaire"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 7,
+            "totalQuantity": 7,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 7
+          }
+        ],
+        "package_width": "20.00",
+        "package_height": "32.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "20.00",
+        "Available": 7,
+        "package_weight": "4.8",
+        "Scent": "Solaire",
+        "SkuId": 24334600886
+      },
+      {
+        "Status": "active",
+        "quantity": 7,
+        "Images": [],
+        "SellerSku": "4337079607-1707399140729-10",
+        "ShopSku": "4337079607_PH-24334600892",
+        "Url": "https://www.lazada.com.ph/-i4337079607-s24334600892.html",
+        "saleProp": {
+          "Scent": "White Tea"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 7,
+            "totalQuantity": 7,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 7
+          }
+        ],
+        "package_width": "20.00",
+        "package_height": "32.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "20.00",
+        "Available": 7,
+        "package_weight": "4.8",
+        "Scent": "White Tea",
+        "SkuId": 24334600892
+      },
+      {
+        "Status": "active",
+        "quantity": 7,
+        "Images": [],
+        "SellerSku": "4337079607-1707399140728-5",
+        "ShopSku": "4337079607_PH-24334600887",
+        "Url": "https://www.lazada.com.ph/-i4337079607-s24334600887.html",
+        "saleProp": {
+          "Scent": "Conrad"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 7,
+            "totalQuantity": 7,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 7
+          }
+        ],
+        "package_width": "20.00",
+        "package_height": "32.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "20.00",
+        "Available": 7,
+        "package_weight": "4.8",
+        "Scent": "Conrad",
+        "SkuId": 24334600887
+      },
+      {
+        "Status": "active",
+        "quantity": 8,
+        "Images": [],
+        "SellerSku": "4337079607-1707399140729-11",
+        "ShopSku": "4337079607_PH-24334600893",
+        "Url": "https://www.lazada.com.ph/-i4337079607-s24334600893.html",
+        "saleProp": {
+          "Scent": "3lizabeth Ard3n"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 8,
+            "totalQuantity": 8,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 8
+          }
+        ],
+        "package_width": "20.00",
+        "package_height": "32.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "20.00",
+        "Available": 8,
+        "package_weight": "4.8",
+        "Scent": "3lizabeth Ard3n",
+        "SkuId": 24334600893
+      },
+      {
+        "Status": "active",
+        "quantity": 4,
+        "Images": [],
+        "SellerSku": "4337079607-1707399140728-2",
+        "ShopSku": "4337079607_PH-24334600884",
+        "Url": "https://www.lazada.com.ph/-i4337079607-s24334600884.html",
+        "saleProp": {
+          "Scent": "Okada"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 4,
+            "totalQuantity": 4,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 4
+          }
+        ],
+        "package_width": "20.00",
+        "package_height": "32.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "20.00",
+        "Available": 4,
+        "package_weight": "4.8",
+        "Scent": "Okada",
+        "SkuId": 24334600884
+      },
+      {
+        "Status": "active",
+        "quantity": 10,
+        "Images": [],
+        "SellerSku": "4337079607-1707399140729-12",
+        "ShopSku": "4337079607_PH-24334600894",
+        "Url": "https://www.lazada.com.ph/-i4337079607-s24334600894.html",
+        "saleProp": {
+          "Scent": "Matcha"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 10,
+            "totalQuantity": 10,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 10
+          }
+        ],
+        "package_width": "20.00",
+        "package_height": "32.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "20.00",
+        "Available": 10,
+        "package_weight": "4.8",
+        "Scent": "Matcha",
+        "SkuId": 24334600894
+      },
+      {
+        "Status": "active",
+        "quantity": 6,
+        "Images": [],
+        "SellerSku": "4337079607-1707399140728-3",
+        "ShopSku": "4337079607_PH-24334600885",
+        "Url": "https://www.lazada.com.ph/-i4337079607-s24334600885.html",
+        "saleProp": {
+          "Scent": "Marriott"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 6,
+            "totalQuantity": 6,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 6
+          }
+        ],
+        "package_width": "20.00",
+        "package_height": "32.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "20.00",
+        "Available": 6,
+        "package_weight": "4.8",
+        "Scent": "Marriott",
+        "SkuId": 24334600885
+      },
+      {
+        "Status": "active",
+        "quantity": 146,
+        "Images": [],
+        "SellerSku": "4337079607-1707399140728-0",
+        "ShopSku": "4337079607_PH-24334600882",
+        "Url": "https://www.lazada.com.ph/-i4337079607-s24334600882.html",
+        "saleProp": {
+          "Scent": "Shangrila"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 146,
+            "totalQuantity": 146,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 146
+          }
+        ],
+        "package_width": "20.00",
+        "package_height": "32.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "20.00",
+        "Available": 146,
+        "package_weight": "4.8",
+        "Scent": "Shangrila",
+        "SkuId": 24334600882
+      },
+      {
+        "Status": "active",
+        "quantity": 46,
+        "Images": [],
+        "SellerSku": "4337079607-1707399140728-1",
+        "ShopSku": "4337079607_PH-24334600883",
+        "Url": "https://www.lazada.com.ph/-i4337079607-s24334600883.html",
+        "saleProp": {
+          "Scent": "Fresh Bamboo"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 46,
+            "totalQuantity": 46,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 46
+          }
+        ],
+        "package_width": "20.00",
+        "package_height": "32.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 1280.0,
+        "channelInventories": [],
+        "package_length": "20.00",
+        "Available": 46,
+        "package_weight": "4.8",
+        "Scent": "Fresh Bamboo",
+        "SkuId": 24334600883
+      }
+    ],
+    "item_id": 4337079607,
+    "variation": {
+      "Variation1": {
+        "name": "Scent",
+        "label": "Scent",
+        "hasImage": false,
+        "customize": true,
+        "options": [
+          "Shangrila",
+          "Fresh Bamboo",
+          "Okada",
+          "Marriott",
+          "Solaire",
+          "Conrad",
+          "Peppermint",
+          "Eucalyptus",
+          "Cotton Blossom",
+          "Cherry Blossom",
+          "White Tea",
+          "3lizabeth Ard3n",
+          "Matcha"
+        ]
+      }
+    },
+    "trialProduct": false,
+    "primary_category": 22490,
+    "marketImages": [],
+    "attributes": {
+      "description": "<p>Same Scent Quality, Bigger Size!</p><p></p><p>Ideal for Industrial and Office Use!</p><p></p><p></p><p></p><p>Introducing our new 1-gallon humidifier scent, now available due to popular demand! Elevate your space with refreshing fragrances designed to enhance your environment. Our specially curated scents are crafted to bring a sense of calm and freshness to any room. With a gallon-sized capacity, enjoy long-lasting aromatherapy benefits throughout your home or office. Experience the essence of relaxation with our new humidifier scent.</p>",
+      "brand": "LA Collections",
+      "material": "GLASS",
+      "scent": "Scented",
+      "home_fragrance_type": "HUMIDIFIER",
+      "name": "1 GALLON Humidifier / Diffuser Scent by L.A. Collections",
+      "Hazmat": "Battery/Flammable/Liquid",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1617524196476",
+    "updated_time": "1760242936951",
+    "images": [
+      "https://filebroker-cdn.lazada.com.ph/kf/S575a059a949e46ec9caf1b7d3bdff9b1O.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/S03d904afa4d0498d9f880e9422da4eaae.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/Sdc4f67f7d83449f0a2b8d7e29319a6cew.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/H312c407e0bba4ccfb07376d0ec7df4d9b.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/Hda76e5e71f84415b873aefd75ce29e44I.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 565,
+        "Images": [],
+        "SellerSku": "1857030628-1617524196393-0",
+        "ShopSku": "1857030628_PH-7870989083",
+        "Url": "https://www.lazada.com.ph/-i1857030628-s7870989083.html",
+        "saleProp": {},
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 565,
+            "totalQuantity": 565,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 565
+          }
+        ],
+        "package_width": "25.00",
+        "package_height": "9.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "9.00",
+        "Available": 565,
+        "package_weight": "1.23",
+        "SkuId": 7870989083
+      }
+    ],
+    "item_id": 1857030628,
+    "variation": {},
+    "trialProduct": false,
+    "primary_category": 10100546,
+    "marketImages": [],
+    "attributes": {
+      "description": "<div>Okada Hotel Scents Water Based</div><div>✔ Humidifier/Diffuser Scent (mix with water)</div><div>✔ Room Spray</div><div>✔ Linen Spray ( BedSheets, Curtains , Pillows, Couches) </div><div>✔ Car Interior Spray</div><div><br></div><div>SHIPPING:</div><div>Same day ship out(cut off at 6am)</div><div>Metro Manila orders usually arrive a day after ship out (still depends kay courier)</div><div>Orders that were confirmed on Saturday and Sunday will be shipped out on Monday. 😊</div><div><br></div><div>CHOOSE J&T FOR FASTER SHIPPING</div><div><br></div><div>PACKAGING:</div><div>Bubble wrap + Custom box</div><div>All bottles are individually sealed to ensure no leakage. </div><div><br></div><div>Feel free to ask me questions. Will respond as soon as I can. 😊</div><div><br></div><div>1000 ML</div><div>Legit</div>",
+      "name": "1 LITER L.A. COLLECTIONS OKADA Hotel Diffuser Scent/ Linen Spray/ Room spray",
+      "brand": "No Brand",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1729943500566",
+    "updated_time": "1759053193386",
+    "images": [
+      "https://filebroker-cdn.lazada.com.ph/kf/Sd08dbf775f3848b681ee5022231c485bO.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 250,
+        "Images": [],
+        "SellerSku": "4726844228-1729943500336-1",
+        "ShopSku": "4726844228_PH-27339128267",
+        "Url": "https://www.lazada.com.ph/-i4726844228-s27339128267.html",
+        "saleProp": {
+          "color_family": "Black"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 250,
+            "totalQuantity": 250,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 250
+          }
+        ],
+        "package_width": "6.00",
+        "color_family": "Black",
+        "package_height": "1.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 30.0,
+        "channelInventories": [],
+        "package_length": "6.00",
+        "Available": 250,
+        "package_weight": "0.005",
+        "SkuId": 27339128267
+      },
+      {
+        "Status": "active",
+        "quantity": 135,
+        "Images": [],
+        "SellerSku": "4726844228-1729943500336-0",
+        "ShopSku": "4726844228_PH-27339128266",
+        "Url": "https://www.lazada.com.ph/-i4726844228-s27339128266.html",
+        "saleProp": {
+          "color_family": "Brown"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 135,
+            "totalQuantity": 135,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 135
+          }
+        ],
+        "package_width": "6.00",
+        "color_family": "Brown",
+        "package_height": "1.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 30.0,
+        "channelInventories": [],
+        "package_length": "6.00",
+        "Available": 135,
+        "package_weight": "0.005",
+        "SkuId": 27339128266
+      }
+    ],
+    "item_id": 4726844228,
+    "variation": {
+      "Variation1": {
+        "name": "color_family",
+        "label": "Color family",
+        "hasImage": false,
+        "customize": false,
+        "options": [
+          "Brown",
+          "Black"
+        ]
+      }
+    },
+    "trialProduct": false,
+    "primary_category": 22490,
+    "marketImages": [],
+    "attributes": {
+      "description": "<br/>",
+      "brand": "No Brand",
+      "material": "Rattan",
+      "scent": "Unscented",
+      "home_fragrance_type": "Diffuser & Sticks",
+      "name": "Rattan Sticks for Reed Diffusers (5PCS)",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1617523941733",
+    "updated_time": "1760312405533",
+    "images": [
+      "https://filebroker-cdn.lazada.com.ph/kf/S326760639f284c8bb7f9d1eb013dd2db9.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/Sbc9700e2b11b4c2a9f96e58b78b24289V.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/Sebe3556433434019ab5554fafd9eb521A.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 4314,
+        "Images": [],
+        "SellerSku": "1856947959-1748396661641-0",
+        "ShopSku": "1856947959_PH-30097934851",
+        "Url": "https://www.lazada.com.ph/-i1856947959-s30097934851.html",
+        "saleProp": {},
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 4314,
+            "totalQuantity": 4314,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 4314
+          }
+        ],
+        "package_width": "9.00",
+        "package_height": "25.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "9.00",
+        "Available": 4314,
+        "package_weight": "1.2",
+        "SkuId": 30097934851
+      }
+    ],
+    "item_id": 1856947959,
+    "variation": {},
+    "trialProduct": false,
+    "primary_category": 22490,
+    "marketImages": [],
+    "attributes": {
+      "description": "Over 20,000 bottles sold nation wide!!<br><br>Shangri - La Hotel Scents Water Based<br>✔ Humidifier/Diffuser Scent (mix with water)<br>✔ Room Spray<br>✔ Linen Spray ( BedSheets, Curtains , Pillows, Couches) <br>✔ Car Interior Spray<br><br>SHIPPING:<br>Same day ship out(cut off at 6am)<br>Metro Manila orders usually arrive a day after ship out (still depends kay courier)<br>Orders that were confirmed on Saturday and Sunday will be shipped out on Monday. 😊<br><br>PACKAGING:<br>Bubble wrap + Custom box<br>All bottles are individually sealed to ensure no leakage. <br><br>Feel free to ask me questions. Will respond as soon as I can. 😊<br><br>1000 ML<br>Legit",
+      "brand": "No Brand",
+      "material": "Linen",
+      "home_fragrance_type": "Spray Air Freshener",
+      "name": "1Liter L.A. Collections SHANGRI-LA Hotel Waterbased Diffuser Scents/Linen Spray/ Room Spray",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1666063218414",
+    "updated_time": "1760242936938",
+    "images": [
+      "https://ph-live.slatic.net/p/1fbed853aad5ea8e7eab9e1dd01cc66e.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/Sc1471a4ff509423d960522b49435e4d2i.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 27,
+        "Images": [],
+        "SellerSku": "3382826683-1666063218249-0",
+        "ShopSku": "3382826683_PH-17251724455",
+        "Url": "https://www.lazada.com.ph/-i3382826683-s17251724455.html",
+        "saleProp": {},
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 27,
+            "totalQuantity": 27,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 27
+          }
+        ],
+        "package_width": "9.00",
+        "package_height": "15.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "9.00",
+        "Available": 27,
+        "package_weight": "1.24",
+        "SkuId": 17251724455
+      }
+    ],
+    "item_id": 3382826683,
+    "variation": {},
+    "trialProduct": false,
+    "primary_category": 7539,
+    "marketImages": [],
+    "attributes": {
+      "description": "SCENT ONLY",
+      "humidifier_features": "Aromatherapy",
+      "brand": "LA Collections",
+      "capacity": "1",
+      "warranty_type": "No Warranty",
+      "name": "1L Solaire Humidifier Scent/ Diffuser Scent/ Linen Spray Scent LA Collections",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1686201190088",
+    "updated_time": "1760321553710",
+    "images": [
+      "https://ph-live.slatic.net/p/31049f8e03c7a5809e07b1c3f800d3e6.jpg",
+      "https://ph-live.slatic.net/p/20a6ca53c437c96462b7848378ff5638.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 396,
+        "Images": [],
+        "SellerSku": "P",
+        "ShopSku": "3884388412_PH-20793032962",
+        "Url": "https://www.lazada.com.ph/-i3884388412-s20793032962.html",
+        "saleProp": {},
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 396,
+            "totalQuantity": 396,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 396
+          }
+        ],
+        "package_width": "9.00",
+        "package_height": "21.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 350.0,
+        "channelInventories": [],
+        "package_length": "9.00",
+        "Available": 396,
+        "package_weight": "1.25",
+        "SkuId": 20793032962
+      }
+    ],
+    "item_id": 3884388412,
+    "variation": {},
+    "trialProduct": false,
+    "primary_category": 7539,
+    "marketImages": [],
+    "attributes": {
+      "description": "<article class=\"lzd-article\"><p style=\"line-height: 1.7;text-align: left;text-indent: 0;margin-left: 0;margin-top: 0;margin-bottom: 0;\"><span style=\"color: #374151;background-color: #f7f7f8;font-size: 12.0pt;\">Peppermint humidifier scent is refreshing and invigorating, known for its cool and minty aroma. It combines the soothing properties of humidified air with the uplifting fragrance of peppermint essential oil. The scent is reminiscent of fresh peppermint leaves, with a crisp and clean quality that can help create a rejuvenating atmosphere in any space.</span></p><p style=\"line-height: 1.7;text-align: left;text-indent: 0;margin-left: 0;margin-top: 0;margin-bottom: 0;\"><span style=\"color: #374151;background-color: #f7f7f8;font-size: 12.0pt;\">When released into the air through a humidifier, the peppermint scent can provide a range of benefits.</span></p><p style=\"line-height: 1.7;text-align: left;text-indent: 0;margin-left: 0;margin-top: 0;margin-bottom: 0;\"><span style=\"color: #374151;background-color: #f7f7f8;font-size: 12.0pt;\"></span></p><p style=\"line-height: 1.7;text-align: left;text-indent: 0;margin-left: 0;margin-top: 0;margin-bottom: 0;\"><span style=\"color: #374151;background-color: #f7f7f8;font-size: 12.0pt;\"> It is often associated with promoting mental clarity and alertness, helping to enhance focus and concentration. The invigorating scent can also be revitalizing, offering a burst of energy and a feeling of wakefulness. In addition, peppermint is known for its potential to alleviate headaches and sinus congestion, providing a soothing and cooling sensation.</span></p></article>",
+      "humidifier_features": "Aromatherapy",
+      "brand": "LA Collections",
+      "room_size": "Unkhown",
+      "capacity": "1",
+      "warranty_type": "No Warranty",
+      "name": "(COD)  1 Liter Peppermint Waterbased Humidifier Scent",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1676440088872",
+    "updated_time": "1760227729785",
+    "images": [
+      "https://filebroker-cdn.lazada.com.ph/kf/S2cded6ac65c84986b2b6020c71b25bc3R.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/S3a1c9b26787f4024b8c1194c4eb58846g.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/S0fb0ddeb563641088b5cb1bc641431e1T.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 0,
+        "Images": [],
+        "SellerSku": "3583313195-1676440088441-0",
+        "ShopSku": "3583313195_PH-18525646548",
+        "Url": "https://www.lazada.com.ph/-i3583313195-s18525646548.html",
+        "saleProp": {},
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 0,
+            "totalQuantity": 0,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 0
+          }
+        ],
+        "package_width": "9.00",
+        "package_height": "15.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 395.0,
+        "channelInventories": [],
+        "package_length": "9.00",
+        "Available": 0,
+        "package_weight": "1.5",
+        "SkuId": 18525646548
+      }
+    ],
+    "item_id": 3583313195,
+    "variation": {},
+    "trialProduct": false,
+    "primary_category": 22490,
+    "marketImages": [],
+    "attributes": {
+      "description": "<p dir=\"ltr\"><span style=\"font-size:14px\" ;=\"\">Melon Cucumber Waterbased Humidifier Scent</span><br>\n<span style=\"font-size:14px\" ;=\"\">✔ Humidifier/Diffuser Scent</span><br>\n<span style=\"font-size:14px\" ;=\"\">✔ Room Spray</span><br>\n<span style=\"font-size:14px\" ;=\"\">✔ Linen Spray ( BedSheets, Curtains , Pillows, Couches) </span><br>\n<span style=\"font-size:14px\" ;=\"\">✔ Car Interior Spray</span></p>\n<p dir=\"ltr\"><span style=\"font-size:14px\" ;=\"\">SHIPPING:</span><br>\n<span style=\"font-size:14px\" ;=\"\">Same day ship out(cut off at 6am)</span><br>\n<span style=\"font-size:14px\" ;=\"\">Metro Manila orders usually arrive a day after ship out (still depends kay courier)</span><br>\n<span style=\"font-size:14px\" ;=\"\">Orders that were confirmed on Saturday and Sunday will be shipped out on Monday. 😊</span></p>\n<p dir=\"ltr\"><span style=\"font-size:14px\" ;=\"\">CHOOSE J&T FOR FASTER SHIPPING</span></p>\n<p dir=\"ltr\"><span style=\"font-size:14px\" ;=\"\">PACKAGING:</span><br>\n<span style=\"font-size:14px\" ;=\"\">Bubble wrap + Custom box</span><br>\n<span style=\"font-size:14px\" ;=\"\">All bottles are individually sealed to ensure no leakage. </span></p>\n<p dir=\"ltr\"><span style=\"font-size:14px\" ;=\"\">Feel free to ask me questions. Will respond as soon as I can. 😊</span></p>\n<p dir=\"ltr\"><span style=\"font-size:14px\" ;=\"\">1000 ML</span><br>\n<span style=\"font-size:14px\" ;=\"\">Legit</span></p>",
+      "brand": "No Brand",
+      "scent": "Melon",
+      "home_fragrance_type": "HUMIDIFIER",
+      "name": "Melon Cucumber Waterbased Humidifier &  Diffuser Scent by LA Collections",
+      "Hazmat": "None",
+      "source": "asc",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1713947239733",
+    "updated_time": "1716724626885",
+    "images": [
+      "https://sg-test-11.slatic.net/p/a8a834c3ffa1417fa27f5840353315e9.jpg",
+      "https://sg-test-11.slatic.net/p/e3d2882ed0a1c28a92905d4cb759c2c7.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 0,
+        "Images": [],
+        "SellerSku": "kt160",
+        "ShopSku": "4419369844_PH-24903350129",
+        "Url": "https://www.lazada.com.ph/-i4419369844-s24903350129.html",
+        "saleProp": {},
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 0,
+            "totalQuantity": 0,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 0
+          }
+        ],
+        "package_width": "8.0",
+        "package_height": "22.0",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 180.0,
+        "channelInventories": [],
+        "package_length": "23.0",
+        "Available": 0,
+        "package_weight": "0.99",
+        "SkuId": 24903350129
+      }
+    ],
+    "item_id": 4419369844,
+    "variation": {},
+    "trialProduct": false,
+    "primary_category": 24442,
+    "marketImages": [],
+    "attributes": {
+      "short_description": "<div><p>- 100% Virgin Pulp<br />- 2 Ply<br />- 2 Rolls per pack<br />- 80 Pulls<br />- Biodegradable<br />- 160 Sheets<br />- Emboss Design<br />- Tightly Rolled<br />- High-Grade Premium Quality<br />- Unscented and Hypo-allergenic<br />-&nbsp; &nbsp; &nbsp; &nbsp;Package size : 23x22x8 cm<br /><br />Commercial and Home use!<br /><br />ON HAND - QUICK DELIVERY</p></div>",
+      "description": "<div><p>- 100% Virgin Pulp<br />- 2 Ply<br />- 2 Rolls per pack<br />- 80 Pulls<br />- Biodegradable<br />- 160 Sheets<br />- Emboss Design<br />- Tightly Rolled<br />- High-Grade Premium Quality<br />- Unscented and Hypo-allergenic<br />-&nbsp; &nbsp; &nbsp; &nbsp;Package size : 23x22x8 cm<br /><br />Commercial and Home use!<br /><br />ON HAND - QUICK DELIVERY</p></div>",
+      "name": "Fluffy Essentials Kitchen Towel 2 Ply 2 Rolls 80 Pulls 160 Sheets",
+      "brand": "No Brand",
+      "source": "asc",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1665326309790",
+    "updated_time": "1760196775976",
+    "images": [
+      "https://ph-live.slatic.net/p/3f5a4ff61edcf1b9d36a1a28b55d18ad.jpg",
+      "https://ph-live.slatic.net/p/f2c44acb1794dc1d5f7fd1c589c3b331.jpg",
+      "https://ph-live.slatic.net/p/bb7a21a6936f2cd80d8ad2aa0c4a5680.jpg",
+      "https://filebroker-cdn.lazada.com.ph/kf/Sfe55b3e0a3c64e5fa61ae6aa99767d093.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 820,
+        "Images": [],
+        "SellerSku": "3368572353-1738239695642-0",
+        "ShopSku": "3368572353_PH-28661617725",
+        "Url": "https://www.lazada.com.ph/-i3368572353-s28661617725.html",
+        "saleProp": {},
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 820,
+            "totalQuantity": 820,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 820
+          }
+        ],
+        "package_width": "9.00",
+        "package_height": "15.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 380.0,
+        "channelInventories": [],
+        "package_length": "9.00",
+        "Available": 820,
+        "package_weight": "1.21",
+        "SkuId": 28661617725
+      }
+    ],
+    "item_id": 3368572353,
+    "variation": {},
+    "trialProduct": false,
+    "primary_category": 22490,
+    "marketImages": [
+      "https://ph-live-01.slatic.net/p/3f5a4ff61edcf1b9d36a1a28b55d18ad.jpg"
+    ],
+    "attributes": {
+      "description": "<p></p><p></p><p>Fresh Bamboo Scents Water Based</p><p>✔ Humidifier/Diffuser Scent (mix with water) </p><p>✔ Room Spray </p><p>✔ Linen Spray ( BedSheets, Curtains , Pillows, Couches) </p><p>✔ Car Interior Spray</p><p></p><p>SHIPPING: Same day ship out(cut off at 4PM) Metro Manila orders usually arrive a day after ship out (still depends kay courier) Orders that were confirmed on Saturday and Sunday will be shipped out on Monday. 😊</p><p></p><p></p><p>PACKAGING: Bubble wrap + Custom box All bottles are individually sealed to ensure no leakage. </p><p>Feel free to ask me questions. Will respond as soon as I can. 😊</p><p></p><p>1000 ML Legit</p>",
+      "brand": "LA Collections",
+      "material": "Bamboo",
+      "scent": "Fresh Bamboo",
+      "home_fragrance_type": "Essential Oil",
+      "name": "1 Liter L.A. Collections Fresh Bamboo Waterbased Scent for  Humidifiers/Diffusers/Linen Spray",
+      "Hazmat": "Battery/Flammable/Liquid",
+      "promotion_whitebkg_image": [
+        "https://ph-live-01.slatic.net/p/3f5a4ff61edcf1b9d36a1a28b55d18ad.jpg"
+      ],
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  },
+  {
+    "created_time": "1746971370701",
+    "updated_time": "1758022387722",
+    "images": [
+      "https://filebroker-cdn.lazada.com.ph/kf/S2fa414c4a6d549dc92d80e4a90cae1acy.jpg"
+    ],
+    "skus": [
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842711-5",
+        "ShopSku": "5081975434_PH-30848790568",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790568.html",
+        "saleProp": {
+          "Scent": "Conrad"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "Conrad",
+        "SkuId": 30848790568
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842710-4",
+        "ShopSku": "5081975434_PH-30848790567",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790567.html",
+        "saleProp": {
+          "Scent": "Marriott"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "Marriott",
+        "SkuId": 30848790567
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842710-3",
+        "ShopSku": "5081975434_PH-30848790566",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790566.html",
+        "saleProp": {
+          "Scent": "Solaire"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "Solaire",
+        "SkuId": 30848790566
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842711-9",
+        "ShopSku": "5081975434_PH-30848790572",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790572.html",
+        "saleProp": {
+          "Scent": "Melon Cucumber"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "Melon Cucumber",
+        "SkuId": 30848790572
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842711-8",
+        "ShopSku": "5081975434_PH-30848790571",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790571.html",
+        "saleProp": {
+          "Scent": "Matcha"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "Matcha",
+        "SkuId": 30848790571
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842711-7",
+        "ShopSku": "5081975434_PH-30848790570",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790570.html",
+        "saleProp": {
+          "Scent": "Green Tea"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "Green Tea",
+        "SkuId": 30848790570
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842711-6",
+        "ShopSku": "5081975434_PH-30848790569",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790569.html",
+        "saleProp": {
+          "Scent": "White Tea"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "White Tea",
+        "SkuId": 30848790569
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842711-12",
+        "ShopSku": "5081975434_PH-30848790575",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790575.html",
+        "saleProp": {
+          "Scent": "Lavender"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "Lavender",
+        "SkuId": 30848790575
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842711-11",
+        "ShopSku": "5081975434_PH-30848790574",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790574.html",
+        "saleProp": {
+          "Scent": "Eucalyptus"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "Eucalyptus",
+        "SkuId": 30848790574
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842711-10",
+        "ShopSku": "5081975434_PH-30848790573",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790573.html",
+        "saleProp": {
+          "Scent": "Peppermint"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "Peppermint",
+        "SkuId": 30848790573
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842711-14",
+        "ShopSku": "5081975434_PH-30848790577",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790577.html",
+        "saleProp": {
+          "Scent": "Marine Squash"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "Marine Squash",
+        "SkuId": 30848790577
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842711-13",
+        "ShopSku": "5081975434_PH-30848790576",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790576.html",
+        "saleProp": {
+          "Scent": "Lavender&Peppermint"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "Lavender&Peppermint",
+        "SkuId": 30848790576
+      },
+      {
+        "Status": "active",
+        "quantity": 48,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842710-2",
+        "ShopSku": "5081975434_PH-30848790565",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790565.html",
+        "saleProp": {
+          "Scent": "Okada"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 48,
+            "totalQuantity": 48,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 48
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 48,
+        "package_weight": "0.3",
+        "Scent": "Okada",
+        "SkuId": 30848790565
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842710-1",
+        "ShopSku": "5081975434_PH-30848790564",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790564.html",
+        "saleProp": {
+          "Scent": "Fresh Bamboo"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "Fresh Bamboo",
+        "SkuId": 30848790564
+      },
+      {
+        "Status": "active",
+        "quantity": 50,
+        "Images": [],
+        "SellerSku": "5081975434-1755061842710-0",
+        "ShopSku": "5081975434_PH-30848790563",
+        "Url": "https://www.lazada.com.ph/-i5081975434-s30848790563.html",
+        "saleProp": {
+          "Scent": "Shangrila"
+        },
+        "multiWarehouseInventories": [
+          {
+            "occupyQuantity": 0,
+            "quantity": 50,
+            "totalQuantity": 50,
+            "bizType": 1,
+            "withholdQuantity": 0,
+            "bizCode": "",
+            "warehouseType": "dropshipping",
+            "warehouseCode": "dropshipping",
+            "sellableQuantity": 50
+          }
+        ],
+        "package_width": "5.00",
+        "package_height": "5.00",
+        "fblWarehouseInventories": [],
+        "special_price": 0.0,
+        "price": 298.0,
+        "channelInventories": [],
+        "package_length": "5.00",
+        "Available": 50,
+        "package_weight": "0.3",
+        "Scent": "Shangrila",
+        "SkuId": 30848790563
+      }
+    ],
+    "item_id": 5081975434,
+    "variation": {
+      "Variation1": {
+        "name": "Scent",
+        "label": "Scent",
+        "hasImage": false,
+        "customize": true,
+        "options": [
+          "Shangrila",
+          "Fresh Bamboo",
+          "Okada",
+          "Solaire",
+          "Marriott",
+          "Conrad",
+          "White Tea",
+          "Green Tea",
+          "Matcha",
+          "Melon Cucumber",
+          "Peppermint",
+          "Eucalyptus",
+          "Lavender",
+          "Lavender&Peppermint",
+          "Marine Squash"
+        ]
+      }
+    },
+    "trialProduct": false,
+    "primary_category": 7539,
+    "marketImages": [],
+    "attributes": {
+      "description": "Transform your space with L.A. Collections Pure Oil Diffuser. This 15 ml is designed for humidifiers and diffusers. Just 1-2 drops can transform your space into serenity 🍃",
+      "humidifier_features": "Aromatherapy",
+      "brand": "LA Collections",
+      "capacity": ".01",
+      "warranty_type": "No Warranty",
+      "name": "Pure Oil Dropper for Humidifier and Electric Diffusers",
+      "Hazmat": "None",
+      "source": "asc",
+      "delivery_option_sof": "0",
+      "preorder": "No"
+    },
+    "status": "Active"
+  }
+]
