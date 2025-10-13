@@ -55,7 +55,7 @@ CREATE TABLE "Dim_Product_Variant" (
 );
 
 CREATE TABLE "Dim_Order" (
-  "orders_key" int PRIMARY KEY NOT NULL,
+  "order_key" int PRIMARY KEY NOT NULL,
   "platform_order_id" varchar NOT NULL,
   "order_status" varchar NOT NULL,
   "order_date" date NOT NULL,
@@ -63,11 +63,12 @@ CREATE TABLE "Dim_Order" (
   "price_total" decimal,
   "total_item_count" int,
   "payment_method" varchar,
-  "shipping_city" varchar
+  "shipping_city" varchar,
+  "platform_key" int NOT NULL
 );
 
 CREATE TABLE "Fact_Orders" (
-  "order_item_key" varchar PRIMARY KEY NOT NULL,
+  "order_item_key" int PRIMARY KEY NOT NULL,
   "orders_key" int NOT NULL,
   "product_key" int NOT NULL,
   "product_variant_key" int NOT NULL,

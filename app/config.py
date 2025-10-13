@@ -5,22 +5,50 @@ Database schemas, API configurations, and empty DataFrames
 
 import pandas as pd
 import os
+import json
 from datetime import datetime
 
 # =============================================================================
 # KEYS & ACCESS TOKENS
 # =============================================================================
 
-# LAZADA Access Token
-LAZADA_TOKENS = {
-    "access_token": "50000101036qkHuaaZHYHorBVvk6GDqBOuWEGitpXeR1lGWm1fac843dRDUAdPyr",
-    "refresh_token": "50001100436yHIebrvFVloBPZtx9Dbg1GkSBStCfDbQCMVTG1e27ca45I2DXk7zy",
-    "expires_in": 604800,
-    "account_platform": "seller_center",
-    "created_at": 1760078355,
-    "app_key": os.getenv("LAZADA_APP_KEY", "135073"),
-    "app_secret": os.getenv("LAZADA_APP_SECRET", "FBWYjlNCqs5QMVLUwxiEsylpMwleRAeI")
-}
+def load_lazada_tokens():
+    """
+    Load Lazada tokens from lazada_tokens.json file
+    
+    Returns:
+        dict: Lazada tokens and app credentials
+    """
+    tokens_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lazada', 'lazada_tokens.json')
+    
+    # Default empty tokens
+    tokens = {
+        "access_token": "",
+        "refresh_token": "",
+        "expires_in": 604800,
+        "account_platform": "seller_center",
+        "created_at": None
+    }
+    
+    # Load from JSON file if it exists
+    if os.path.exists(tokens_file):
+        try:
+            with open(tokens_file, 'r') as f:
+                file_tokens = json.load(f)
+                tokens.update(file_tokens)
+        except (json.JSONDecodeError, IOError) as e:
+            print(f"Warning: Could not load Lazada tokens from {tokens_file}: {e}")
+    
+    # Add app credentials from environment variables
+    tokens.update({
+        "app_key": os.getenv("LAZADA_APP_KEY", ""),
+        "app_secret": os.getenv("LAZADA_APP_SECRET", "")
+    })
+    
+    return tokens
+
+# Load LAZADA tokens
+LAZADA_TOKENS = load_lazada_tokens()
 
 # =============================================================================
 # ENV CONNECTIONS
@@ -102,7 +130,7 @@ DIM_PRODUCT_VARIANT_COLUMNS = [
 DIM_ORDER_COLUMNS = [
     'orders_key', 'platform_order_id', 'order_status', 'order_date',
     'updated_at', 'price_total', 'total_item_count', 'payment_method',
-    'shipping_city'
+    'shipping_city', 'platform_key'
 ]
 
 # =============================================================================
@@ -275,6 +303,7 @@ def validate_config():
             'supabase_service_role_configured': bool(SUPABASE_SERVICE_ROLE_KEY),
             'next_public_configured': bool(NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY),
             'shopee_configured': bool(SHOPEE_PARTNER_ID and SHOPEE_PARTNER_KEY),
+            'lazada_tokens_loaded': bool(LAZADA_TOKENS.get('access_token')),
             'lazada_app_configured': bool(LAZADA_TOKENS.get('app_key') and LAZADA_TOKENS.get('app_secret'))
         }
     }
@@ -300,6 +329,26 @@ LAZADA_TO_UNIFIED_MAPPING = {
     "Variation1": "variant_attribute_1",  
     "Variation2": "variant_attribute_2",  
     "Variation3": "variant_attribute_3",  
+    
+    # --- Dim_Order ---
+    "id": "orders_key",  # not pulled from API, generated internally incremental
+    "order_id": "platform_order_id", 
+    "statuses": "order_status",  # Get status in index 0 for the order status
+    "created_at": "order_date",  # Convert to date only (YYYY-MM-DD)
+    "updated_at": "updated_at",  # Convert to date only (YYYY-MM-DD)  
+    "price": "price_total",
+    "items_count": "total_item_count",
+    
+    # --- Dim_Customer ---
+    "customer_key": "customer_key",  # Generated internally incremental
+    "platform_customer_id": "platform_customer_id",  # Generated: 'LZ' + first_char + last_char of first_name + first2_phone + last2_phone
+    "address_shipping.city": "customer_city",  # From address_shipping.city
+    "address_shipping.phone": "customer_phone",  # From address_shipping.phone (for platform_customer_id generation)
+    "buyer_segment": "buyer_segment",  # Calculated: 'New Buyer' or 'Returning Buyer'
+    "total_orders": "total_orders",  # Calculated: Count of orders per platform_customer_id
+    "customer_since": "customer_since",  # Calculated: Earliest order_date for platform_customer_id
+    "last_order_date": "last_order_date",  # Calculated: Latest order_date for platform_customer_id
+    "platform_key": "platform_key",  # Always 1 for Lazada
 }
 
 # =============================================================================
@@ -367,7 +416,8 @@ COLUMN_DATA_TYPES = {
         'price_total': 'float64',  # Decimal equivalent in pandas
         'total_item_count': 'int',
         'payment_method': 'str',
-        'shipping_city': 'str'
+        'shipping_city': 'str',
+        'platform_key': 'int'
     },
     'fact_orders': {
         'order_item_key': 'str',
@@ -461,6 +511,7 @@ if __name__ == "__main__":
     print(f"  Supabase Service Role: {env_config['supabase_service_role_configured']}")
     print(f"  Next.js Frontend: {env_config['next_public_configured']}")
     print(f"  Shopee API Configured: {env_config['shopee_configured']}")
+    print(f"  Lazada Tokens Loaded: {env_config['lazada_tokens_loaded']}")
     print(f"  Lazada App Configured: {env_config['lazada_app_configured']}")
     
     print("\nAvailable Tables (LA_Collections_Schema.sql):")
