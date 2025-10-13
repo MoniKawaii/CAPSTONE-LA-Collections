@@ -119,10 +119,25 @@ class LazadaDataExtractor:
             if response_code != "0":
                 error_msg = getattr(response, 'message', 'Unknown error')
                 print(f"API Error - Code: {response_code}, Message: {error_msg}")
+                
+                # Handle rate limit errors with automatic retry
+                if response_code == "ApiCallLimit":
+                    import time
+                    print(f"   ⏳ Rate limit hit! Waiting 60 seconds before retry...")
+                    time.sleep(60)
+                    print(f"   🔄 Retrying API call...")
+                    # Retry the same request once
+                    retry_response = self.client.execute(request, self.access_token)
+                    retry_code = getattr(retry_response, 'code', None)
+                    print(f"   Retry - Code: {retry_code}")
+                    if retry_code == "0" and hasattr(retry_response, 'body') and retry_response.body:
+                        return retry_response.body
+                
                 return None
             
-            # Small delay to be respectful to API
-            time.sleep(0.1)
+            # Longer delay to prevent API frequency limits
+            import time
+            time.sleep(1.5)  # 1.5 seconds between API calls to avoid rate limiting
             
             # Return the response body (should be a dict)
             if hasattr(response, 'body') and response.body:
@@ -664,8 +679,310 @@ class LazadaDataExtractor:
         
         # Final save
         self._save_to_json(all_product_details, filename)
-        print(f" Product details extraction complete! Total: {len(all_product_details)} items")
+        print(f"🎉 Product details extraction complete! Total: {len(all_product_details)} items")
         return all_product_details
+    
+    def extract_review_history_list(self, start_fresh=False, limit_products=None):
+        """
+        Step 1: Extract review IDs using product item_ids from lazada_products_raw.json
+        Uses /review/seller/list endpoint with item_id parameter
+        Saves review IDs to lazada_reviewhistorylist_raw.json
+        
+        Args:
+            start_fresh (bool): Whether to start fresh or append to existing data
+            limit_products (int): Limit number of products to process (for testing)
+        
+        Returns:
+            list: List of review IDs
+        """
+        filename = 'lazada_reviewhistorylist_raw.json'
+        
+        if not start_fresh:
+            existing_ids = self._load_from_json(filename)
+            if existing_ids:
+                print(f"📋 Found {len(existing_ids)} existing review IDs. Use start_fresh=True to overwrite.")
+                return existing_ids
+        
+        print(f"🔍 Starting product-based review extraction...")
+        
+        # Load product data to get item_ids
+        products = self._load_from_json('lazada_products_raw.json')
+        if not products:
+            print("❌ No products found. Please extract products first.")
+            return []
+        
+        # Extract item_ids from products
+        item_ids = []
+        for product in products:
+            if 'item_id' in product:
+                item_ids.append(product['item_id'])
+        
+        if not item_ids:
+            print("❌ No item_ids found in products data.")
+            return []
+        
+        # Limit products for testing if specified
+        if limit_products:
+            item_ids = item_ids[:limit_products]
+            print(f"🔬 Testing mode: Processing first {len(item_ids)} products")
+        
+        print(f"📦 Processing reviews for {len(item_ids)} products...")
+        
+        all_review_ids = []
+        processed_count = 0
+        
+        for i, item_id in enumerate(item_ids):
+            if self.api_calls_made >= self.max_daily_calls:
+                print("⚠️ Daily API limit reached")
+                break
+            
+            processed_count += 1
+            print(f"� Product {processed_count}/{len(item_ids)}: Getting reviews for item_id {item_id}")
+            
+            # Add rate limiting between calls
+            if processed_count > 1:
+                import time
+                print(f"   ⏳ Rate limiting: waiting 30 seconds...")
+                time.sleep(30)
+            
+            try:
+                # API call to get reviews for specific product
+                request = lazop.LazopRequest('/review/seller/list', 'GET')
+                request.add_api_param('item_id', str(item_id))
+                request.add_api_param('current', '1')  # Page number
+                request.add_api_param('limit', '100')  # Max reviews per product
+                
+                print(f"   📡 API Call: /review/seller/list for item_id {item_id}")
+                
+                review_data = self._make_api_call(request, f"product-reviews-{item_id}")
+                
+                if review_data and review_data.get('data'):
+                    data = review_data['data']
+                    
+                    # Check if we got reviews directly
+                    if 'reviews' in data and data['reviews']:
+                        reviews = data['reviews']
+                        print(f"   ✅ Found {len(reviews)} reviews for product {item_id}")
+                        
+                        # Save review IDs with product context
+                        for review in reviews:
+                            review_entry = {
+                                'item_id': item_id,
+                                'review_id': review.get('review_id', f"review_{item_id}_{len(all_review_ids)}"),
+                                'rating': review.get('rating', 0),
+                                'created_at': review.get('created_at', ''),
+                                'type': 'product_review'
+                            }
+                            all_review_ids.append(review_entry)
+                    
+                    # Check if we got review IDs to fetch later
+                    elif 'review_ids' in data or 'id_list' in data:
+                        ids = data.get('review_ids', data.get('id_list', []))
+                        print(f"   ✅ Found {len(ids)} review IDs for product {item_id}")
+                        
+                        for review_id in ids:
+                            review_entry = {
+                                'item_id': item_id,
+                                'review_id': review_id,
+                                'type': 'review_id_to_fetch'
+                            }
+                            all_review_ids.append(review_entry)
+                    else:
+                        print(f"   ℹ️ No reviews found for product {item_id}")
+                else:
+                    print(f"   ⚠️ No data returned for product {item_id}")
+                    
+            except Exception as e:
+                print(f"   ❌ Error processing product {item_id}: {e}")
+                continue
+        
+        # Save review IDs
+        self._save_to_json(all_review_ids, filename)
+        
+        print(f"\n🎉 Product-based review extraction complete!")
+        print(f"   Products processed: {processed_count}")
+        print(f"   Total review entries collected: {len(all_review_ids)}")
+        print(f"   Saved to: {filename}")
+        
+        return all_review_ids
+    
+    def extract_review_details(self, review_ids=None, start_fresh=False):
+        """
+        Step 2: Extract detailed review information 
+        For product-based reviews, this mainly processes already collected review data
+        For review IDs that need fetching, uses /review/seller/list/v2
+        Saves detailed reviews to lazada_productreview_raw.json
+        
+        Args:
+            review_ids (list): List of review entries to process
+            start_fresh (bool): Whether to start fresh or append to existing data
+        
+        Returns:
+            list: List of detailed review data
+        """
+        filename = 'lazada_productreview_raw.json'
+        
+        if not start_fresh:
+            existing_reviews = self._load_from_json(filename)
+            if existing_reviews:
+                print(f"📋 Found {len(existing_reviews)} existing reviews. Use start_fresh=True to overwrite.")
+                return existing_reviews
+        
+        # Load review entries if not provided
+        if review_ids is None:
+            review_ids = self._load_from_json('lazada_reviewhistorylist_raw.json')
+        
+        if not review_ids:
+            print("❌ No review data found. Please run extract_review_history_list() first.")
+            return []
+        
+        print(f"🔍 Starting detailed review processing for {len(review_ids)} review entries...")
+        
+        # Separate different types of review data
+        product_reviews = []  # Reviews already collected from products
+        ids_to_fetch = []     # Review IDs that need detailed fetching
+        
+        for item in review_ids:
+            if isinstance(item, dict):
+                if item.get('type') == 'product_review':
+                    # These are complete reviews from the product endpoint
+                    review_detail = {
+                        'item_id': item.get('item_id'),
+                        'review_id': item.get('review_id'),
+                        'rating': item.get('rating'),
+                        'created_at': item.get('created_at'),
+                        'review_type': 'product_based'
+                    }
+                    product_reviews.append(review_detail)
+                    
+                elif item.get('type') == 'review_id_to_fetch':
+                    # These need to be fetched with detailed API call
+                    ids_to_fetch.append({
+                        'item_id': item.get('item_id'),
+                        'review_id': item.get('review_id')
+                    })
+            else:
+                # Legacy format - assume it's a review ID
+                ids_to_fetch.append({'review_id': item})
+        
+        print(f"📋 Product-based reviews ready: {len(product_reviews)}")
+        print(f"📋 Review IDs to fetch details for: {len(ids_to_fetch)}")
+        
+        # Start with product-based reviews
+        all_reviews = product_reviews.copy()
+        
+        # Process IDs that need detailed fetching
+        if ids_to_fetch:
+            batch_size = 10
+            total_batches = math.ceil(len(ids_to_fetch) / batch_size)
+            
+            print(f"📦 Processing {len(ids_to_fetch)} review IDs in {total_batches} batches of {batch_size}...")
+            
+            for i in range(0, len(ids_to_fetch), batch_size):
+                if self.api_calls_made >= self.max_daily_calls:
+                    print("⚠️ Daily API limit reached during review details extraction")
+                    break
+                
+                batch_entries = ids_to_fetch[i:i + batch_size]
+                batch_num = (i // batch_size) + 1
+                
+                print(f"📦 Batch {batch_num}/{total_batches}: Processing {len(batch_entries)} review details...")
+                
+                # Add rate limiting between batches
+                if batch_num > 1:
+                    import time
+                    print(f"   ⏳ Rate limiting: waiting 5 seconds...")
+                    time.sleep(5)
+                
+                # Extract just the review IDs for the API call
+                batch_ids = [entry.get('review_id') for entry in batch_entries if entry.get('review_id')]
+                
+                if not batch_ids:
+                    print(f"   ⚠️ No valid review IDs in batch {batch_num}")
+                    continue
+                
+                # API call to get detailed review information
+                request = lazop.LazopRequest('/review/seller/list/v2', 'GET')
+                id_list_str = ','.join(str(id) for id in batch_ids)
+                request.add_api_param('id_list', id_list_str)
+                
+                print(f"   📡 API Call: /review/seller/list/v2 (IDs: {id_list_str})")
+                
+                batch_data = self._make_api_call(request, f"review-details-batch-{batch_num}")
+                
+                if batch_data and batch_data.get('data', {}).get('reviews'):
+                    reviews = batch_data['data']['reviews']
+                    
+                    # Add item_id context to detailed reviews
+                    for review in reviews:
+                        # Find the corresponding item_id from the batch
+                        review_id = review.get('review_id')
+                        item_id = None
+                        for entry in batch_entries:
+                            if str(entry.get('review_id')) == str(review_id):
+                                item_id = entry.get('item_id')
+                                break
+                        
+                        review['item_id'] = item_id
+                        review['review_type'] = 'detailed_fetch'
+                    
+                    all_reviews.extend(reviews)
+                    print(f"   ✅ Extracted {len(reviews)} detailed reviews")
+                    
+                    # Save progress every 5 batches
+                    if batch_num % 5 == 0:
+                        self._save_to_json(all_reviews, filename)
+                        print(f"   💾 Progress saved: {len(all_reviews)} reviews")
+                else:
+                    print(f"   ⚠️ No review details found for batch {batch_num}")
+        else:
+            print("📋 All reviews already available from product data")
+        
+        # Final save
+        self._save_to_json(all_reviews, filename)
+        
+        # Summary
+        print(f"\n🎉 Detailed review processing complete!")
+        print(f"   Total review entries processed: {len(review_ids)}")
+        print(f"   Product-based reviews: {len(product_reviews)}")
+        print(f"   Detailed fetched reviews: {len(all_reviews) - len(product_reviews)}")
+        print(f"   Total reviews extracted: {len(all_reviews)}")
+        print(f"   Saved to: {filename}")
+        
+        return all_reviews
+    
+    def extract_product_reviews(self, start_fresh=False, limit_products=None):
+        """
+        Complete product review extraction using product-based approach:
+        1. Extract reviews for each product using item_ids from lazada_products_raw.json
+        2. Process and save detailed review information
+        
+        Args:
+            start_fresh (bool): Whether to start fresh or append to existing data
+            limit_products (int): Limit number of products to process (for testing)
+        
+        Returns:
+            list: List of detailed review data
+        """
+        print(f"🔍 Starting complete product review extraction (product-based approach)...")
+        
+        # Step 1: Extract reviews by product
+        print(f"\n📋 Step 1: Extracting reviews for each product...")
+        review_entries = self.extract_review_history_list(start_fresh=start_fresh, limit_products=limit_products)
+        
+        if not review_entries:
+            print("❌ No review data found. Cannot proceed with processing.")
+            return []
+        
+        # Step 2: Process and format detailed reviews
+        print(f"\n📋 Step 2: Processing detailed review information...")
+        reviews = self.extract_review_details(review_ids=review_entries, start_fresh=start_fresh)
+        
+        print(f"\n🎉 Complete review extraction finished!")
+        print(f"   Review entries collected: {len(review_entries)}")
+        print(f"   Final reviews processed: {len(reviews)}")
+        
+        return reviews
     
     def run_complete_extraction(self, start_fresh=False):
         """
@@ -679,7 +996,8 @@ class LazadaDataExtractor:
             ("Orders", self.extract_all_orders),
             ("Order Items", self.extract_all_order_items),
             ("Traffic Metrics", self.extract_traffic_metrics),
-            ("Product Details", self.extract_product_details)
+            ("Product Details", self.extract_product_details),
+            ("Product Reviews", self.extract_product_reviews)
         ]
         
         results = {}
@@ -696,6 +1014,9 @@ class LazadaDataExtractor:
                 if step_name == "Product Details":
                     # Only extract details for first 50 products to save API calls
                     results[step_name] = extraction_func(start_fresh=start_fresh)
+                elif step_name == "Product Reviews":
+                    # Extract reviews from last 3 months
+                    results[step_name] = extraction_func(start_fresh=start_fresh, months_back=3)
                 else:
                     results[step_name] = extraction_func(start_fresh=start_fresh)
                     
@@ -743,24 +1064,54 @@ def extract_recent_data():
         'traffic': traffic
     }
 
+def extract_product_reviews_only(start_fresh=False, limit_products=None):
+    """Extract only product reviews (standalone function)"""
+    extractor = LazadaDataExtractor()
+    return extractor.extract_product_reviews(start_fresh=start_fresh, limit_products=limit_products)
+
+def extract_review_history_only(start_fresh=False, limit_products=None):
+    """Extract only review history by product (Step 1)"""
+    extractor = LazadaDataExtractor()
+    return extractor.extract_review_history_list(start_fresh=start_fresh, limit_products=limit_products)
+
+def extract_review_details_only(review_ids=None, start_fresh=False):
+    """Extract only detailed reviews (Step 2)"""
+    extractor = LazadaDataExtractor()
+    return extractor.extract_review_details(review_ids=review_ids, start_fresh=start_fresh)
+
 if __name__ == "__main__":
-    print(" Lazada Complete Data Extraction")
+    print("🚀 Lazada Complete Data Extraction")
     print("Choose extraction mode:")
     print("1. Complete historical extraction (uses more API calls)")
     print("2. Recent data only (last 30 days)")
+    print("3. Product reviews - complete 2-step process")
+    print("4. Product reviews - Step 1 only (IDs)")
+    print("5. Product reviews - Step 2 only (details)")
     
-    choice = input("Enter choice (1 or 2): ").strip()
+    choice = input("Enter choice (1-5): ").strip()
     
     if choice == "1":
-        print(" Running complete extraction...")
+        print("📊 Running complete extraction...")
         results = run_full_extraction(start_fresh=False)
     elif choice == "2":
-        print(" Running recent data extraction...")
+        print("📈 Running recent data extraction...")
         results = extract_recent_data()
+    elif choice == "3":
+        print("⭐ Running complete product reviews extraction (2 steps)...")
+        results = extract_product_reviews_only(start_fresh=True, limit_products=5)  # Test with 5 products
+        print(f"📝 Extracted {len(results)} reviews")
+    elif choice == "4":
+        print("📋 Running review history extraction (Step 1)...")
+        results = extract_review_history_only(start_fresh=True, limit_products=5)  # Test with 5 products
+        print(f"📝 Extracted {len(results)} review entries")
+    elif choice == "5":
+        print("📃 Running review details extraction (Step 2)...")
+        results = extract_review_details_only(start_fresh=True)
+        print(f"📝 Extracted {len(results)} detailed reviews")
     else:
-        print(" Invalid choice. Running recent data extraction by default...")
+        print("❌ Invalid choice. Running recent data extraction by default...")
         results = extract_recent_data()
     
-    print("\n Extraction completed!")
-    print(" Check the app/Staging/ directory for JSON files")
+    print("\n✅ Extraction completed!")
+    print("📁 Check the app/Staging/ directory for JSON files")
 

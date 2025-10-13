@@ -71,7 +71,7 @@
   },
   {
     "created_time": "1752677181287",
-    "updated_time": "1759100198734",
+    "updated_time": "1760365721283",
     "images": [
       "https://ph-live.slatic.net/p/a1b9cdbb3ff5288d161cd2d959db590e.jpg",
       "https://ph-live.slatic.net/p/3e6f10dde4108e580ea659a8f67cf7db.jpg",
@@ -80,27 +80,27 @@
     "skus": [
       {
         "Status": "active",
-        "quantity": 2,
-        "sellableStock": 2,
+        "quantity": 1,
+        "sellableStock": 1,
         "Images": [],
         "SellerSku": "5175120341-1752677181110-0",
         "ShopSku": "5175120341_PH-30683243468",
-        "occupiedStock": 0,
+        "occupiedStock": 1,
         "dropshippingStock": 0,
         "Url": "https://www.lazada.com.ph/-i5175120341-s30683243468.html",
         "saleProp": {},
         "fulfilmentStock": 0,
         "multiWarehouseInventories": [
           {
-            "occupyQuantity": 0,
-            "quantity": 2,
+            "occupyQuantity": 1,
+            "quantity": 1,
             "totalQuantity": 2,
             "bizType": 1,
             "withholdQuantity": 0,
             "bizCode": "",
             "warehouseType": "dropshipping",
             "warehouseCode": "dropshipping",
-            "sellableQuantity": 2
+            "sellableQuantity": 1
           }
         ],
         "package_width": "10.00",
@@ -110,7 +110,7 @@
         "price": 649.0,
         "channelInventories": [],
         "package_length": "10.00",
-        "Available": 2,
+        "Available": 1,
         "package_weight": "0.999",
         "SkuId": 30683243468,
         "preorderStock": 0,
@@ -2412,7 +2412,7 @@
   },
   {
     "created_time": "1665326309790",
-    "updated_time": "1760196775976",
+    "updated_time": "1760363257687",
     "images": [
       "https://ph-live.slatic.net/p/3f5a4ff61edcf1b9d36a1a28b55d18ad.jpg",
       "https://ph-live.slatic.net/p/f2c44acb1794dc1d5f7fd1c589c3b331.jpg",
@@ -2422,27 +2422,27 @@
     "skus": [
       {
         "Status": "active",
-        "quantity": 820,
-        "sellableStock": 820,
+        "quantity": 819,
+        "sellableStock": 819,
         "Images": [],
         "SellerSku": "3368572353-1738239695642-0",
         "ShopSku": "3368572353_PH-28661617725",
-        "occupiedStock": 4,
+        "occupiedStock": 1,
         "dropshippingStock": 0,
         "Url": "https://www.lazada.com.ph/-i3368572353-s28661617725.html",
         "saleProp": {},
         "fulfilmentStock": 0,
         "multiWarehouseInventories": [
           {
-            "occupyQuantity": 4,
-            "quantity": 820,
-            "totalQuantity": 824,
+            "occupyQuantity": 1,
+            "quantity": 819,
+            "totalQuantity": 820,
             "bizType": 1,
             "withholdQuantity": 0,
             "bizCode": "",
             "warehouseType": "dropshipping",
             "warehouseCode": "dropshipping",
-            "sellableQuantity": 820
+            "sellableQuantity": 819
           }
         ],
         "package_width": "9.00",
@@ -2452,7 +2452,7 @@
         "price": 380.0,
         "channelInventories": [],
         "package_length": "9.00",
-        "Available": 820,
+        "Available": 819,
         "package_weight": "1.21",
         "SkuId": 28661617725,
         "preorderStock": 0,
@@ -4419,16 +4419,16 @@
         "Images": [],
         "SellerSku": "1857030628-1617524196393-0",
         "ShopSku": "1857030628_PH-7870989083",
-        "occupiedStock": 1,
+        "occupiedStock": 0,
         "dropshippingStock": 0,
         "Url": "https://www.lazada.com.ph/-i1857030628-s7870989083.html",
         "saleProp": {},
         "fulfilmentStock": 0,
         "multiWarehouseInventories": [
           {
-            "occupyQuantity": 1,
+            "occupyQuantity": 0,
             "quantity": 565,
-            "totalQuantity": 566,
+            "totalQuantity": 565,
             "bizType": 1,
             "withholdQuantity": 0,
             "bizCode": "",
@@ -4576,7 +4576,7 @@
   },
   {
     "created_time": "1617523941733",
-    "updated_time": "1760268716101",
+    "updated_time": "1760361089870",
     "images": [
       "https://filebroker-cdn.lazada.com.ph/kf/S326760639f284c8bb7f9d1eb013dd2db9.jpg",
       "https://filebroker-cdn.lazada.com.ph/kf/Sbc9700e2b11b4c2a9f96e58b78b24289V.jpg",
@@ -4585,27 +4585,27 @@
     "skus": [
       {
         "Status": "active",
-        "quantity": 4315,
-        "sellableStock": 4315,
+        "quantity": 4313,
+        "sellableStock": 4313,
         "Images": [],
         "SellerSku": "1856947959-1748396661641-0",
         "ShopSku": "1856947959_PH-30097934851",
-        "occupiedStock": 11,
+        "occupiedStock": 1,
         "dropshippingStock": 0,
         "Url": "https://www.lazada.com.ph/-i1856947959-s30097934851.html",
         "saleProp": {},
         "fulfilmentStock": 0,
         "multiWarehouseInventories": [
           {
-            "occupyQuantity": 11,
-            "quantity": 4315,
-            "totalQuantity": 4326,
+            "occupyQuantity": 1,
+            "quantity": 4313,
+            "totalQuantity": 4314,
             "bizType": 1,
             "withholdQuantity": 0,
             "bizCode": "",
             "warehouseType": "dropshipping",
             "warehouseCode": "dropshipping",
-            "sellableQuantity": 4315
+            "sellableQuantity": 4313
           }
         ],
         "package_width": "9.00",
@@ -4615,7 +4615,7 @@
         "price": 395.0,
         "channelInventories": [],
         "package_length": "9.00",
-        "Available": 4315,
+        "Available": 4313,
         "package_weight": "1.2",
         "SkuId": 30097934851,
         "preorderStock": 0,
@@ -4654,16 +4654,16 @@
         "Images": [],
         "SellerSku": "3382826683-1666063218249-0",
         "ShopSku": "3382826683_PH-17251724455",
-        "occupiedStock": 1,
+        "occupiedStock": 0,
         "dropshippingStock": 0,
         "Url": "https://www.lazada.com.ph/-i3382826683-s17251724455.html",
         "saleProp": {},
         "fulfilmentStock": 0,
         "multiWarehouseInventories": [
           {
-            "occupyQuantity": 1,
+            "occupyQuantity": 0,
             "quantity": 27,
-            "totalQuantity": 28,
+            "totalQuantity": 27,
             "bizType": 1,
             "withholdQuantity": 0,
             "bizCode": "",
@@ -4706,7 +4706,7 @@
   },
   {
     "created_time": "1686201190088",
-    "updated_time": "1760148001978",
+    "updated_time": "1760321553710",
     "images": [
       "https://ph-live.slatic.net/p/31049f8e03c7a5809e07b1c3f800d3e6.jpg",
       "https://ph-live.slatic.net/p/20a6ca53c437c96462b7848378ff5638.jpg"
@@ -4714,8 +4714,8 @@
     "skus": [
       {
         "Status": "active",
-        "quantity": 399,
-        "sellableStock": 399,
+        "quantity": 396,
+        "sellableStock": 396,
         "Images": [],
         "SellerSku": "P",
         "ShopSku": "3884388412_PH-20793032962",
@@ -4727,14 +4727,14 @@
         "multiWarehouseInventories": [
           {
             "occupyQuantity": 0,
-            "quantity": 399,
-            "totalQuantity": 399,
+            "quantity": 396,
+            "totalQuantity": 396,
             "bizType": 1,
             "withholdQuantity": 0,
             "bizCode": "",
             "warehouseType": "dropshipping",
             "warehouseCode": "dropshipping",
-            "sellableQuantity": 399
+            "sellableQuantity": 396
           }
         ],
         "package_width": "9.00",
@@ -4744,7 +4744,7 @@
         "price": 350.0,
         "channelInventories": [],
         "package_length": "9.00",
-        "Available": 399,
+        "Available": 396,
         "package_weight": "1.25",
         "SkuId": 20793032962,
         "preorderStock": 0,
@@ -4786,16 +4786,16 @@
         "Images": [],
         "SellerSku": "3583313195-1676440088441-0",
         "ShopSku": "3583313195_PH-18525646548",
-        "occupiedStock": 1,
+        "occupiedStock": 0,
         "dropshippingStock": 0,
         "Url": "https://www.lazada.com.ph/-i3583313195-s18525646548.html",
         "saleProp": {},
         "fulfilmentStock": 0,
         "multiWarehouseInventories": [
           {
-            "occupyQuantity": 1,
+            "occupyQuantity": 0,
             "quantity": 0,
-            "totalQuantity": 1,
+            "totalQuantity": 0,
             "bizType": 1,
             "withholdQuantity": 0,
             "bizCode": "",

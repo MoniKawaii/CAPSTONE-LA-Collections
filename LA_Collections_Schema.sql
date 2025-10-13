@@ -35,7 +35,7 @@ CREATE TABLE "Dim_Product" (
   "product_key" int PRIMARY KEY NOT NULL,
   "product_item_id" varchar NOT NULL,
   "product_name" varchar,
-  "product_sku" varchar,
+  "product_sku_base" varchar,
   "product_category" varchar,
   "product_status" varchar,
   "product_price" decimal,
@@ -43,12 +43,23 @@ CREATE TABLE "Dim_Product" (
   "platform_key" int NOT NULL
 );
 
+CREATE TABLE "Dim_Product_Variant" (
+"product_variant_key" int PRIMARY KEY NOT NULL,
+"product_key" int NOT NULL,
+"platform_sku_id" varchar, -- Platform internal SKU ID (used for API calls)
+"variant_sku" varchar NOT NULL, -- The specific SKU used for inventory (SellerSku/ShopSku)
+"variant_attribute_1" varchar NULL, -- e.g., 'Color: Red'
+"variant_attribute_2" varchar NULL, -- e.g., 'Size: L'
+"variant_attribute_3" varchar NULL -- e.g., 'Material: Cotton'
+"platform_key" int NOT NULL,
+);
+
 CREATE TABLE "Dim_Order" (
   "orders_key" int PRIMARY KEY NOT NULL,
   "platform_order_id" varchar NOT NULL,
   "order_status" varchar NOT NULL,
-  "order_date" timestamp NOT NULL,
-  "updated_at" timestamp,
+  "order_date" date NOT NULL,
+  "updated_at" date NOT NULL,
   "price_total" decimal,
   "total_item_count" int,
   "payment_method" varchar,
@@ -59,6 +70,7 @@ CREATE TABLE "Fact_Orders" (
   "order_item_key" varchar PRIMARY KEY NOT NULL,
   "orders_key" int NOT NULL,
   "product_key" int NOT NULL,
+  "product_variant_key" int NOT NULL,
   "time_key" int NOT NULL,
   "customer_key" int NOT NULL,
   "platform_key" int NOT NULL,
@@ -92,8 +104,8 @@ CREATE TABLE "Fact_Sales_Aggregate" (
   "shipping_revenue" decimal DEFAULT 0,
   "total_discounts" decimal DEFAULT 0,
   "unique_customers" int DEFAULT 0,
-  "created_at" timestamp,
-  "updated_at" timestamp
+  "created_at" DATE,
+  "updated_at" DATE
 );
 
 COMMENT ON COLUMN "Dim_Platform"."platform_key" IS 'Surrogate key for the marketplace (1=Lazada, 2=Shopee)';

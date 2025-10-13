@@ -87,9 +87,15 @@ DIM_CUSTOMER_COLUMNS = [
 
 # Product Dimension
 DIM_PRODUCT_COLUMNS = [
-    'product_key', 'product_item_id', 'product_name', 'product_sku',
+    'product_key', 'product_item_id', 'product_name', 'product_sku_base',
     'product_category', 'product_status', 'product_price', 
     'product_rating', 'platform_key'
+]
+
+# Product Variant Dimension
+DIM_PRODUCT_VARIANT_COLUMNS = [
+    'product_variant_key', 'product_key', 'platform_sku_id', 'variant_sku',
+    'variant_attribute_1', 'variant_attribute_2', 'variant_attribute_3', 'platform_key'
 ]
 
 # Order Dimension
@@ -105,7 +111,7 @@ DIM_ORDER_COLUMNS = [
 
 # Fact Orders Table
 FACT_ORDERS_COLUMNS = [
-    'order_item_key', 'orders_key', 'product_key', 'time_key',
+    'order_item_key', 'orders_key', 'product_key', 'product_variant_key', 'time_key',
     'customer_key', 'platform_key', 'item_quantity', 'paid_price',
     'original_unit_price', 'voucher_platform_amount', 'voucher_seller_amount',
     'shipping_fee_paid_by_buyer'
@@ -133,6 +139,7 @@ EMPTY_DIM_PLATFORM = pd.DataFrame(columns=DIM_PLATFORM_COLUMNS)
 EMPTY_DIM_TIME = pd.DataFrame(columns=DIM_TIME_COLUMNS)
 EMPTY_DIM_CUSTOMER = pd.DataFrame(columns=DIM_CUSTOMER_COLUMNS)
 EMPTY_DIM_PRODUCT = pd.DataFrame(columns=DIM_PRODUCT_COLUMNS)
+EMPTY_DIM_PRODUCT_VARIANT = pd.DataFrame(columns=DIM_PRODUCT_VARIANT_COLUMNS)
 EMPTY_DIM_ORDER = pd.DataFrame(columns=DIM_ORDER_COLUMNS)
 
 # Fact Tables
@@ -150,6 +157,7 @@ EMPTY_DATAFRAMES = {
     'dim_time': EMPTY_DIM_TIME,
     'dim_customer': EMPTY_DIM_CUSTOMER,
     'dim_product': EMPTY_DIM_PRODUCT,
+    'dim_product_variant': EMPTY_DIM_PRODUCT_VARIANT,
     'dim_order': EMPTY_DIM_ORDER,
     
     # Fact Tables
@@ -226,7 +234,7 @@ def create_sample_time_data(start_date='2024-01-01', periods=365):
         
         df.loc[i] = [
             time_key,                    # time_key
-            date,                        # date
+            date.date(),                 # date (convert to date only, not datetime)
             date.year,                   # year
             quarter,                     # quarter
             date.month,                  # month
@@ -273,6 +281,28 @@ def validate_config():
     return results
 
 # =============================================================================
+# LAZADA TO UNIFIED FIELD MAPPINGS
+# =============================================================================
+
+LAZADA_TO_UNIFIED_MAPPING = {
+    # --- Dim_Product ---
+    "item_id": "product_item_id",
+    "name": "product_name",
+    "primary_category_name": "product_category",
+    "status": "product_status",
+    "price": "product_price",  # Base price
+    "product_rating": "product_rating",
+    "platform_key": "platform_key",  # Always 1 for Lazada
+    
+    # --- Dim_Product_Variant (from skus array) ---
+    "SkuId": "platform_sku_id",  # From skus[].SkuId
+    "SellerSku": "variant_sku",  # From skus[].SellerSku
+    "Variation1": "variant_attribute_1",  
+    "Variation2": "variant_attribute_2",  
+    "Variation3": "variant_attribute_3",  
+}
+
+# =============================================================================
 # DATA TYPE MAPPINGS
 # =============================================================================
 
@@ -284,7 +314,7 @@ COLUMN_DATA_TYPES = {
     },
     'dim_time': {
         'time_key': 'int',
-        'date': 'datetime64[ns]',
+        'date': 'datetime64[D]',  # Date only, not datetime
         'year': 'int',
         'quarter': 'str',
         'month': 'int',
@@ -303,28 +333,38 @@ COLUMN_DATA_TYPES = {
         'customer_city': 'str',
         'buyer_segment': 'str',
         'total_orders': 'int',
-        'customer_since': 'datetime64[ns]',
-        'last_order_date': 'datetime64[ns]',
+        'customer_since': 'datetime64[D]',  # Date only, not datetime
+        'last_order_date': 'datetime64[D]',  # Date only, not datetime
         'platform_key': 'int'
     },
     'dim_product': {
         'product_key': 'int',
         'product_item_id': 'str',
         'product_name': 'str',
-        'product_sku': 'str',
+        'product_sku_base': 'str',
         'product_category': 'str',
         'product_status': 'str',
-        'product_price': 'float',
-        'product_rating': 'float',
+        'product_price': 'float64',  # Decimal equivalent in pandas
+        'product_rating': 'float64',  # Decimal equivalent in pandas
+        'platform_key': 'int'
+    },
+    'dim_product_variant': {
+        'product_variant_key': 'int',
+        'product_key': 'int',
+        'platform_sku_id': 'str',
+        'variant_sku': 'str',
+        'variant_attribute_1': 'str',
+        'variant_attribute_2': 'str',
+        'variant_attribute_3': 'str',
         'platform_key': 'int'
     },
     'dim_order': {
         'orders_key': 'int',
         'platform_order_id': 'str',
         'order_status': 'str',
-        'order_date': 'datetime64[ns]',
-        'updated_at': 'datetime64[ns]',
-        'price_total': 'float',
+        'order_date': 'datetime64[D]',  # Date only, not datetime
+        'updated_at': 'datetime64[D]',  # Date only, not datetime
+        'price_total': 'float64',  # Decimal equivalent in pandas
         'total_item_count': 'int',
         'payment_method': 'str',
         'shipping_city': 'str'
@@ -333,25 +373,26 @@ COLUMN_DATA_TYPES = {
         'order_item_key': 'str',
         'orders_key': 'int',
         'product_key': 'int',
+        'product_variant_key': 'int',
         'time_key': 'int',
         'customer_key': 'int',
         'platform_key': 'int',
         'item_quantity': 'int',
-        'paid_price': 'float',
-        'original_unit_price': 'float',
-        'voucher_platform_amount': 'float',
-        'voucher_seller_amount': 'float',
-        'shipping_fee_paid_by_buyer': 'float'
+        'paid_price': 'float64',  # Decimal equivalent in pandas
+        'original_unit_price': 'float64',  # Decimal equivalent in pandas
+        'voucher_platform_amount': 'float64',  # Decimal equivalent in pandas
+        'voucher_seller_amount': 'float64',  # Decimal equivalent in pandas
+        'shipping_fee_paid_by_buyer': 'float64'  # Decimal equivalent in pandas
     },
     'fact_traffic': {
-        'traffic_event_key': 'int',
+        'traffic_event_key': 'int64',  # Bigint equivalent in pandas
         'time_key': 'int',
         'platform_key': 'int',
         'clicks': 'int',
         'impressions': 'int'
     },
     'fact_sales_aggregate': {
-        'sales_summary_key': 'int',
+        'sales_summary_key': 'int',  # Serial/auto-increment handled at DB level
         'time_key': 'int',
         'platform_key': 'int',
         'buyer_segment': 'str',
@@ -360,18 +401,18 @@ COLUMN_DATA_TYPES = {
         'cancelled_orders': 'int',
         'returned_orders': 'int',
         'total_items_sold': 'int',
-        'gross_revenue': 'float',
-        'shipping_revenue': 'float',
-        'total_discounts': 'float',
+        'gross_revenue': 'float64',  # Decimal equivalent in pandas
+        'shipping_revenue': 'float64',  # Decimal equivalent in pandas
+        'total_discounts': 'float64',  # Decimal equivalent in pandas
         'unique_customers': 'int',
-        'created_at': 'datetime64[ns]',
-        'updated_at': 'datetime64[ns]'
+        'created_at': 'datetime64[D]',  # Date only, not datetime
+        'updated_at': 'datetime64[D]'  # Date only, not datetime
     }
 }
 
 def apply_data_types(df, table_name):
     """
-    Apply appropriate data types to DataFrame columns
+    Apply appropriate data types to DataFrame columns matching the SQL schema exactly
     
     Args:
         df (pd.DataFrame): DataFrame to apply types to
@@ -384,8 +425,18 @@ def apply_data_types(df, table_name):
         for col, dtype in COLUMN_DATA_TYPES[table_name].items():
             if col in df.columns:
                 try:
-                    df[col] = df[col].astype(dtype)
-                except (ValueError, TypeError):
+                    # Special handling for date columns (convert from datetime to date)
+                    if dtype == 'datetime64[D]':
+                        # First convert to datetime if it's not already
+                        df[col] = pd.to_datetime(df[col])
+                        # Then convert to date only (removes time component)
+                        df[col] = df[col].dt.date
+                        # Convert back to datetime64[D] for pandas compatibility
+                        df[col] = pd.to_datetime(df[col]).dt.date
+                    else:
+                        df[col] = df[col].astype(dtype)
+                except (ValueError, TypeError) as e:
+                    print(f"Warning: Could not convert column '{col}' to type '{dtype}': {e}")
                     pass  # Skip if conversion fails
     return df
 

@@ -33,9 +33,12 @@ def main():
     print("5. Extract order items only (requires existing orders)")
     print("6. Extract traffic metrics (2020-04-01 to 2025-04-30)")
     print("7. Extract product details (requires existing products)")
-    print("8. Check existing data")
+    print("8. Extract product reviews - complete process")
+    print("9. Extract review history IDs only (Step 1)")
+    print("10. Extract review details only (Step 2)")
+    print("11. Check existing data")
     
-    choice = input("\n👆 Choose option (1-8): ").strip()
+    choice = input("\n👆 Choose option (1-11): ").strip()
     
     if choice == "1":
         print("\n🎯 FULL HISTORICAL EXTRACTION STARTING...")
@@ -187,7 +190,54 @@ def main():
         print(f"📞 API calls used: {extractor.api_calls_made}")
         
     elif choice == "8":
-        print("\n📊 CHECKING EXISTING DATA...")
+        print("\n⭐ PRODUCT REVIEWS EXTRACTION (Complete Process)...")
+        print("📋 This will run both steps:")
+        print("   Step 1: Extract review IDs from /review/seller/history/list")
+        print("   Step 2: Extract review details from /review/seller/list/v2")
+        print("📅 Reviews are extracted in 7-day chunks (API requirement)")
+        print("🔍 Each review ID batch is processed with max 10 reviews (API limit)")
+        
+        confirm = input("Continue with complete review extraction? (y/n): ").strip().lower()
+        if confirm != 'y':
+            print("❌ Extraction cancelled")
+            return
+        
+        reviews = extractor.extract_product_reviews(start_fresh=True, limit_products=10)
+        print(f"✅ Product reviews extracted: {len(reviews)}")
+        print(f"📞 API calls used: {extractor.api_calls_made}")
+        
+    elif choice == "9":
+        print("\n📋 REVIEW HISTORY IDs EXTRACTION (Step 1)...")
+        print("🔍 This will extract review IDs using /review/seller/history/list")
+        print("💾 IDs will be saved to lazada_reviewhistorylist_raw.json")
+        print("📅 Reviews are extracted in 7-day chunks (API requirement)")
+        
+        confirm = input("Continue with review IDs extraction? (y/n): ").strip().lower()
+        if confirm != 'y':
+            print("❌ Extraction cancelled")
+            return
+        
+        review_ids = extractor.extract_review_history_list(start_fresh=True, limit_products=10)
+        print(f"✅ Review IDs extracted: {len(review_ids)}")
+        print(f"📞 API calls used: {extractor.api_calls_made}")
+        
+    elif choice == "10":
+        print("\n📃 REVIEW DETAILS EXTRACTION (Step 2)...")
+        print("🔍 This will extract detailed reviews using /review/seller/list/v2")
+        print("📋 Will use IDs from lazada_reviewhistorylist_raw.json")
+        print("🔍 Each batch processes max 10 review IDs (API limit)")
+        
+        confirm = input("Continue with review details extraction? (y/n): ").strip().lower()
+        if confirm != 'y':
+            print("❌ Extraction cancelled")
+            return
+        
+        reviews = extractor.extract_review_details(start_fresh=True)
+        print(f"✅ Detailed reviews extracted: {len(reviews)}")
+        print(f"📞 API calls used: {extractor.api_calls_made}")
+        
+    elif choice == "11":
+        print("\n CHECKING EXISTING DATA...")
         
         # Check products
         products = extractor.extract_all_products(start_fresh=False)
@@ -196,6 +246,14 @@ def main():
         # Check orders
         orders = extractor.extract_all_orders(start_fresh=False)
         print(f"🛒 Existing orders: {len(orders)}")
+        
+        # Check review IDs
+        review_ids = extractor._load_from_json('lazada_reviewhistorylist_raw.json')
+        print(f"📋 Existing review IDs: {len(review_ids)}")
+        
+        # Check reviews
+        reviews = extractor._load_from_json('lazada_productreview_raw.json')
+        print(f"⭐ Existing detailed reviews: {len(reviews)}")
         
         print(f"📞 API calls used today: {extractor.api_calls_made}")
         
@@ -210,6 +268,7 @@ def main():
     print("   - lazada_multiple_order_items_raw.json")
     print("   - lazada_productitem_raw.json")
     print("   - lazada_reportoverview_raw.json")
+    print("   - lazada_productreview_raw.json")
     print("\n✨ You can now run your ETL pipeline to process this data!")
 
 if __name__ == "__main__":
