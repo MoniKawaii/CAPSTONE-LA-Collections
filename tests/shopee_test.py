@@ -50,6 +50,16 @@ def generate_shopee_signature(path, timestamp, access_token=None, shop_id=None):
     Returns:
         str: Generated signature
     """
+    # Debug signature components
+    print(f"DEBUG Signature Components:")
+    print(f"- Path: {path}")
+    print(f"- Timestamp: {timestamp}")
+    print(f"- Partner ID: {PARTNER_ID}")
+    if access_token:
+        print(f"- Access Token: {access_token[:5]}...")
+    if shop_id:
+        print(f"- Shop ID: {shop_id}")
+    
     # Ensure path has correct format with /api/v2/ prefix
     if not path.startswith('/'):
         path = '/' + path
@@ -67,6 +77,7 @@ def generate_shopee_signature(path, timestamp, access_token=None, shop_id=None):
     partner_key = API_SECRET.encode('utf-8')  # Must be bytes for hmac
     
     # Construct base string according to Shopee documentation
+    # CRITICAL: Check exact format as required by Shopee
     if shop_id is not None and access_token is not None:
         # Shop API format
         base_string = f"{partner_id}{path}{timestamp}{access_token}{shop_id}"
@@ -74,10 +85,13 @@ def generate_shopee_signature(path, timestamp, access_token=None, shop_id=None):
         # Public API format (for authentication)
         base_string = f"{partner_id}{path}{timestamp}"
     
+    print(f"- Base String: '{base_string}'")
+    
     # Generate signature using HMAC-SHA256
     base_string_bytes = base_string.encode('utf-8')
     hmac_obj = hmac.new(partner_key, base_string_bytes, hashlib.sha256)
     signature = hmac_obj.hexdigest()  # Convert to lowercase hex string
+    print(f"- Generated Signature: {signature}")
     
     return signature
 
@@ -98,12 +112,17 @@ def get_authorization_url(redirect_uri="https://oscitant-brody-pseudonationally.
     signature = generate_shopee_signature(path, timestamp)
     
     # Prepare URL parameters
+    # IMPORTANT: partner_id must be string in URL parameters according to Shopee docs
     params = {
-        "partner_id": str(PARTNER_ID),  # As string in URL parameters
+        "partner_id": PARTNER_ID,       # Shopee expects this as string in URL params 
         "timestamp": timestamp,         # Integer timestamp
         "sign": signature.lower(),      # Lowercase hex signature
         "redirect": redirect_uri        # Redirect URI
     }
+    
+    print(f"Authorization URL Parameters:")
+    for k, v in params.items():
+        print(f"- {k}: {v} (type: {type(v).__name__})")
     
     # Construct full URL
     base_url = BASE_URL.rstrip('/')
@@ -143,18 +162,28 @@ def exchange_code_for_token(code):
     url = f"{base_url}{path}"
     
     # URL parameters
+    # IMPORTANT: partner_id must be string in URL params
     params = {
-        "partner_id": str(PARTNER_ID),  # As string in URL parameters
+        "partner_id": PARTNER_ID,       # CRITICAL: Shopee needs this as string 
         "timestamp": timestamp,
         "sign": signature.lower()
     }
     
     # Request body
+    # IMPORTANT: partner_id must be integer in request body
     data = {
         "code": code,
-        "partner_id": int(PARTNER_ID),  # As integer in request body
-        "shop_id": 0
+        "partner_id": int(PARTNER_ID),  # CRITICAL: Must be integer in JSON body
+        "shop_id": 0                    # Required for token exchange
     }
+    
+    print(f"URL Parameters types:")
+    for k, v in params.items():
+        print(f"- {k}: {v} (type: {type(v).__name__})")
+    
+    print(f"Request Body types:")  
+    for k, v in data.items():
+        print(f"- {k}: {v} (type: {type(v).__name__})")
     
     print(f"Token Request URL: {url}")
     print(f"URL Parameters: {params}")
@@ -236,17 +265,27 @@ def refresh_access_token(refresh_token):
     url = f"{base_url}{path}"
     
     # URL parameters
+    # IMPORTANT: partner_id must be string in URL params according to Shopee docs
     params = {
-        "partner_id": str(PARTNER_ID),  # As string in URL parameters
+        "partner_id": PARTNER_ID,       # As string in URL parameters
         "timestamp": timestamp,
         "sign": signature.lower()
     }
     
     # Request body
+    # IMPORTANT: partner_id must be integer in request body
     data = {
         "refresh_token": refresh_token,
-        "partner_id": int(PARTNER_ID)  # As integer in request body
+        "partner_id": int(PARTNER_ID)   # CRITICAL: Must be integer in JSON body
     }
+    
+    print(f"URL Parameters types:")
+    for k, v in params.items():
+        print(f"- {k}: {v} (type: {type(v).__name__})")
+    
+    print(f"Request Body types:")  
+    for k, v in data.items():
+        print(f"- {k}: {v} (type: {type(v).__name__})")
     
     print(f"Refresh Token Request URL: {url}")
     print(f"URL Parameters: {params}")
@@ -388,13 +427,18 @@ def test_shopee_api_with_token():
     url = f"{base_url}{path}"
     
     # URL parameters
+    # IMPORTANT: Both partner_id and shop_id must be string in URL parameters
     params = {
-        "partner_id": str(PARTNER_ID),  # As string in URL parameters
+        "partner_id": PARTNER_ID,       # As string in URL parameters
         "timestamp": timestamp,
         "sign": signature.lower(),
         "access_token": access_token,
-        "shop_id": str(shop_id)  # As string in URL parameters
+        "shop_id": str(shop_id)         # CRITICAL: Must be string in URL parameters
     }
+    
+    print(f"API Test URL Parameters types:")
+    for k, v in params.items():
+        print(f"- {k}: {v} (type: {type(v).__name__})")
     
     print(f"API Test URL: {url}")
     print(f"URL Parameters: {params}")
