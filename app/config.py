@@ -349,6 +349,7 @@ LAZADA_TO_UNIFIED_MAPPING = {
     "customer_since": "customer_since",  # Calculated: Earliest order_date for platform_customer_id
     "last_order_date": "last_order_date",  # Calculated: Latest order_date for platform_customer_id
     "platform_key": "platform_key",  # Always 1 for Lazada
+    
 }
 
 # =============================================================================

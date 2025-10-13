@@ -171,7 +171,7 @@ COMMENT ON COLUMN "Fact_Orders"."customer_key" IS 'FK to Dim_Customer.';
 
 COMMENT ON COLUMN "Fact_Orders"."platform_key" IS 'FK to Dim_Platform.';
 
-COMMENT ON COLUMN "Fact_Orders"."item_quantity" IS 'UNIFIED QUANTITY. Shopee: model_quantity. Lazada: COUNT of unit-level records grouped by Order ID and SKU ID.';
+COMMENT ON COLUMN "Fact_Orders"."item_quantity" IS 'UNIFIED QUANTITY. Shopee: model_quantity. Lazada: COUNT of unit-level records grouped by Order_ID and SKU_ID.';
 
 COMMENT ON COLUMN "Fact_Orders"."paid_price" IS 'Total Revenue for this LINE ITEM. Shopee: model_discounted_price * model_quantity_purchased. Lazada: SUM of paid_price from all aggregated unit records.';
 
