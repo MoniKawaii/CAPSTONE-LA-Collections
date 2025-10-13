@@ -46,50 +46,24 @@ TOKEN_FILE = Path('shopee_tokens.json')
 # SIGNATURE GENERATION
 # ============================================================================
 
-def generate_signature(path: str, timestamp: int, access_token: str = None, 
-                      shop_id: int = None) -> str:
+def generate_signature(path: str, timestamp: int, partner_key: str) -> str:
     """
-    Generate HMAC-SHA256 signature for Shopee API requests
+    Generates the HMAC-SHA256 signature for the Public API call.
     
-    Args:
-        path: API endpoint path (e.g., '/auth/token/get')
-        timestamp: Unix timestamp in seconds
-        access_token: Optional access token for authenticated requests
-        shop_id: Optional shop ID for shop-level APIs
-    
-    Returns:
-        Lowercase hex signature string
+    The base string format for public API is: partner_id + path + timestamp
     """
-    # Remove /api/v2 prefix if present
-    if path.startswith('/api/v2'):
-        path = path[7:]
+    partner_id_str = str(SHOPEE_PARTNER_ID)
+    timestamp_str = str(timestamp)
     
-    # Remove leading slash
-    path = path.lstrip('/')
+    # Concatenate the elements without any separators (crucial!)
+    base_string = f"{partner_id_str}{path}{timestamp_str}"
     
-    # Convert partner_id to int
-    partner_id = int(SHOPEE_PARTNER_ID)
-    
-    # Build base string according to Shopee's specification
-    if shop_id and access_token:
-        # Shop API
-        base_string = f"{partner_id}{path}{timestamp}{access_token}{shop_id}"
-    elif access_token:
-        # Public API with token
-        base_string = f"{partner_id}{path}{timestamp}{access_token}"
-    else:
-        # Public API without token (for initial authorization)
-        base_string = f"{partner_id}{path}{timestamp}"
-    
-    # Generate HMAC-SHA256 signature
+    # Calculate the HMAC-SHA256 signature
     signature = hmac.new(
-        SHOPEE_API_SECRET.encode('utf-8'),
-        base_string.encode('utf-8'),
-        hashlib.sha256
+        key=partner_key.encode('utf-8'),
+        msg=base_string.encode('utf-8'),
+        digestmod=hashlib.sha256
     ).hexdigest()
-    
-    logger.debug(f"Base string: {base_string}")
-    logger.debug(f"Signature: {signature}")
     
     return signature
 
@@ -119,40 +93,46 @@ def save_tokens(token_data: dict) -> bool:
 # OAUTH FLOW
 # ============================================================================
 
-def get_authorization_url(redirect_uri: str = "https://example.com") -> str:
+import urllib.parse
+
+def get_authorization_url(redirect_uri: str = "https://oscitant-brody-pseudonationally.ngrok-free.dev") -> str:
     """
-    Generate authorization URL for Shopee OAuth
-    
+    Generate the complete authorization URL for the seller to grant access.
+
     Args:
-        redirect_uri: URL to redirect after authorization
-    
+        redirect_uri: The URL Shopee will redirect to after authorization.
+
     Returns:
-        Complete authorization URL
+        The complete, signed authorization URL.
     """
+    # 🌟 CORRECT PATH for the authorization link
     path = "/api/v2/shop/auth_partner"
     timestamp = int(time.time())
-    
-    # Generate signature
-    signature = generate_signature(path, timestamp)
-    
+
+    # Generate signature using the correct base string logic
+    signature = generate_signature(path, timestamp, SHOPEE_API_SECRET)
+
     # Build URL with parameters
     base_url = SHOPEE_BASE_URL.rstrip('/')
     url = f"{base_url}{path}"
-    
+
     params = {
         'partner_id': int(SHOPEE_PARTNER_ID),
         'timestamp': timestamp,
         'sign': signature,
+        # The redirect URL must be URL-encoded
         'redirect': redirect_uri
     }
-    
-    # Build query string
-    query_parts = [f"{k}={v}" for k, v in params.items()]
-    full_url = f"{url}?{'&'.join(query_parts)}"
-    
-    logger.info(f"Authorization URL generated")
-    logger.debug(f"URL: {full_url}")
-    
+
+    # Build the final query string
+    # We use urllib.parse.urlencode for safe URL construction
+    query_string = urllib.parse.urlencode(params)
+
+    full_url = f"{url}?{query_string}"
+
+    print(f"✅ Authorization URL Generated (Timestamp: {timestamp})")
+    print(f"🔗 URL: {full_url}")
+
     return full_url
 
 def exchange_code_for_token(auth_code: str) -> dict:
@@ -169,7 +149,7 @@ def exchange_code_for_token(auth_code: str) -> dict:
     timestamp = int(time.time())
     
     # Generate signature
-    signature = generate_signature(path, timestamp)
+    signature = generate_signature(path, timestamp, SHOPEE_API_SECRET)
     
     # Build request
     base_url = SHOPEE_BASE_URL.rstrip('/')
@@ -226,7 +206,7 @@ def refresh_access_token(refresh_token: str, shop_id: int) -> dict:
     timestamp = int(time.time())
     
     # Generate signature
-    signature = generate_signature(path, timestamp)
+    signature = generate_signature(path, timestamp, SHOPEE_API_SECRET)
     
     # Build request
     base_url = SHOPEE_BASE_URL.rstrip('/')
