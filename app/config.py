@@ -21,36 +21,44 @@ except ImportError:
 
 def load_lazada_tokens():
     """
-    Load Lazada tokens from lazada_tokens.json file
+    Load Lazada tokens and credentials exclusively from environment variables
+    (e.g., from GitHub Secrets or a local .env file).
     
     Returns:
         dict: Lazada tokens and app credentials
     """
-    tokens_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lazada', 'lazada_tokens.json')
     
-    # Default empty tokens
+    # NOTE: The local file reading logic (os.path.join, json.load) IS REMOVED.
+    
+    # 1. Load dynamic tokens (these will come from your rotation script / secrets)
+    access_token = os.getenv("LAZADA_ACCESS_TOKEN", "")
+    refresh_token = os.getenv("LAZADA_REFRESH_TOKEN", "")
+    
+    # 2. Load metadata fields (use int() for numeric fields)
+    # The default value should be 604800 (1 week) as per original config, but 
+    # reading from ENV allows your rotation script to update it.
+    try:
+        expires_in = int(os.getenv("LAZADA_EXPIRES_IN", 604800))
+    except ValueError:
+        expires_in = 604800 # Fallback to default if ENV var is invalid
+        
+    account_platform = os.getenv("LAZADA_ACCOUNT_PLATFORM", "seller_center")
+    created_at = os.getenv("LAZADA_CREATED_AT", None) # Timestamp of when token was acquired
+    
+    # 3. Load static credentials
+    app_key = os.getenv("LAZADA_APP_KEY", "")
+    app_secret = os.getenv("LAZADA_APP_SECRET", "")
+    
+    # 4. Construct the final tokens dictionary
     tokens = {
-        "access_token": "",
-        "refresh_token": "",
-        "expires_in": 604800,
-        "account_platform": "seller_center",
-        "created_at": None
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "expires_in": expires_in,
+        "account_platform": account_platform,
+        "created_at": created_at,
+        "app_key": app_key,
+        "app_secret": app_secret
     }
-    
-    # Load from JSON file if it exists
-    if os.path.exists(tokens_file):
-        try:
-            with open(tokens_file, 'r') as f:
-                file_tokens = json.load(f)
-                tokens.update(file_tokens)
-        except (json.JSONDecodeError, IOError) as e:
-            print(f"Warning: Could not load Lazada tokens from {tokens_file}: {e}")
-    
-    # Add app credentials from environment variables
-    tokens.update({
-        "app_key": os.getenv("LAZADA_APP_KEY", ""),
-        "app_secret": os.getenv("LAZADA_APP_SECRET", "")
-    })
     
     return tokens
 
