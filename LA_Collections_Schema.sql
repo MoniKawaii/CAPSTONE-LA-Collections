@@ -91,22 +91,20 @@ CREATE TABLE "Fact_Traffic" (
   "impressions" int NOT NULL
 );
 
+-- REVISED FACT AGGREGATE TABLE (Data Cube Grain)
+-- Grain: Time, Platform, Customer, Product
 CREATE TABLE "Fact_Sales_Aggregate" (
-  "sales_summary_key" serial PRIMARY KEY,
   "time_key" int NOT NULL,
   "platform_key" int NOT NULL,
-  "buyer_segment" varchar NOT NULL,
-  "total_orders" int DEFAULT 0,
-  "successful_orders" int DEFAULT 0,
-  "cancelled_orders" int DEFAULT 0,
-  "returned_orders" int DEFAULT 0,
-  "total_items_sold" int DEFAULT 0,
-  "gross_revenue" decimal DEFAULT 0,
-  "shipping_revenue" decimal DEFAULT 0,
-  "total_discounts" decimal DEFAULT 0,
-  "unique_customers" int DEFAULT 0,
-  "created_at" DATE,
-  "updated_at" DATE
+  "customer_key" int NOT NULL,                 -- NEW: For slicing by segment, city, etc.
+  "product_key" int NOT NULL,                  -- NEW: For slicing by category, status, etc.
+  "total_orders" int,                          -- Count of distinct orders_key in this segment (not item count)
+  "total_items_sold" int,                      -- Sum of Fact_Orders.item_quantity
+  "gross_revenue" decimal,                     -- Sum of all paid_price
+  "total_discounts" decimal,                   -- Sum of all voucher amounts
+  "net_sales" decimal,                         -- gross_revenue - total_discounts
+  "shipping_revenue" decimal,                  -- Sum of Fact_Orders.shipping_fee_paid_by_buyer
+  PRIMARY KEY ("time_key", "platform_key", "customer_key", "product_key")
 );
 
 COMMENT ON COLUMN "Dim_Platform"."platform_key" IS 'Surrogate key for the marketplace (1=Lazada, 2=Shopee)';
@@ -187,25 +185,25 @@ COMMENT ON COLUMN "Fact_Traffic"."clicks" IS 'Additive measure, total clicks (sa
 
 COMMENT ON COLUMN "Fact_Traffic"."impressions" IS 'Additive measure, total impressions (Lazada: impressions, Shopee: impression)';
 
-COMMENT ON COLUMN "Fact_Sales_Aggregate"."sales_summary_key" IS 'Surrogate Key';
-
 COMMENT ON COLUMN "Fact_Sales_Aggregate"."time_key" IS 'FK to Dim_Time. The aggregation day.';
 
 COMMENT ON COLUMN "Fact_Sales_Aggregate"."platform_key" IS 'FK to Dim_Platform.';
 
-COMMENT ON COLUMN "Fact_Sales_Aggregate"."buyer_segment" IS 'Slice by customer type (New/Returning) - Pulled from Dim_Customer.';
+COMMENT ON COLUMN "Fact_Sales_Aggregate"."customer_key" IS 'FK to Dim_Customer. Enables slicing by customer segment, city, etc.';
 
-COMMENT ON COLUMN "Fact_Sales_Aggregate"."total_orders" IS 'Count of distinct Order IDs.';
+COMMENT ON COLUMN "Fact_Sales_Aggregate"."product_key" IS 'FK to Dim_Product. Enables slicing by product category, status, etc.';
+
+COMMENT ON COLUMN "Fact_Sales_Aggregate"."total_orders" IS 'Count of distinct orders_key in this segment (not item count).';
 
 COMMENT ON COLUMN "Fact_Sales_Aggregate"."total_items_sold" IS 'Sum of Fact_Orders.item_quantity.';
 
 COMMENT ON COLUMN "Fact_Sales_Aggregate"."gross_revenue" IS 'Sum of Fact_Orders.paid_price (Item revenue only).';
 
-COMMENT ON COLUMN "Fact_Sales_Aggregate"."shipping_revenue" IS 'Sum of Fact_Orders.shipping_fee_paid_by_buyer.';
-
 COMMENT ON COLUMN "Fact_Sales_Aggregate"."total_discounts" IS 'Sum of all vouchers/discounts.';
 
-COMMENT ON COLUMN "Fact_Sales_Aggregate"."unique_customers" IS 'Count of distinct customer_key in this segment.';
+COMMENT ON COLUMN "Fact_Sales_Aggregate"."net_sales" IS 'Gross revenue minus total discounts.';
+
+COMMENT ON COLUMN "Fact_Sales_Aggregate"."shipping_revenue" IS 'Sum of Fact_Orders.shipping_fee_paid_by_buyer.';
 
 ALTER TABLE "Fact_Sales_Aggregate" ADD FOREIGN KEY ("time_key") REFERENCES "Dim_Time" ("time_key");
 

@@ -8,6 +8,13 @@ import os
 import json
 from datetime import datetime
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    print("Warning: python-dotenv not installed. Environment variables from .env file will not be loaded automatically.")
+
 # =============================================================================
 # KEYS & ACCESS TOKENS
 # =============================================================================
@@ -152,10 +159,9 @@ FACT_TRAFFIC_COLUMNS = [
 
 # Fact Sales Aggregate Table
 FACT_SALES_AGGREGATE_COLUMNS = [
-    'sales_summary_key', 'time_key', 'platform_key', 'buyer_segment',
-    'total_orders', 'successful_orders', 'cancelled_orders', 'returned_orders',
-    'total_items_sold', 'gross_revenue', 'shipping_revenue', 'total_discounts',
-    'unique_customers', 'created_at', 'updated_at'
+    'time_key', 'platform_key', 'customer_key', 'product_key',
+    'total_orders', 'total_items_sold', 'gross_revenue', 'total_discounts',
+    'net_sales', 'shipping_revenue'
 ]
 
 # =============================================================================
@@ -443,21 +449,16 @@ COLUMN_DATA_TYPES = {
         'impressions': 'int'
     },
     'fact_sales_aggregate': {
-        'sales_summary_key': 'int',  # Serial/auto-increment handled at DB level
         'time_key': 'int',
         'platform_key': 'int',
-        'buyer_segment': 'str',
+        'customer_key': 'int',
+        'product_key': 'int',
         'total_orders': 'int',
-        'successful_orders': 'int',
-        'cancelled_orders': 'int',
-        'returned_orders': 'int',
         'total_items_sold': 'int',
         'gross_revenue': 'float64',  # Decimal equivalent in pandas
-        'shipping_revenue': 'float64',  # Decimal equivalent in pandas
         'total_discounts': 'float64',  # Decimal equivalent in pandas
-        'unique_customers': 'int',
-        'created_at': 'datetime64[D]',  # Date only, not datetime
-        'updated_at': 'datetime64[D]'  # Date only, not datetime
+        'net_sales': 'float64',  # Decimal equivalent in pandas
+        'shipping_revenue': 'float64'  # Decimal equivalent in pandas
     }
 }
 
