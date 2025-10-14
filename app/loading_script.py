@@ -36,11 +36,14 @@ def get_combined_transactions():
     # Try to get data from transformation modules
     try:
         # from shopee_transform import get_shopee_transactions
-        from lazada_transform import get_lazada_transactions
+        # from lazada_transform import get_lazada_transactions
         
-        shopee_df = get_shopee_transactions()
-        lazada_df = get_lazada_transactions()
-        combined_df = pd.concat([shopee_df, lazada_df], ignore_index=True)
+        # shopee_df = get_shopee_transactions()
+        # lazada_df = get_lazada_transactions()
+        # combined_df = pd.concat([shopee_df, lazada_df], ignore_index=True)
+        
+        # For now, skip the import and go directly to CSV fallback
+        raise ImportError("Transformation modules not available")
         
     except ImportError:
         print("⚠️  Transformation modules not found, using CSV files...")
@@ -133,47 +136,109 @@ def clean_dataframe(df, table_name):
     
     # Table-specific data fixes
     if table_name == 'Dim_Product_Variant':
-        # Fix column name if needed
+        logger.info(f"🔧 Original columns: {list(df.columns)}")
+        
+        # Fix column name if needed (CSV uses variant_key, DB expects product_variant_key)
         if 'variant_key' in df.columns and 'product_variant_key' not in df.columns:
             df = df.rename(columns={'variant_key': 'product_variant_key'})
             logger.info("🔧 Renamed variant_key to product_variant_key in Dim_Product_Variant")
+        
+        # Remove extra columns that don't exist in database schema
+        # Database expects: product_variant_key, product_key, platform_sku_id, variant_sku, 
+        #                   variant_attribute_1, variant_attribute_2, variant_attribute_3, platform_key
+        expected_columns = [
+            'product_variant_key', 'product_key', 'platform_sku_id', 'variant_sku',
+            'variant_attribute_1', 'variant_attribute_2', 'variant_attribute_3', 'platform_key'
+        ]
+        
+        # Drop extra columns that don't match database schema
+        columns_to_drop = [col for col in df.columns if col not in expected_columns]
+        if columns_to_drop:
+            df = df.drop(columns=columns_to_drop)
+            logger.info(f"🔧 Dropped extra columns: {columns_to_drop}")
+        
+        # Reorder columns to match database schema
+        df = df.reindex(columns=expected_columns)
+        
         # Debug: show unique platform_key values before filtering
-        logger.info(f"🔍 Unique platform_key values before filtering: {df['platform_key'].unique()}")
+        logger.info(f"🔍 Unique platform_key values before filtering: {sorted(df['platform_key'].unique())}")
+        
         # Filter out invalid platform_key values (should be 1 or 2 only)
         valid_platforms = [1, 2]
         original_count = len(df)
         df = df[df['platform_key'].isin(valid_platforms)]
-        logger.info(f"🔍 Unique platform_key values after filtering: {df['platform_key'].unique()}")
+        logger.info(f"🔍 Unique platform_key values after filtering: {sorted(df['platform_key'].unique())}")
+        
         if len(df) != original_count:
             logger.info(f"🔧 Filtered Dim_Product_Variant: {original_count} -> {len(df)} records (removed invalid platform_key values)")
+        
+        # Remove rows with NULL or invalid product_variant_key
+        if 'product_variant_key' in df.columns:
+            before = len(df)
+            df = df.dropna(subset=['product_variant_key'])
+            df = df[df['product_variant_key'] > 0]  # Ensure positive keys
+            if len(df) != before:
+                logger.info(f"🔧 Removed rows with invalid product_variant_key: {before} -> {len(df)} records")
+        
         # Remove duplicates on product_variant_key if any
         if 'product_variant_key' in df.columns:
             before = len(df)
             df = df.drop_duplicates(subset=['product_variant_key'])
             if len(df) != before:
-                logger.info(f"🔧 Dropped duplicate product_variant_key in Dim_Product_Variant: {before} -> {len(df)} records")
+                logger.info(f"🔧 Dropped duplicate product_variant_key: {before} -> {len(df)} records")
+        
+        logger.info(f"🔧 Final columns: {list(df.columns)}")
         return df
+        
     elif table_name == 'Fact_Orders':
+        logger.info(f"🔧 Original columns: {list(df.columns)}")
+        
         # Fix order_item_key if it contains strings like "OI00000001"
-        if df['order_item_key'].dtype == 'object':
+        if 'order_item_key' in df.columns and df['order_item_key'].dtype == 'object':
             df['order_item_key'] = range(1, len(df) + 1)
             logger.info("🔧 Fixed order_item_key to sequential integers in Fact_Orders")
-        # Remove rows where product_variant_key does not exist in cleaned Dim_Product_Variant
-        pv_path = Path("app/Transformed/dim_product_variant.csv")
-        if not pv_path.exists():
-            pv_path = Path("../app/Transformed/dim_product_variant.csv")
-        if pv_path.exists():
-            pv_df = pd.read_csv(pv_path)
-            # Fix column name if needed
-            if 'variant_key' in pv_df.columns and 'product_variant_key' not in pv_df.columns:
-                pv_df = pv_df.rename(columns={'variant_key': 'product_variant_key'})
-            pv_df = pv_df[pv_df['platform_key'].isin([1,2])]
-            valid_keys = set(pv_df['product_variant_key'])
+        
+        # Ensure product_variant_key exists and is valid
+        if 'product_variant_key' in df.columns:
+            # Remove rows with NULL or 0 product_variant_key
             before = len(df)
-            df = df[df['product_variant_key'].isin(valid_keys)]
+            df = df.dropna(subset=['product_variant_key'])
+            df = df[df['product_variant_key'] > 0]
             if len(df) != before:
-                logger.info(f"🔧 Filtered Fact_Orders: {before} -> {len(df)} records with valid product_variant_key")
+                logger.info(f"🔧 Removed rows with invalid product_variant_key: {before} -> {len(df)} records")
+            
+            # Load valid product_variant_keys from cleaned Dim_Product_Variant
+            pv_path = None
+            for path in [Path("app/Transformed/dim_product_variant.csv"), 
+                        Path("../app/Transformed/dim_product_variant.csv"),
+                        Path("Transformed/dim_product_variant.csv")]:
+                if path.exists():
+                    pv_path = path
+                    break
+            
+            if pv_path and pv_path.exists():
+                logger.info(f"🔍 Loading product variant reference from: {pv_path}")
+                pv_df = pd.read_csv(pv_path)
+                
+                # Fix column name in variant data
+                if 'variant_key' in pv_df.columns and 'product_variant_key' not in pv_df.columns:
+                    pv_df = pv_df.rename(columns={'variant_key': 'product_variant_key'})
+                
+                # Filter valid platform keys in variant data
+                pv_df = pv_df[pv_df['platform_key'].isin([1, 2])]
+                valid_variant_keys = set(pv_df['product_variant_key'].dropna())
+                logger.info(f"🔍 Found {len(valid_variant_keys)} valid product_variant_keys: {sorted(list(valid_variant_keys))[:10]}...")
+                
+                before = len(df)
+                df = df[df['product_variant_key'].isin(valid_variant_keys)]
+                if len(df) != before:
+                    logger.info(f"🔧 Filtered Fact_Orders for valid product_variant_key: {before} -> {len(df)} records")
+            else:
+                logger.warning("⚠️ Could not find dim_product_variant.csv for reference validation")
+        
+        logger.info(f"🔧 Final columns: {list(df.columns)}")
         return df
+    
     # If not a special table, return as is
     return df
 
