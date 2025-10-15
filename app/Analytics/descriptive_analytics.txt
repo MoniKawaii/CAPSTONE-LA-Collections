@@ -1,0 +1,116 @@
+======================================================================
+🚀 LAZADA SALES ANALYTICS - DIMENSIONAL MODEL
+======================================================================
+✅ Loaded data from C:\Users\alyss\Desktop\CAPSTONE-LA-Collections\app\Analytics\..\Transformed
+   📊 Dim Order: 7,669 records
+   📋 Fact Orders: 10,955 records
+   📦 Dim Product: 23 records
+   👥 Dim Customer: 4,778 records
+   📅 Dim Time: 1,856 records
+✅ Merged data: 10,955 sales records
+
+======================================================================
+📊 DATA QUALITY & FOREIGN KEY COVERAGE
+======================================================================
+Total Records................. 10955
+Order Key Coverage............ 100.0%
+Product Key Coverage.......... 100.0%
+Customer Key Coverage......... 100.0%
+Time Key Coverage............. 100.0%
+Product Join Success.......... 100.0%
+Order Join Success............ 100.0%
+Customer Join Success......... 99.0%
+Time Join Success............. 100.0%
+
+======================================================================
+💰 SUMMARY SALES KPIs
+======================================================================
+Total Sales Revenue (Completed):...... ₱ 3,535,671.86
+Number of Completed Orders:........... 7,169
+Total Units Sold:..................... 10,293
+Average Order Value (AOV):............ ₱ 493.19
+
+======================================================================
+📈 ORDER RATE KPIs
+======================================================================
+Total Orders (All Statuses):.......... 7,669
+Cancelled Orders Rate:................ 5.35%
+Fulfillment Rate (Confirmed):......... 93.48%
+
+Order Status Distribution:
+  confirmed................ 7,169 (93.5%)
+  canceled................. 410 (5.3%)
+  shipped_back_success..... 84 (1.1%)
+  lost_by_3pl.............. 5 (0.1%)
+  returned................. 1 (0.0%)
+
+======================================================================
+🏆 TOP 5 SELLING PRODUCTS
+======================================================================
+
+[A] Top 5 Products by Total Units Sold:
+  1Liter L.A. Collections SHANGRI-LA Hotel 6,582 units
+  1 Liter L.A. Collections Fresh Bamboo Wa 1,125 units
+  1 LITER L.A. COLLECTIONS OKADA Hotel Dif 581 units
+  L.A. Collections Lavender Humidifer / Di 388 units
+  1L Solaire Humidifier Scent/ Diffuser Sc 308 units
+
+[B] Top 5 Products by Total Revenue:
+  1Liter L.A. Collections SHANGRI-LA Hotel ₱ 2,148,189.68
+  1 Liter L.A. Collections Fresh Bamboo Wa ₱ 335,104.19
+  1 LITER L.A. COLLECTIONS OKADA Hotel Dif ₱ 190,389.95
+  L.A. Collections Lavender Humidifer / Di ₱ 128,243.70
+  1L Solaire Humidifier Scent/ Diffuser Sc ₱ 99,665.44
+
+======================================================================
+🌍 TOP 10 CUSTOMER LOCATIONS (by Orders)
+======================================================================
+  Quezon City........................ 822 orders
+  Pasig City......................... 311 orders
+  Makati City........................ 248 orders
+  Paranaque City..................... 233 orders
+  Taguig City........................ 231 orders
+  Mandaluyong City................... 195 orders
+  Bacoor............................. 183 orders
+  Las Pinas City..................... 174 orders
+  Caloocan City...................... 174 orders
+  Imus............................... 153 orders
+
+======================================================================
+📅 SALES BY TIME PERIOD
+======================================================================
+  2022 December.... ₱ 5,258.75 (14 orders)
+  2022 November.... ₱ 31,427.50 (73 orders)
+  2022 October..... ₱ 19,053.25 (44 orders)
+  2023 April....... ₱ 49,740.13 (112 orders)
+  2023 August...... ₱ 92,700.09 (208 orders)
+  2023 December.... ₱ 159,809.26 (367 orders)
+  2023 February.... ₱ 54,131.70 (121 orders)
+  2023 January..... ₱ 24,849.83 (56 orders)
+  2023 July........ ₱ 116,372.48 (250 orders)
+  2023 June........ ₱ 136,647.06 (330 orders)
+  2023 March....... ₱ 69,908.00 (168 orders)
+  2023 May......... ₱ 101,347.32 (240 orders)
+  2023 November.... ₱ 133,436.05 (272 orders)
+  2023 October..... ₱ 143,982.08 (352 orders)
+  2023 September... ₱ 137,846.14 (321 orders)
+  2024 April....... ₱ 152,242.74 (370 orders)
+  2024 August...... ₱ 143,155.81 (305 orders)
+  2024 December.... ₱ 177,211.69 (362 orders)
+  2024 February.... ₱ 107,034.68 (219 orders)
+  2024 January..... ₱ 136,425.52 (287 orders)
+  2024 July........ ₱ 112,583.43 (240 orders)
+  2024 June........ ₱ 106,378.66 (243 orders)
+  2024 March....... ₱ 116,827.79 (221 orders)
+  2024 May......... ₱ 123,544.00 (248 orders)
+  2024 November.... ₱ 133,742.43 (300 orders)
+  2024 October..... ₱ 102,557.30 (202 orders)
+  2024 September... ₱ 125,282.10 (290 orders)
+  2025 April....... ₱ 101,901.46 (176 orders)
+  2025 February.... ₱ 146,159.89 (330 orders)
+  2025 January..... ₱ 116,812.49 (215 orders)
+  2025 March....... ₱ 129,492.03 (233 orders)
+
+======================================================================
+✅ ANALYTICS COMPLETED SUCCESSFULLY
+======================================================================
