@@ -7,6 +7,9 @@ Data Sources:
 - lazada_productitem_raw.json
 
 Target Schema: Dim_Product and Dim_Product_Variant tables
+
+product_key: Internal surrogate ID in data type FLOAT64 (sequential) then concat '.1' cast to float (.1 means from Lazada, example 1.1, 2.1, 3.1, ...)
+product_variant_key: Internal surrogate ID in data type FLOAT64 (sequential) then concat '.1' cast to float (.1 means from Lazada, example 1.1, 2.1, 3.1, ...)
 """
 
 import pandas as pd
@@ -255,7 +258,9 @@ def harmonize_dim_product():
 
     if all_products:
         dim_product_df = pd.DataFrame(all_products)
-        dim_product_df['product_key'] = range(1, len(dim_product_df) + 1)
+        # Generate product_key with .1 suffix for Lazada sources
+        base_keys = range(1, len(dim_product_df) + 1)
+        dim_product_df['product_key'] = [float(f"{key}.1") for key in base_keys]
         dim_product_df = apply_data_types(dim_product_df, 'dim_product')
         
         # Create a lookup map for safe variant extraction (item_id -> product_key)
@@ -272,9 +277,9 @@ def harmonize_dim_product():
                 product_key = key_lookup[item_id]
                 variants = extract_product_variants(product, product_key)
                 
-                # Add variant keys
+                # Add variant keys with .1 suffix for Lazada sources
                 for variant in variants:
-                    variant['variant_key'] = variant_key_counter
+                    variant['variant_key'] = float(f"{variant_key_counter}.1")
                     variant_key_counter += 1
                 
                 all_variants.extend(variants)
@@ -282,6 +287,8 @@ def harmonize_dim_product():
         # Convert variants to DataFrame
         if all_variants:
             dim_product_variant_df = pd.DataFrame(all_variants)
+            # Rename variant_key to product_variant_key to match schema
+            dim_product_variant_df = dim_product_variant_df.rename(columns={'variant_key': 'product_variant_key'})
             dim_product_variant_df = apply_data_types(dim_product_variant_df, 'dim_product_variant')
         
         print(f"✅ Harmonized {len(dim_product_df)} products and {len(dim_product_variant_df)} variants")
@@ -294,7 +301,7 @@ def harmonize_dim_product():
         
         if not dim_product_variant_df.empty:
             print("\n📋 Sample of harmonized variant data (Dim_Product_Variant):")
-            variant_cols = ['variant_key', 'product_key', 'platform_sku_id', 'variant_attribute_1', 'variant_attribute_2', 'variant_attribute_3']
+            variant_cols = ['product_variant_key', 'product_key', 'platform_sku_id', 'variant_attribute_1', 'variant_attribute_2', 'variant_attribute_3']
             available_variant_cols = [col for col in variant_cols if col in dim_product_variant_df.columns]
             print(dim_product_variant_df[available_variant_cols].head(3).to_string(index=False))
         

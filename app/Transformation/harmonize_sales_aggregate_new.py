@@ -44,7 +44,7 @@ def generate_sales_aggregate(dim_time, dim_customer, dim_product, fact_orders):
     sales_agg = fact_orders.groupby([
         'time_key', 'platform_key', 'customer_key', 'product_key'
     ]).agg({
-        'orders_key': 'nunique',
+        'order_key': 'nunique',
         'item_quantity': 'sum',
         'paid_price': 'sum',
         'voucher_platform_amount': 'sum',
@@ -133,20 +133,51 @@ def main():
         # Step 4: Validate results
         validate_sales_aggregate(sales_agg, fact_orders)
         
-        # Step 5: Save to CSV
+        # Step 5: Save to CSV with error handling
         output_path = os.path.join(os.path.dirname(__file__), '..', 'Transformed', 'fact_sales_aggregate.csv')
-        sales_agg.to_csv(output_path, index=False)
-        print(f"\n💾 Step 5: Saved to {output_path}")
+        
+        # Try to save the file with multiple attempts
+        max_attempts = 5
+        saved_successfully = False
+        
+        for attempt in range(max_attempts):
+            try:
+                # If file exists and is locked, wait and retry
+                if os.path.exists(output_path) and attempt > 0:
+                    import time
+                    print(f"⚠️ File is locked, waiting 3 seconds... (attempt {attempt + 1})")
+                    time.sleep(3)
+                
+                # Save the file with the exact required filename
+                sales_agg.to_csv(output_path, index=False)
+                print(f"\n💾 Step 5: Saved to {output_path}")
+                saved_successfully = True
+                break
+                
+            except PermissionError as pe:
+                if attempt < max_attempts - 1:
+                    print(f"⚠️ Permission error (attempt {attempt + 1}): File may be open in Excel or another application")
+                    print(f"   Please close the file and the script will retry automatically...")
+                    import time
+                    time.sleep(5)  # Wait longer for user to close the file
+                else:
+                    print(f"\n❌ Failed to save after {max_attempts} attempts")
+                    print(f"💡 Please ensure fact_sales_aggregate.csv is not open in Excel or another application")
+                    print(f"   The file must be saved as 'fact_sales_aggregate.csv' for the loading script to work")
+                    raise pe
+        
+        if not saved_successfully:
+            raise Exception("Failed to save the file after multiple attempts")
         
         # Summary statistics
         print(f"\n📊 SUMMARY STATISTICS:")
         print(f"   📋 Total records: {len(sales_agg):,}")
         print(f"   📅 Date range: {sales_agg['time_key'].min()} to {sales_agg['time_key'].max()}")
-        print(f"   💰 Total gross revenue: ${sales_agg['gross_revenue'].sum():,.2f}")
-        print(f"   💸 Total discounts: ${sales_agg['total_discounts'].sum():,.2f}")
-        print(f"   💵 Total net sales: ${sales_agg['net_sales'].sum():,.2f}")
+        print(f"   💰 Total gross revenue: ₱{sales_agg['gross_revenue'].sum():,.2f}")
+        print(f"   💸 Total discounts: ₱{sales_agg['total_discounts'].sum():,.2f}")
+        print(f"   💵 Total net sales: ₱{sales_agg['net_sales'].sum():,.2f}")
         print(f"   📦 Total items sold: {sales_agg['total_items_sold'].sum():,}")
-        print(f"   🚚 Total shipping revenue: ${sales_agg['shipping_revenue'].sum():,.2f}")
+        print(f"   🚚 Total shipping revenue: ₱{sales_agg['shipping_revenue'].sum():,.2f}")
         
         print(f"\n✅ Sales aggregate harmonization completed successfully!")
         print(f"📅 Finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")

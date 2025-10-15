@@ -6,7 +6,7 @@ This module processes Lazada order line items and harmonizes them into the Fact_
 The fact table contains one record per individual item (not aggregated by quantity).
 
 Key Requirements:
-- Uses orders_key from Dim_Order (foreign key relationship)
+- Uses order_key from Dim_Order (foreign key relationship)
 - Each order can have multiple line items (multiple products)
 - Creates individual records for each item (if quantity=3, creates 3 records with quantity=1 each)
 - Maps platform-specific fields to unified schema
@@ -14,7 +14,7 @@ Key Requirements:
 
 Field Mappings for Fact_Orders:
 - order_item_key: Generated unique identifier for each individual item
-- orders_key: Foreign key to Dim_Order.orders_key (matched by platform_order_id)
+- order_key: Foreign key to Dim_Order.order_key (matched by platform_order_id)
 - product_key: Foreign key to Dim_Product.product_key (matched by product_item_id)
 - product_variant_key: Foreign key to Dim_Product_Variant (matched by platform_sku_id)
 - time_key: Foreign key to Dim_Time (derived from order_date, format YYYYMMDD)
@@ -30,6 +30,7 @@ Field Mappings for Fact_Orders:
 
 import pandas as pd
 import numpy as np
+import re
 from datetime import datetime, date
 import json
 import os
@@ -82,7 +83,7 @@ def load_lazada_order_items_raw():
 
 
 def load_dim_order():
-    """Load the harmonized Dim_Order table to get orders_key mappings"""
+    """Load the harmonized Dim_Order table to get order_key mappings"""
     csv_path = os.path.join(os.path.dirname(__file__), '..', 'Transformed', 'dim_order.csv')
     
     try:
@@ -124,13 +125,13 @@ def load_dim_product():
 
 
 def load_dim_product_variant():
-    """Load the harmonized Dim_Product_Variant table to get variant_key mappings"""
+    """Load the harmonized Dim_Product_Variant table to get product_variant_key mappings"""
     csv_path = os.path.join(os.path.dirname(__file__), '..', 'Transformed', 'dim_product_variant.csv')
     
     try:
         dim_variant_df = pd.read_csv(csv_path)
         # Rename to match fact table column name
-        dim_variant_df = dim_variant_df.rename(columns={'variant_key': 'product_variant_key'})
+        dim_variant_df = dim_variant_df.rename(columns={'product_variant_key': 'product_variant_key'})
         print(f"✓ Loaded {len(dim_variant_df)} records from Dim_Product_Variant")
         return dim_variant_df
     except FileNotFoundError:
@@ -223,7 +224,7 @@ def extract_order_items_from_transformed_data(order_items_data, orders_data, dim
     for _, order_row in dim_order_df.iterrows():
         try:
             platform_order_id = str(order_row['platform_order_id'])
-            orders_key = order_row['orders_key']
+            order_key = order_row['order_key']
             total_item_count = int(order_row.get('total_item_count', 1))
             order_date = order_row['order_date']
             
@@ -243,11 +244,21 @@ def extract_order_items_from_transformed_data(order_items_data, orders_data, dim
             
             # Try to find customer by looking for customers in the same city/area
             if not dim_customer_df.empty and shipping_city:
-                customer_matches = dim_customer_df[
-                    dim_customer_df['customer_city'].str.contains(shipping_city, case=False, na=False)
-                ]
-                if not customer_matches.empty:
-                    customer_key = customer_matches.iloc[0]['customer_key']
+                try:
+                    # Escape special regex characters and make it case-insensitive
+                    escaped_city = re.escape(str(shipping_city))
+                    customer_matches = dim_customer_df[
+                        dim_customer_df['customer_city'].str.contains(escaped_city, case=False, na=False, regex=True)
+                    ]
+                    if not customer_matches.empty:
+                        customer_key = customer_matches.iloc[0]['customer_key']
+                except Exception as e:
+                    # If regex fails, try simple string comparison
+                    customer_matches = dim_customer_df[
+                        dim_customer_df['customer_city'].str.lower().str.strip() == str(shipping_city).lower().strip()
+                    ]
+                    if not customer_matches.empty:
+                        customer_key = customer_matches.iloc[0]['customer_key']
             
             # If no customer match found, create a placeholder
             if customer_key is None:
@@ -296,7 +307,7 @@ def extract_order_items_from_transformed_data(order_items_data, orders_data, dim
                                     ]
                                     if not variant_matches.empty:
                                         # Use the first variant for this product
-                                        product_variant_key = variant_matches.iloc[0]['variant_key']
+                                        product_variant_key = variant_matches.iloc[0]['product_variant_key']
                         
                         # If no product found by name, try by SKU or other identifiers
                         if product_key is None:
@@ -307,7 +318,7 @@ def extract_order_items_from_transformed_data(order_items_data, orders_data, dim
                                     dim_variant_df['platform_sku_id'].astype(str) == sku_id
                                 ]
                                 if not variant_matches.empty:
-                                    product_variant_key = variant_matches.iloc[0]['variant_key']
+                                    product_variant_key = variant_matches.iloc[0]['product_variant_key']
                                     product_key = variant_matches.iloc[0]['product_key']
                         
                         # If still no product found, use default
@@ -320,7 +331,7 @@ def extract_order_items_from_transformed_data(order_items_data, orders_data, dim
                                         dim_variant_df['product_key'] == product_key
                                     ]
                                     if not default_variant.empty:
-                                        product_variant_key = default_variant.iloc[0]['variant_key']
+                                        product_variant_key = default_variant.iloc[0]['product_variant_key']
                             else:
                                 continue  # Skip if no products available
                         
@@ -331,7 +342,7 @@ def extract_order_items_from_transformed_data(order_items_data, orders_data, dim
                         for individual_item in range(item_quantity):
                             fact_record = {
                                 'order_item_key': f"OI{order_item_key_counter:08d}",
-                                'orders_key': orders_key,
+                                'order_key': order_key,
                                 'product_key': product_key,
                                 'product_variant_key': product_variant_key,  # Will be None if not found
                                 'time_key': time_key,
@@ -364,13 +375,13 @@ def extract_order_items_from_transformed_data(order_items_data, orders_data, dim
                             dim_variant_df['product_key'] == product_key
                         ]
                         if not variant_matches.empty:
-                            product_variant_key = variant_matches.iloc[0]['variant_key']
+                            product_variant_key = variant_matches.iloc[0]['product_variant_key']
                     
                     # Create individual records based on total_item_count
                     for individual_item in range(total_item_count):
                         fact_record = {
                             'order_item_key': f"OI{order_item_key_counter:08d}",
-                            'orders_key': orders_key,
+                            'order_key': order_key,
                             'product_key': product_key,
                             'product_variant_key': product_variant_key,
                             'time_key': time_key,
@@ -422,7 +433,7 @@ def extract_order_items_from_transformed_data(order_items_data, orders_data, dim
     # Create lookup dictionaries for foreign key mapping
     order_key_lookup = dict(zip(
         dim_order_df['platform_order_id'].astype(str), 
-        dim_order_df['orders_key']
+        dim_order_df['order_key']
     )) if not dim_order_df.empty else {}
     
     # Also create order date lookup for time_key generation
@@ -471,10 +482,10 @@ def extract_order_items_from_transformed_data(order_items_data, orders_data, dim
             platform_order_id = str(order_record.get('order_id', ''))
             order_items = order_record.get('order_items', [])
             
-            # Get orders_key from dimension table
-            orders_key = order_key_lookup.get(platform_order_id)
-            if orders_key is None:
-                print(f"⚠️ Warning: Could not find orders_key for order_id {platform_order_id}")
+            # Get order_key from dimension table
+            order_key = order_key_lookup.get(platform_order_id)
+            if order_key is None:
+                print(f"⚠️ Warning: Could not find order_key for order_id {platform_order_id}")
                 continue
             
             # Get order date for time_key
@@ -538,7 +549,7 @@ def extract_order_items_from_transformed_data(order_items_data, orders_data, dim
                     for individual_item in range(item_quantity):
                         fact_record = {
                             'order_item_key': f"OI{order_item_key_counter:08d}",  # Generate unique key
-                            'orders_key': orders_key,
+                            'order_key': order_key,
                             'product_key': product_key,
                             'product_variant_key': product_variant_key if product_variant_key else None,
                             'time_key': time_key,
@@ -634,7 +645,7 @@ def harmonize_fact_orders():
     # Load all dimension tables for foreign key relationships
     dim_order_df = load_dim_order()
     if dim_order_df.empty:
-        print("❌ No Dim_Order data available - required for orders_key mapping")
+        print("❌ No Dim_Order data available - required for order_key mapping")
         return get_empty_dataframe('fact_orders')
     
     dim_customer_df = load_dim_customer()
@@ -671,7 +682,7 @@ def harmonize_fact_orders():
         
         # Foreign key relationship statistics
         print(f"\n🔗 Foreign Key Coverage:")
-        print(f"   • Orders with valid orders_key: {fact_orders_df['orders_key'].notna().sum()} / {len(fact_orders_df)}")
+        print(f"   • Orders with valid order_key: {fact_orders_df['order_key'].notna().sum()} / {len(fact_orders_df)}")
         print(f"   • Orders with valid customer_key: {fact_orders_df['customer_key'].notna().sum()} / {len(fact_orders_df)}")
         print(f"   • Orders with valid product_key: {fact_orders_df['product_key'].notna().sum()} / {len(fact_orders_df)}")
         print(f"   • Orders with valid product_variant_key: {fact_orders_df['product_variant_key'].notna().sum()} / {len(fact_orders_df)}")
@@ -802,7 +813,7 @@ def display_fact_orders_summary(fact_orders_df):
         
         # Foreign key relationship statistics
         print(f"\n🔗 Foreign Key Coverage:")
-        print(f"   • Orders with valid orders_key: {fact_orders_df['orders_key'].notna().sum()} / {len(fact_orders_df)}")
+        print(f"   • Orders with valid order_key: {fact_orders_df['order_key'].notna().sum()} / {len(fact_orders_df)}")
         print(f"   • Orders with valid customer_key: {fact_orders_df['customer_key'].notna().sum()} / {len(fact_orders_df)}")
         print(f"   • Orders with valid product_key: {fact_orders_df['product_key'].notna().sum()} / {len(fact_orders_df)}")
         print(f"   • Orders with valid product_variant_key: {fact_orders_df['product_variant_key'].notna().sum()} / {len(fact_orders_df)}")

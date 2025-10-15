@@ -143,7 +143,7 @@ DIM_PRODUCT_VARIANT_COLUMNS = [
 
 # Order Dimension
 DIM_ORDER_COLUMNS = [
-    'orders_key', 'platform_order_id', 'order_status', 'order_date',
+    'order_key', 'platform_order_id', 'order_status', 'order_date',
     'updated_at', 'price_total', 'total_item_count', 'payment_method',
     'shipping_city', 'platform_key'
 ]
@@ -154,7 +154,7 @@ DIM_ORDER_COLUMNS = [
 
 # Fact Orders Table
 FACT_ORDERS_COLUMNS = [
-    'order_item_key', 'orders_key', 'product_key', 'product_variant_key', 'time_key',
+    'order_item_key', 'order_key', 'product_key', 'product_variant_key', 'time_key',
     'customer_key', 'platform_key', 'item_quantity', 'paid_price',
     'original_unit_price', 'voucher_platform_amount', 'voucher_seller_amount',
     'shipping_fee_paid_by_buyer'
@@ -346,7 +346,7 @@ LAZADA_TO_UNIFIED_MAPPING = {
     "skus[].Variation1": "variant_attribute_1",  # FALLBACK: Used if saleProp is empty
     
     # --- Dim_Order ---
-    "id": "orders_key",  # not pulled from API, generated internally incremental
+    "id": "order_key",  # not pulled from API, generated internally incremental
     "order_id": "platform_order_id", 
     "statuses": "order_status",  # Get status in index 0 for the order status
     "created_at": "order_date",  # Convert to date only (YYYY-MM-DD)
@@ -367,7 +367,7 @@ LAZADA_TO_UNIFIED_MAPPING = {
     
     # --- Fact_Orders ---
     "order_item_key": "order_item_key",  # Generated internally incremental
-    "orders_key": "orders_key",  # Foreign key to dim_order connected by order_id
+    "order_key": "order_key",  # Foreign key to dim_order connected by order_id
     "product_key": "product_key",  # Foreign key to dim_product
     "product_variant_key": "product_variant_key",  # Foreign key to dim_product_variant
     "time_key": "time_key",  # Foreign key to dim_time based on order_date
@@ -408,7 +408,7 @@ COLUMN_DATA_TYPES = {
         'is_mega_sale_day': 'bool'
     },
     'dim_customer': {
-        'customer_key': 'int',
+        'customer_key': 'float64',  # Changed to float64 to handle NaN for empty DataFrame
         'platform_customer_id': 'str',
         'customer_city': 'str',
         'buyer_segment': 'str',
@@ -418,7 +418,7 @@ COLUMN_DATA_TYPES = {
         'platform_key': 'int'
     },
     'dim_product': {
-        'product_key': 'int',
+        'product_key': 'float64',  # Changed to float64 to handle NaN for empty DataFrame
         'product_item_id': 'str',
         'product_name': 'str',
         'product_sku_base': 'str',
@@ -429,8 +429,8 @@ COLUMN_DATA_TYPES = {
         'platform_key': 'int'
     },
     'dim_product_variant': {
-        'product_variant_key': 'int',
-        'product_key': 'int',
+        'product_variant_key': 'float64',  # Changed to float64 to handle NaN for empty DataFrame
+        'product_key': 'float64',  # Changed to float64 to match the .1 suffix pattern
         'platform_sku_id': 'str',
         'variant_sku': 'str',
         'variant_attribute_1': 'str',
@@ -439,7 +439,7 @@ COLUMN_DATA_TYPES = {
         'platform_key': 'int'
     },
     'dim_order': {
-        'orders_key': 'int',
+        'order_key': 'float64',  # Changed to float64 to handle NaN for empty DataFrame    
         'platform_order_id': 'str',
         'order_status': 'str',
         'order_date': 'datetime64[D]',  # Date only, not datetime
@@ -451,12 +451,12 @@ COLUMN_DATA_TYPES = {
         'platform_key': 'int'
     },
     'fact_orders': {
-        'order_item_key': 'str',
-        'orders_key': 'int',
-        'product_key': 'int',
-        'product_variant_key': 'int',
+        'order_item_key': 'float64',  # Changed to float64 to handle NaN for empty DataFrame
+        'order_key': 'float64',
+        'product_key': 'float64',
+        'product_variant_key': 'float64',
         'time_key': 'int',
-        'customer_key': 'int',
+        'customer_key': 'float64',
         'platform_key': 'int',
         'item_quantity': 'int',
         'paid_price': 'float64',  # Decimal equivalent in pandas
@@ -466,7 +466,7 @@ COLUMN_DATA_TYPES = {
         'shipping_fee_paid_by_buyer': 'float64'  # Decimal equivalent in pandas
     },
     'fact_traffic': {
-        'traffic_event_key': 'int64',  # Bigint equivalent in pandas
+        'traffic_event_key': 'float64',  # Bigint equivalent in pandas
         'time_key': 'int',
         'platform_key': 'int',
         'clicks': 'int',
@@ -475,8 +475,8 @@ COLUMN_DATA_TYPES = {
     'fact_sales_aggregate': {
         'time_key': 'int',
         'platform_key': 'int',
-        'customer_key': 'int',
-        'product_key': 'int',
+        'customer_key': 'float64',
+        'product_key': 'float64', 
         'total_orders': 'int',
         'total_items_sold': 'int',
         'gross_revenue': 'float64',  # Decimal equivalent in pandas

@@ -57,9 +57,9 @@ CREATE TABLE "Dim_Product_Variant" (
 CREATE TABLE "Dim_Order" (
   "order_key" int PRIMARY KEY NOT NULL,
   "platform_order_id" varchar NOT NULL,
-  "order_status" varchar NOT NULL,
-  "order_date" date NOT NULL,
-  "updated_at" date NOT NULL,
+  "order_status" varchar,
+  "order_date" date,
+  "updated_at" date,
   "price_total" decimal,
   "total_item_count" int,
   "payment_method" varchar,
@@ -69,7 +69,7 @@ CREATE TABLE "Dim_Order" (
 
 CREATE TABLE "Fact_Orders" (
   "order_item_key" int PRIMARY KEY NOT NULL,
-  "orders_key" int NOT NULL,
+  "order_key" int NOT NULL,
   "product_key" int NOT NULL,
   "product_variant_key" int NOT NULL,
   "time_key" int NOT NULL,
@@ -143,7 +143,7 @@ COMMENT ON COLUMN "Dim_Product"."product_price" IS 'price for lazada // original
 
 COMMENT ON COLUMN "Dim_Product"."product_rating" IS 'product_rating for lazada // rating_star for shopee';
 
-COMMENT ON COLUMN "Dim_Order"."orders_key" IS 'Surrogate Primary Key';
+COMMENT ON COLUMN "Dim_Order"."order_key" IS 'Surrogate Primary Key';
 
 COMMENT ON COLUMN "Dim_Order"."platform_order_id" IS 'Lazada: order_id; Shopee: order_sn';
 
@@ -159,7 +159,7 @@ COMMENT ON COLUMN "Dim_Order"."total_item_count" IS 'Lazada: Total Number of Ite
 
 COMMENT ON COLUMN "Fact_Orders"."order_item_key" IS 'Primary Key. Your unique Line Item ID (Lazada/Shopee order_item_id or aggregated ID).';
 
-COMMENT ON COLUMN "Fact_Orders"."orders_key" IS 'FK to Dim_Order (Order Header).';
+COMMENT ON COLUMN "Fact_Orders"."order_key" IS 'FK to Dim_Order (Order Header).';
 
 COMMENT ON COLUMN "Fact_Orders"."product_key" IS 'FK to Dim_Product (SKU/Model ID). **TYPE FIXED: MUST BE INT**';
 
@@ -193,7 +193,7 @@ COMMENT ON COLUMN "Fact_Sales_Aggregate"."customer_key" IS 'FK to Dim_Customer. 
 
 COMMENT ON COLUMN "Fact_Sales_Aggregate"."product_key" IS 'FK to Dim_Product. Enables slicing by product category, status, etc.';
 
-COMMENT ON COLUMN "Fact_Sales_Aggregate"."total_orders" IS 'Count of distinct orders_key in this segment (not item count).';
+COMMENT ON COLUMN "Fact_Sales_Aggregate"."total_orders" IS 'Count of distinct order_key in this segment (not item count).';
 
 COMMENT ON COLUMN "Fact_Sales_Aggregate"."total_items_sold" IS 'Sum of Fact_Orders.item_quantity.';
 
@@ -209,7 +209,7 @@ ALTER TABLE "Fact_Sales_Aggregate" ADD FOREIGN KEY ("time_key") REFERENCES "Dim_
 
 ALTER TABLE "Fact_Sales_Aggregate" ADD FOREIGN KEY ("platform_key") REFERENCES "Dim_Platform" ("platform_key");
 
-ALTER TABLE "Fact_Orders" ADD FOREIGN KEY ("orders_key") REFERENCES "Dim_Order" ("orders_key");
+ALTER TABLE "Fact_Orders" ADD FOREIGN KEY ("order_key") REFERENCES "Dim_Order" ("order_key");
 
 ALTER TABLE "Fact_Orders" ADD FOREIGN KEY ("product_key") REFERENCES "Dim_Product" ("product_key");
 

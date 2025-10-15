@@ -44,7 +44,7 @@ def generate_sales_aggregate(dim_time, dim_customer, dim_product, fact_orders):
     sales_agg = fact_orders.groupby([
         'time_key', 'platform_key', 'customer_key', 'product_key'
     ]).agg({
-        'orders_key': 'nunique',
+        'order_key': 'nunique',
         'item_quantity': 'sum',
         'paid_price': 'sum',
         'voucher_platform_amount': 'sum',

@@ -7,6 +7,7 @@ Data Sources:
 - lazada_multiple_order_items_raw.json
 
 Target Schema: Dim_Order table structure
+order_key: Internal surrogate ID in data type FLOAT64 (sequential) then concat '.1' cast to float (.1 means from Lazada, example 1.1, 2.1, 3.1, ...)
 """
 
 import pandas as pd
@@ -137,7 +138,7 @@ def harmonize_order_record(order_data, source_file):
     
     # Map using LAZADA_TO_UNIFIED_MAPPING structure
     harmonized_record = {
-        'orders_key': None,  # Will be generated as surrogate key
+        'order_key': None,  # Will be generated as surrogate key
         'platform_order_id': str(order_data.get('order_id', '')),
         'order_status': order_status,
         'order_date': order_date,
@@ -190,8 +191,9 @@ def harmonize_dim_order():
         orders_list = list(all_orders.values())
         dim_order_df = pd.DataFrame(orders_list)
         
-        # Generate surrogate keys (orders_key)
-        dim_order_df['orders_key'] = range(1, len(dim_order_df) + 1)
+        # Generate surrogate keys (order_key) with .1 suffix for Lazada sources
+        base_keys = range(1, len(dim_order_df) + 1)
+        dim_order_df['order_key'] = [float(f"{key}.1") for key in base_keys]
         
         # Add platform_key for Lazada (always 1)
         dim_order_df['platform_key'] = 1
@@ -209,7 +211,7 @@ def harmonize_dim_order():
         
         # Show sample of data
         print("\n📋 Sample of harmonized data:")
-        sample_cols = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 'price_total', 'total_item_count']
+        sample_cols = ['order_key', 'platform_order_id', 'order_status', 'order_date', 'price_total', 'total_item_count']
         available_cols = [col for col in sample_cols if col in dim_order_df.columns]
         print(dim_order_df[available_cols].head(3).to_string(index=False))
         

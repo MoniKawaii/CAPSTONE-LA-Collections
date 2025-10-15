@@ -6,7 +6,7 @@ This module processes Lazada orders and extracts customer information to create
 the Dim_Customer dimension table with proper customer segmentation and analytics.
 
 Key Requirements from Schema:
-- customer_key: Internal surrogate ID (sequential)
+- customer_key: Internal surrogate ID in data type FLOAT64 (sequential) then concat '.1' cast to float (.1 means from Lazada, example 1.1, 2.1, 3.1, ...)
 - platform_customer_id: Generated synthetic ID (Lazada doesn't provide this)
 - customer_city: Derived from shipping address city
 - buyer_segment: Calculated as 'New Buyer' or 'Returning Buyer'
@@ -192,7 +192,7 @@ def extract_customers_from_orders(orders_data):
             buyer_segment = "New Buyer" if total_orders == 1 else "Returning Buyer"
             
             customer_record = {
-                'customer_key': customer_key_counter,
+                'customer_key': float(f"{customer_key_counter}.1"),  # Add .1 suffix for Lazada sources
                 'platform_customer_id': platform_customer_id,
                 'customer_city': customer_info['city'],
                 'buyer_segment': buyer_segment,
