@@ -145,7 +145,8 @@ def harmonize_order_record(order_data, source_file):
         'price_total': price_total,
         'total_item_count': order_data.get('items_count', 0),
         'payment_method': order_data.get('payment_method', ''),
-        'shipping_city': shipping_city
+        'shipping_city': shipping_city,
+        'platform_key': None  # Lazada is always platform_key 1, Shopee is 2
     }
     
     return harmonized_record

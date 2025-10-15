@@ -328,21 +328,22 @@ def validate_config():
 # =============================================================================
 
 LAZADA_TO_UNIFIED_MAPPING = {
-    # --- Dim_Product ---
+    # --- Dim_Product (Sources from root object) ---
     "item_id": "product_item_id",
-    "name": "product_name",
-    "primary_category_name": "product_category",
-    "status": "product_status",
-    "price": "product_price",  # Base price
-    "product_rating": "product_rating",
-    "platform_key": "platform_key",  # Always 1 for Lazada
+    "attributes.name": "product_name",
+    "primary_category": "product_category", # RAW FIELD: Used as input for get_category_name() function
+    "statuses[]": "product_status", # gets the statuses at 0 index
+    "skus[].price": "product_price",      # DERIVED: Base price calculated via extract_price_from_skus()
+    "skus[].SellerSku": "product_sku_base", # DERIVED: Base SKU extracted via extract_base_sku()
+    # product_rating is not currently mapped from source and is set to None. SO have it NULL for now
+    "platform_key": "platform_key",
     
-    # --- Dim_Product_Variant (from skus array) ---
-    "SkuId": "platform_sku_id",  # From skus[].SkuId
-    "SellerSku": "variant_sku",  # From skus[].SellerSku
-    "Variation1": "variant_attribute_1",  
-    "Variation2": "variant_attribute_2",  
-    "Variation3": "variant_attribute_3",  
+    # --- Dim_Product_Variant (Sources from skus[] array object) ---
+    "skus[].SkuId": "platform_sku_id",
+    "skus[].SellerSku": "variant_sku",
+    "skus[].price": "variant_price", # NOTE: This data is extracted but NOT saved to dim_product_variant per new schema
+    "skus[].saleProp": "variant_attribute_1_2_3", # DERIVED: Extracted from values in saleProp map
+    "skus[].Variation1": "variant_attribute_1",  # FALLBACK: Used if saleProp is empty
     
     # --- Dim_Order ---
     "id": "orders_key",  # not pulled from API, generated internally incremental
@@ -363,6 +364,21 @@ LAZADA_TO_UNIFIED_MAPPING = {
     "customer_since": "customer_since",  # Calculated: Earliest order_date for platform_customer_id
     "last_order_date": "last_order_date",  # Calculated: Latest order_date for platform_customer_id
     "platform_key": "platform_key",  # Always 1 for Lazada
+    
+    # --- Fact_Orders ---
+    "order_item_key": "order_item_key",  # Generated internally incremental
+    "orders_key": "orders_key",  # Foreign key to dim_order connected by order_id
+    "product_key": "product_key",  # Foreign key to dim_product
+    "product_variant_key": "product_variant_key",  # Foreign key to dim_product_variant
+    "time_key": "time_key",  # Foreign key to dim_time based on order_date
+    "customer_key": "customer_key",  # Foreign key to dim_customer
+    "platform_key": "platform_key",  # Always 1 for Lazada
+    "item_quantity": "item_quantity",  # From order_items[].quantity
+    "paid_price": "paid_price",  # From order_items[].paid_price or
+    "price": "original_unit_price",  # From order_items[].price
+    "voucher_platform": "voucher_platform_amount",  # From order_items[].voucher_platform
+    "voucher_selleramount": "voucher_seller_amount",  # From order_items[].voucher_seller
+    "shipping_fee": "shipping_fee_paid_by_buyer",  # From order_items[].shipping_fee 
     
 }
 
