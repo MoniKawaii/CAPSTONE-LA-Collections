@@ -22,7 +22,8 @@ SHOPEE_PARTNER_KEY = os.getenv("SHOPEE_PARTNER_KEY")
 SHOPEE_REDIRECT_URL = os.getenv("SHOPEE_REDIRECT_URL")
 
 # Use sandbox or production URLs based on an environment variable
-IS_SANDBOX = os.getenv("SHOPEE_API_ENV", "sandbox").lower() == "sandbox"
+# Changed to default to PRODUCTION (live) environment
+IS_SANDBOX = os.getenv("SHOPEE_API_ENV", "production").lower() == "sandbox"
 BASE_URL = "https://partner.test-stable.shopeemobile.com" if IS_SANDBOX else "https://partner.shopeemobile.com"
 
 # API Paths
