@@ -21,10 +21,8 @@ SHOPEE_PARTNER_ID = int(os.getenv("SHOPEE_PARTNER_ID"))
 SHOPEE_PARTNER_KEY = os.getenv("SHOPEE_PARTNER_KEY")
 SHOPEE_REDIRECT_URL = os.getenv("SHOPEE_REDIRECT_URL")
 
-# Use sandbox or production URLs based on an environment variable
-# Changed to default to PRODUCTION (live) environment
-IS_SANDBOX = os.getenv("SHOPEE_API_ENV", "production").lower() == "sandbox"
-BASE_URL = "https://partner.test-stable.shopeemobile.com" if IS_SANDBOX else "https://partner.shopeemobile.com"
+# PRODUCTION ONLY - No sandbox/test mode
+BASE_URL = "https://partner.shopeemobile.com"
 
 # API Paths
 PATH_GET_AUTH_URL = "/api/v2/shop/auth_partner"
@@ -453,7 +451,7 @@ def check_server_timestamp():
 
 def main():
     print("=== Shopee Token Management ===")
-    print("Environment: ", "Sandbox" if IS_SANDBOX else "Production")
+    print("Environment: PRODUCTION")
     
     # Check if essential environment variables are set
     if not all([SHOPEE_PARTNER_ID, SHOPEE_PARTNER_KEY, SHOPEE_REDIRECT_URL]):

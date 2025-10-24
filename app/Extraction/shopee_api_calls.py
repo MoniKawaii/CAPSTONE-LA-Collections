@@ -27,7 +27,7 @@ except ImportError:
         print("Warning: Could not import config. Make sure config.py is accessible.")
         # Define minimal fallbacks if needed
         SHOPEE_TOKENS = {}
-        SHOPEE_BASE_URL = "https://partner.test-stable.shopeemobile.com"
+        SHOPEE_BASE_URL = "https://partner.shopeemobile.com"
 
 class ShopeeDataExtractor:
     """
