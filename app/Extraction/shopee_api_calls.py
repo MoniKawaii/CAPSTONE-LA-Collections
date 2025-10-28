@@ -18,6 +18,7 @@ import requests
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
+<<<<<<< Updated upstream
     from config import SHOPEE_TOKENS, SHOPEE_BASE_URL, DIM_PRODUCT_COLUMNS, DIM_ORDER_COLUMNS, FACT_ORDERS_COLUMNS, FACT_TRAFFIC_COLUMNS, DIM_CUSTOMER_COLUMNS
 except ImportError:
     # Fallback for VS Code or different environments
@@ -28,21 +29,60 @@ except ImportError:
         # Define minimal fallbacks if needed
         SHOPEE_TOKENS = {}
         SHOPEE_BASE_URL = "https://partner.shopeemobile.com"
+=======
+    from config import DIM_PRODUCT_COLUMNS, DIM_ORDER_COLUMNS, FACT_ORDERS_COLUMNS, FACT_TRAFFIC_COLUMNS, DIM_CUSTOMER_COLUMNS
+except ImportError:
+    # Fallback for VS Code or different environments
+    try:
+        from app.config import DIM_PRODUCT_COLUMNS, DIM_ORDER_COLUMNS, FACT_ORDERS_COLUMNS, FACT_TRAFFIC_COLUMNS, DIM_CUSTOMER_COLUMNS
+    except ImportError:
+        print("Warning: Could not import config. Make sure config.py is accessible.")
+        # Define minimal fallbacks if needed
+        DIM_PRODUCT_COLUMNS = []
+        DIM_ORDER_COLUMNS = []
+        FACT_ORDERS_COLUMNS = []
+        FACT_TRAFFIC_COLUMNS = []
+        DIM_CUSTOMER_COLUMNS = []
+>>>>>>> Stashed changes
 
 class ShopeeDataExtractor:
     """
     Shopee API data extraction class with batch processing and JSON storage
+<<<<<<< Updated upstream
     Optimized for API calls with Shopee Open Platform API v2.0
     Mirrors Lazada extraction structure for unified harmonization
     """
     
     def __init__(self):
         self.base_url = SHOPEE_BASE_URL
-        self.partner_id = SHOPEE_TOKENS.get("partner_id", 0)
+        self.partner_id = int(SHOPEE_TOKENS.get("partner_id", 0))
         self.partner_key = SHOPEE_TOKENS.get("partner_key", "")
-        self.shop_id = SHOPEE_TOKENS.get("shop_id", 0)
+        self.shop_id = int(SHOPEE_TOKENS.get("shop_id", 0))
         self.access_token = SHOPEE_TOKENS.get("access_token", "")
         self.refresh_token = SHOPEE_TOKENS.get("refresh_token", "")
+=======
+    Uses Shopee Open Platform API v2.0
+    """
+    
+    def __init__(self):
+        # Load environment variables
+        from dotenv import load_dotenv
+        load_dotenv()
+        
+        # Shopee API Configuration
+        self.partner_id = int(os.getenv("SHOPEE_PARTNER_ID"))
+        self.partner_key = os.getenv("SHOPEE_PARTNER_KEY")
+        self.shop_id = int(os.getenv("SHOPEE_SHOP_ID", 0))
+        
+        # Load tokens from JSON file
+        self.tokens = self._load_tokens()
+        self.access_token = self.tokens.get("access_token", "")
+        self.refresh_token = self.tokens.get("refresh_token", "")
+        
+        # Use sandbox or production URLs
+        is_sandbox = os.getenv("SHOPEE_API_ENV", "sandbox").lower() == "sandbox"
+        self.base_url = "https://partner.test-stable.shopeemobile.com" if is_sandbox else "https://partner.shopeemobile.com"
+>>>>>>> Stashed changes
         
         # API call tracking
         self.api_calls_made = 0
@@ -57,6 +97,21 @@ class ShopeeDataExtractor:
         print(f"✅ Shopee Extractor initialized")
         print(f"📁 Staging directory: {self.staging_dir}")
         print(f"📊 Daily API limit: {self.max_daily_calls}")
+<<<<<<< Updated upstream
+        print(f"🔍 Debug - partner_id type: {type(self.partner_id)}, value: {self.partner_id}")
+        print(f"🔍 Debug - shop_id type: {type(self.shop_id)}, value: {self.shop_id}")
+=======
+    
+    def _load_tokens(self):
+        """Load tokens from JSON file"""
+        token_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'tokens', 'shopee_tokens.json')
+        try:
+            with open(token_file, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"⚠️ Warning: Could not load tokens from {token_file}: {e}")
+            return {}
+>>>>>>> Stashed changes
     
     def _generate_signature(self, path, timestamp, access_token=None, shop_id=None, body=None):
         """Generate HMAC-SHA256 signature for Shopee API calls"""
@@ -79,18 +134,37 @@ class ShopeeDataExtractor:
         return signature
     
     def _make_api_call(self, path, method="GET", body=None, call_type="general"):
+<<<<<<< Updated upstream
         """Make API call with rate limiting and tracking"""
+=======
+        """Make API call with authentication and rate limiting"""
+>>>>>>> Stashed changes
         if self.api_calls_made >= self.max_daily_calls:
             print(f"⚠️ Daily API limit ({self.max_daily_calls}) reached!")
             return None
         
         try:
             timestamp = int(time.time())
+<<<<<<< Updated upstream
+            
+            # Extract base path (without query params) for signature
+            # Shopee signature uses: partner_id + base_path + timestamp + access_token + shop_id
+            base_path = path.split('?')[0]
+            sign = self._generate_signature(base_path, timestamp, self.access_token, self.shop_id, body)
+            
+            # Determine separator - use & if path already has ?, otherwise use ?
+            separator = '&' if '?' in path else '?'
+            
+            # Build URL with common parameters
+            url = (
+                f"{self.base_url}{path}{separator}"
+=======
             sign = self._generate_signature(path, timestamp, self.access_token, self.shop_id, body)
             
             # Build URL with common parameters
             url = (
                 f"{self.base_url}{path}?"
+>>>>>>> Stashed changes
                 f"partner_id={self.partner_id}&"
                 f"timestamp={timestamp}&"
                 f"access_token={self.access_token}&"
@@ -98,6 +172,15 @@ class ShopeeDataExtractor:
                 f"sign={sign}"
             )
             
+<<<<<<< Updated upstream
+            # Debug: Print URL parameters
+            if self.api_calls_made <= 2:  # Only print first 2 calls
+                print(f"🔍 Debug URL - partner_id: {self.partner_id} (type: {type(self.partner_id)})")
+                print(f"🔍 Debug - Base path for signature: {base_path}")
+                print(f"🔍 Debug URL - Full URL: {url[:200]}...")
+            
+=======
+>>>>>>> Stashed changes
             self.api_calls_made += 1
             
             if method == "GET":
@@ -188,7 +271,11 @@ class ShopeeDataExtractor:
         
         while has_more and self.api_calls_made < self.max_daily_calls:
             # Build query parameters
+<<<<<<< Updated upstream
+            query_path = f"{path}?item_status={item_status}&offset={offset}&page_size={page_size}"
+=======
             query_path = f"{path}&item_status={item_status}&offset={offset}&page_size={page_size}"
+>>>>>>> Stashed changes
             
             data = self._make_api_call(query_path, method="GET", call_type=f"product-list-offset-{offset}")
             
@@ -229,7 +316,11 @@ class ShopeeDataExtractor:
             # Get base info for batch
             path = "/api/v2/product/get_item_base_info"
             item_id_list = ','.join(str(id) for id in batch)
+<<<<<<< Updated upstream
+            query_path = f"{path}?item_id_list={item_id_list}"
+=======
             query_path = f"{path}&item_id_list={item_id_list}"
+>>>>>>> Stashed changes
             
             data = self._make_api_call(query_path, method="GET", call_type=f"product-details-batch-{batch_num}")
             
@@ -330,8 +421,14 @@ class ShopeeDataExtractor:
         while has_more and self.api_calls_made < self.max_daily_calls:
             batch_count += 1
             
+<<<<<<< Updated upstream
+            # Build query parameters (use ? for first param)
+            # Note: Omit order_status to get all orders regardless of status
+            query_path = f"{path}?time_range_field=create_time&time_from={time_from}&time_to={time_to}&page_size={page_size}"
+=======
             # Build query parameters
             query_path = f"{path}&time_range_field=create_time&time_from={time_from}&time_to={time_to}&page_size={page_size}&order_status=ALL"
+>>>>>>> Stashed changes
             
             if cursor:
                 query_path += f"&cursor={cursor}"
@@ -370,8 +467,11 @@ class ShopeeDataExtractor:
         if not order_sns:
             return []
         
+<<<<<<< Updated upstream
+=======
         path = "/api/v2/order/get_order_detail"
         
+>>>>>>> Stashed changes
         # Split into batches of 50 (API limit)
         batch_size = 50
         all_details = []
@@ -380,9 +480,20 @@ class ShopeeDataExtractor:
             batch = order_sns[i:i+batch_size]
             order_sn_list = ','.join(batch)
             
+<<<<<<< Updated upstream
+            # Build path with query parameters (will be merged with auth params in _make_api_call)
+            path = f"/api/v2/order/get_order_detail"
+            # Add additional parameters as body or separate params
+            extra_params = f"order_sn_list={order_sn_list}&response_optional_fields=buyer_user_id,buyer_username,estimated_shipping_fee,recipient_address,actual_shipping_fee,goods_to_declare,note,note_update_time,item_list,pay_time,dropshipper,credit_card_number,dropshipper_phone,split_up,buyer_cancel_reason,cancel_by,cancel_reason,actual_shipping_fee_confirmed,buyer_cpf_id,fulfillment_flag,pickup_done_time,package_list,shipping_carrier,payment_method,total_amount,buyer_username,invoice_data"
+            
+            full_path = f"{path}?{extra_params}"
+            
+            data = self._make_api_call(full_path, method="GET", call_type=f"order-details-c{chunk_num}-b{batch_num}-sub{i//batch_size}")
+=======
             query_path = f"{path}&order_sn_list={order_sn_list}&response_optional_fields=buyer_user_id,buyer_username,estimated_shipping_fee,recipient_address,actual_shipping_fee,goods_to_declare,note,note_update_time,item_list,pay_time,dropshipper,credit_card_number,dropshipper_phone,split_up,buyer_cancel_reason,cancel_by,cancel_reason,actual_shipping_fee_confirmed,buyer_cpf_id,fulfillment_flag,pickup_done_time,package_list,shipping_carrier,payment_method,total_amount,buyer_username,invoice_data"
             
             data = self._make_api_call(query_path, method="GET", call_type=f"order-details-c{chunk_num}-b{batch_num}-sub{i//batch_size}")
+>>>>>>> Stashed changes
             
             if data and 'response' in data:
                 orders = data['response'].get('order_list', [])
@@ -394,9 +505,15 @@ class ShopeeDataExtractor:
         """
         Extract order items from order data
         Shopee includes items in order details, so this processes existing order data
+<<<<<<< Updated upstream
         Saves to shopee_multiple_order_items_raw.json
         """
         filename = 'shopee_multiple_order_items_raw.json'
+=======
+        Saves to shopee_order_items_raw.json
+        """
+        filename = 'shopee_order_items_raw.json'
+>>>>>>> Stashed changes
         
         if not start_fresh:
             existing_data = self._load_from_json(filename)
@@ -433,13 +550,32 @@ class ShopeeDataExtractor:
         # Save order items
         self._save_to_json(all_order_items, filename)
         print(f"🎉 Order items extraction complete! Total: {len(all_order_items)} items from {len(orders_data)} orders")
+<<<<<<< Updated upstream
         print(f"📊 API calls used: {self.api_calls_made}")
+=======
+>>>>>>> Stashed changes
         return all_order_items
     
     def extract_traffic_metrics(self, start_date=None, end_date=None, start_fresh=False, monthly_aggregate=True):
         """
         Extract traffic/advertising metrics - Monthly Aggregates
+<<<<<<< Updated upstream
         Saves to shopee_reportoverview_raw.json
+        
+        NOTE: Shopee doesn't provide traffic/advertising metrics via public API.
+        This function creates an empty placeholder file for consistency with Lazada structure.
+        Real traffic data would need to come from Shopee Seller Centre Analytics (manual export).
+        
+        Args:
+            start_date: Start date (YYYY-MM-DD or datetime object) - Not used
+            end_date: End date (YYYY-MM-DD or datetime object) - Not used
+            start_fresh: Whether to re-extract all data
+            monthly_aggregate: Whether to extract monthly data (True) or single period (False) - Not used
+        """
+        filename = 'shopee_reportoverview_raw.json'
+=======
+        Saves to shopee_traffic_raw.json
+        Note: Shopee may have different advertising APIs - this is a template
         
         Args:
             start_date: Start date (YYYY-MM-DD or datetime object)
@@ -447,11 +583,50 @@ class ShopeeDataExtractor:
             start_fresh: Whether to re-extract all data
             monthly_aggregate: Whether to extract monthly data (True) or single period (False)
         """
-        filename = 'shopee_reportoverview_raw.json'
+        filename = 'shopee_traffic_raw.json'
+>>>>>>> Stashed changes
         
         if not start_fresh:
             existing_data = self._load_from_json(filename)
             if existing_data:
+<<<<<<< Updated upstream
+                print(f"📊 Found existing traffic data file (empty placeholder).")
+                return existing_data
+        
+        print("\n⚠️ Shopee Traffic Metrics:")
+        print("   Shopee does not provide traffic/advertising data via API")
+        print("   Creating empty placeholder file for pipeline consistency...")
+        
+        # Save empty traffic data as placeholder
+        empty_traffic = []
+        self._save_to_json(empty_traffic, filename)
+        
+        return empty_traffic
+    
+    def _extract_monthly_traffic(self, start_date, end_date, filename):
+        """
+        Placeholder - Shopee doesn't provide traffic/advertising metrics via API.
+        This method is kept for compatibility but returns empty data.
+        """
+        print("⚠️ Shopee API does not provide traffic/advertising metrics")
+        print("📝 Returning empty traffic data for pipeline compatibility")
+        
+        empty_traffic = []
+        self._save_to_json(empty_traffic, filename)
+        return empty_traffic
+    
+    def _extract_single_period_traffic(self, start_date, end_date, filename):
+        """
+        Placeholder - Shopee doesn't provide traffic/advertising metrics via API.
+        This method is kept for compatibility but returns empty data.
+        """
+        print("⚠️ Shopee API does not provide traffic/advertising metrics")
+        print("📝 Returning empty traffic data for pipeline compatibility")
+        
+        empty_traffic = []
+        self._save_to_json(empty_traffic, filename)
+        return empty_traffic
+=======
                 print(f"📊 Found existing traffic data. Use start_fresh=True to re-extract.")
                 return existing_data
         
@@ -487,7 +662,7 @@ class ShopeeDataExtractor:
         total_months = self._count_months(start_date, end_date)
         
         print(f"📊 Processing {total_months} months of traffic data...")
-        print("⚠️ Note: Using shop performance metrics as proxy for advertising data")
+        print("⚠️ Note: Shopee advertising API endpoints may differ - using shop performance as proxy")
         
         while current_date < end_date and self.api_calls_made < self.max_daily_calls:
             # Calculate month boundaries
@@ -502,6 +677,7 @@ class ShopeeDataExtractor:
             
             try:
                 # Use shop performance metrics as traffic proxy
+                # This may need to be adjusted based on actual Shopee advertising APIs available
                 path = "/api/v2/public/get_shop_info"
                 
                 data = self._make_api_call(path, method="GET", call_type=f"traffic-month-{month_start.strftime('%Y-%m')}")
@@ -520,11 +696,11 @@ class ShopeeDataExtractor:
                         'platform_key': 2,  # Shopee
                         'platform_name': 'Shopee',
                         
-                        # Core Fact_Traffic measures (placeholder - actual metrics may differ)
-                        'impressions': 0,
-                        'clicks': 0,
+                        # Core Fact_Traffic measures (using available shop metrics)
+                        'impressions': 0,  # Not directly available from basic shop info
+                        'clicks': 0,  # Not directly available from basic shop info
                         
-                        # Additional metrics
+                        # Additional metrics from shop info
                         'ctr': 0.0,
                         'spend': 0.0,
                         'units_sold': 0,
@@ -541,11 +717,12 @@ class ShopeeDataExtractor:
                         'period_start': month_start.strftime('%Y-%m-%d'),
                         'period_end': month_end.strftime('%Y-%m-%d'),
                         'granularity': 'monthly',
-                        'extraction_timestamp': datetime.now().isoformat()
+                        'extraction_timestamp': datetime.now().isoformat(),
+                        'note': 'Using shop metrics as proxy - actual advertising API may differ'
                     }
                     
                     monthly_traffic.append(traffic_record)
-                    print(f"   ✅ Shop Rating: {shop_info.get('rating', 0):.2f}")
+                    print(f"   ✅ Shop Rating: {shop_info.get('rating', 0):.2f} | Response Rate: {shop_info.get('response_rate', 0)}%")
                 else:
                     print(f"   ⚠️ No data returned for this month")
                 
@@ -581,6 +758,7 @@ class ShopeeDataExtractor:
         else:
             print("❌ Failed to extract traffic metrics")
             return []
+>>>>>>> Stashed changes
     
     def _count_months(self, start_date, end_date):
         """Helper to calculate number of months between dates"""
@@ -613,17 +791,28 @@ class ShopeeDataExtractor:
             return []
         
         all_details = []
+<<<<<<< Updated upstream
         item_ids = [str(prod.get('item_id')) for prod in products_data if prod.get('item_id')]
+=======
+        item_ids = [prod.get('item_id') for prod in products_data if prod.get('item_id')]
+>>>>>>> Stashed changes
         batch_size = 50
         total_batches = math.ceil(len(item_ids) / batch_size)
         print(f"🔍 Extracting product details for {len(item_ids)} items in {total_batches} batches of {batch_size}...")
         
         for i in range(0, len(item_ids), batch_size):
             batch = item_ids[i:i+batch_size]
+<<<<<<< Updated upstream
             batch_str = ','.join(batch)
             
             path = "/api/v2/product/get_item_base_info"
+            query_path = f"{path}?item_id_list={batch_str}"
+=======
+            batch_str = ','.join(str(id) for id in batch)
+            
+            path = "/api/v2/product/get_item_base_info"
             query_path = f"{path}&item_id_list={batch_str}"
+>>>>>>> Stashed changes
             
             data = self._make_api_call(query_path, method="GET", call_type=f'product-item-batch-{i//batch_size+1}')
             
@@ -639,17 +828,27 @@ class ShopeeDataExtractor:
         print(f"🎉 Product details extraction complete! Total: {len(all_details)} items saved to {filename}")
         return all_details
     
+<<<<<<< Updated upstream
     def extract_review_history_list(self, start_fresh=False, limit_products=None):
         """
         Step 1: Extract review IDs using product item_ids from shopee_products_raw.json
         Uses /api/v2/product/get_comment endpoint
         Saves review data to shopee_reviewhistorylist_raw.json
+=======
+    def extract_product_reviews(self, start_fresh=False, limit_products=None):
+        """
+        Complete product review extraction:
+        1. Extract reviews for each product using item_ids from shopee_products_raw.json
+        2. Process and save detailed review information
+        Saves to shopee_productreview_raw.json
+>>>>>>> Stashed changes
         
         Args:
             start_fresh (bool): Whether to start fresh or append to existing data
             limit_products (int): Limit number of products to process (for testing)
         
         Returns:
+<<<<<<< Updated upstream
             list: List of review entries
         """
         filename = 'shopee_reviewhistorylist_raw.json'
@@ -661,6 +860,19 @@ class ShopeeDataExtractor:
                 return existing_data
         
         print(f"🔍 Starting product-based review extraction...")
+=======
+            list: List of detailed review data
+        """
+        filename = 'shopee_productreview_raw.json'
+        
+        if not start_fresh:
+            existing_reviews = self._load_from_json(filename)
+            if existing_reviews:
+                print(f"⭐ Found {len(existing_reviews)} existing reviews. Use start_fresh=True to re-extract.")
+                return existing_reviews
+        
+        print(f"🔍 Starting complete product review extraction...")
+>>>>>>> Stashed changes
         
         # Load product data to get item_ids
         products = self._load_from_json('shopee_products_raw.json')
@@ -682,7 +894,11 @@ class ShopeeDataExtractor:
         
         print(f"📦 Processing reviews for {len(item_ids)} products...")
         
+<<<<<<< Updated upstream
         all_review_entries = []
+=======
+        all_reviews = []
+>>>>>>> Stashed changes
         processed_count = 0
         
         path = "/api/v2/product/get_comment"
@@ -697,11 +913,19 @@ class ShopeeDataExtractor:
             
             # Add rate limiting between calls
             if processed_count > 1:
+<<<<<<< Updated upstream
                 time.sleep(2)
             
             try:
                 # API call to get reviews for specific product
+                query_path = f"{path}?item_id={item_id}&page_size=50"
+=======
+                time.sleep(2)  # 2 seconds between product review calls
+            
+            try:
+                # API call to get reviews for specific product
                 query_path = f"{path}&item_id={item_id}&page_size=50"
+>>>>>>> Stashed changes
                 
                 data = self._make_api_call(query_path, method="GET", call_type=f"product-reviews-{item_id}")
                 
@@ -712,6 +936,7 @@ class ShopeeDataExtractor:
                         reviews = response['item_comment_list']
                         print(f"   ✅ Found {len(reviews)} reviews for product {item_id}")
                         
+<<<<<<< Updated upstream
                         for review in reviews:
                             review_entry = {
                                 'item_id': item_id,
@@ -721,6 +946,21 @@ class ShopeeDataExtractor:
                                 'type': 'product_review'
                             }
                             all_review_entries.append(review_entry)
+=======
+                        # Add product context to each review
+                        for review in reviews:
+                            review_entry = {
+                                'item_id': item_id,
+                                'comment_id': review.get('comment_id', f"comment_{item_id}_{len(all_reviews)}"),
+                                'rating': review.get('rating_star', 0),
+                                'comment': review.get('comment', ''),
+                                'created_at': review.get('ctime', 0),
+                                'buyer_username': review.get('author_username', ''),
+                                'product_items': review.get('product_items', []),
+                                'type': 'product_review'
+                            }
+                            all_reviews.append(review_entry)
+>>>>>>> Stashed changes
                     else:
                         print(f"   ℹ️ No reviews found for product {item_id}")
                 else:
@@ -729,6 +969,7 @@ class ShopeeDataExtractor:
             except Exception as e:
                 print(f"   ❌ Error processing product {item_id}: {e}")
                 continue
+<<<<<<< Updated upstream
         
         # Save review entries
         self._save_to_json(all_review_entries, filename)
@@ -791,10 +1032,25 @@ class ShopeeDataExtractor:
         
         print(f"\n🎉 Review details processing complete!")
         print(f"   Total reviews processed: {len(all_reviews)}")
+=======
+            
+            # Save progress every 50 products
+            if processed_count % 50 == 0:
+                self._save_to_json(all_reviews, filename)
+                print(f"   💾 Progress saved: {len(all_reviews)} reviews")
+        
+        # Final save
+        self._save_to_json(all_reviews, filename)
+        
+        print(f"\n🎉 Product review extraction complete!")
+        print(f"   Products processed: {processed_count}")
+        print(f"   Total reviews collected: {len(all_reviews)}")
+>>>>>>> Stashed changes
         print(f"   Saved to: {filename}")
         
         return all_reviews
     
+<<<<<<< Updated upstream
     def extract_product_reviews(self, start_fresh=False, limit_products=None):
         """
         Complete product review extraction:
@@ -828,6 +1084,8 @@ class ShopeeDataExtractor:
         
         return reviews
     
+=======
+>>>>>>> Stashed changes
     def run_complete_extraction(self, start_fresh=False):
         """
         Run complete data extraction in optimal order
@@ -876,3 +1134,122 @@ class ShopeeDataExtractor:
         print(f"📁 All data saved to: {self.staging_dir}")
         
         return results
+
+<<<<<<< Updated upstream
+
+# ============================================================================
+# MAIN EXECUTION
+# ============================================================================
+
+if __name__ == "__main__":
+    print("=" * 70)
+    print("🚀 SHOPEE COMPLETE DATA EXTRACTION")
+    print("=" * 70)
+    print()
+    
+    try:
+        # Initialize extractor
+        print("📝 Initializing Shopee Data Extractor...")
+        extractor = ShopeeDataExtractor()
+        
+        # Display configuration
+        print(f"✓ Shop ID: {extractor.shop_id}")
+        print(f"✓ Partner ID: {extractor.partner_id}")
+        print(f"✓ Access Token: {'Present ✓' if extractor.access_token else 'Missing ✗'}")
+        print()
+        
+        if not extractor.access_token:
+            print("❌ No access token found!")
+            print("   Please run 'python get_shopee_tokens.py' first to get tokens.")
+            sys.exit(1)
+        
+        # Run complete extraction
+        print("=" * 70)
+        print("🔄 Starting complete extraction...")
+        print("   This will extract:")
+        print("   • Products")
+        print("   • Orders")
+        print("   • Order Items")
+        print("   • Traffic Metrics")
+        print("=" * 70)
+        print()
+        
+        results = extractor.run_complete_extraction(start_fresh=True)
+        
+        print("\n" + "=" * 70)
+        print("✅ EXTRACTION COMPLETED SUCCESSFULLY!")
+        print("=" * 70)
+        print()
+        print("📊 Extraction Summary:")
+        for step_name, data in results.items():
+            count = len(data) if isinstance(data, list) else 0
+            print(f"   • {step_name}: {count:,} records")
+        print()
+        print(f"📁 All files saved to: {extractor.staging_dir}")
+        print("=" * 70)
+        print()
+        
+    except KeyboardInterrupt:
+        print("\n\n⚠️ Extraction cancelled by user.")
+        sys.exit(0)
+    except Exception as e:
+        print(f"\n❌ Error during extraction: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
+=======
+# Convenience functions
+def run_full_extraction(start_fresh=False):
+    """Run complete extraction with all data"""
+    extractor = ShopeeDataExtractor()
+    return extractor.run_complete_extraction(start_fresh=start_fresh)
+
+def extract_recent_data():
+    """Extract only recent data (last 30 days) to save API calls"""
+    extractor = ShopeeDataExtractor()
+    
+    # Extract recent orders
+    recent_start = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+    recent_end = datetime.now().strftime('%Y-%m-%d')
+    
+    orders = extractor.extract_all_orders(start_date=recent_start, end_date=recent_end)
+    order_items = extractor.extract_all_order_items(orders_data=orders)
+    traffic = extractor.extract_traffic_metrics()
+    
+    return {
+        'orders': orders,
+        'order_items': order_items,
+        'traffic': traffic
+    }
+
+def extract_product_reviews_only(start_fresh=False, limit_products=None):
+    """Extract only product reviews (standalone function)"""
+    extractor = ShopeeDataExtractor()
+    return extractor.extract_product_reviews(start_fresh=start_fresh, limit_products=limit_products)
+
+if __name__ == "__main__":
+    print("🚀 Shopee Complete Data Extraction")
+    print("Choose extraction mode:")
+    print("1. Complete historical extraction (uses more API calls)")
+    print("2. Recent data only (last 30 days)")
+    print("3. Product reviews extraction")
+    
+    choice = input("Enter choice (1-3): ").strip()
+    
+    if choice == "1":
+        print("📊 Running complete extraction...")
+        results = run_full_extraction(start_fresh=False)
+    elif choice == "2":
+        print("📈 Running recent data extraction...")
+        results = extract_recent_data()
+    elif choice == "3":
+        print("⭐ Running product reviews extraction...")
+        results = extract_product_reviews_only(start_fresh=True, limit_products=5)  # Test with 5 products
+        print(f"📝 Extracted {len(results)} reviews")
+    else:
+        print("❌ Invalid choice. Running recent data extraction by default...")
+        results = extract_recent_data()
+    
+    print("\n✅ Extraction completed!")
+    print("📁 Check the app/Staging/ directory for JSON files")
+>>>>>>> Stashed changes

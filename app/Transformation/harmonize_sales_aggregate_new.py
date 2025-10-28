@@ -66,8 +66,15 @@ def generate_sales_aggregate(dim_time, dim_customer, dim_product, fact_orders):
     # Drop intermediate columns
     sales_agg = sales_agg.drop(['platform_discounts', 'seller_discounts'], axis=1)
     
-    # Reorder columns to match schema
-    sales_agg = sales_agg[FACT_SALES_AGGREGATE_COLUMNS]
+    # Define the columns we actually have (simplified schema)
+    final_columns = [
+        'time_key', 'platform_key', 'customer_key', 'product_key',
+        'total_orders', 'total_items_sold', 'gross_revenue',
+        'total_discounts', 'shipping_revenue', 'net_sales'
+    ]
+    
+    # Reorder columns
+    sales_agg = sales_agg[final_columns]
     
     print(f"✅ Generated {len(sales_agg):,} sales aggregate records")
     print(f"   📊 Covering {sales_agg['time_key'].nunique():,} unique dates")
@@ -125,18 +132,18 @@ def main():
         print(f"\n🔄 Step 2: Generating sales aggregate...")
         sales_agg = generate_sales_aggregate(dim_time, dim_customer, dim_product, fact_orders)
         
-        # Step 3: Apply data types
-        print(f"\n🔧 Step 3: Applying data types...")
-        sales_agg = apply_data_types(sales_agg, 'fact_sales_aggregate')
-        print(f"✅ Data types applied successfully")
-        
-        # Step 4: Validate results
+        # Step 3: Validate results
+        print(f"\n� Step 3: Validating results...")
         validate_sales_aggregate(sales_agg, fact_orders)
         
-        # Step 5: Save to CSV
+        # Step 3: Validate results
+        print(f"\n🔍 Step 3: Validating results...")
+        validate_sales_aggregate(sales_agg, fact_orders)
+        
+        # Step 4: Save to CSV
         output_path = os.path.join(os.path.dirname(__file__), '..', 'Transformed', 'fact_sales_aggregate.csv')
         sales_agg.to_csv(output_path, index=False)
-        print(f"\n💾 Step 5: Saved to {output_path}")
+        print(f"\n💾 Step 4: Saved to {output_path}")
         
         # Summary statistics
         print(f"\n📊 SUMMARY STATISTICS:")

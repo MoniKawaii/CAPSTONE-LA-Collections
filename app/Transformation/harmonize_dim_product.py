@@ -1,17 +1,13 @@
 """
-Product Dimension Harmonization Script - Multi-Platform (Lazada & Shopee)
-Maps product data from both Lazada and Shopee raw JSON files to the standardized dimensional model
+Product Dimension Harmonization Script
+Maps Lazada and Shopee product data from raw JSON files to the standardized dimensional model
 
 Data Sources:
-Lazada:
 - lazada_products_raw.json 
 - lazada_productitem_raw.json
-
-Shopee:
 - shopee_products_raw.json
-- shopee_productitem_raw.json
 
-Target Schema: Dim_Product table structure with platform_key (1=Lazada, 2=Shopee)
+Target Schema: Dim_Product table structure
 """
 
 import pandas as pd
@@ -22,61 +18,6 @@ import sys
 # Add parent directory to path to import config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import get_empty_dataframe, LAZADA_TO_UNIFIED_MAPPING, SHOPEE_TO_UNIFIED_MAPPING, apply_data_types
-
-
-def load_products_raw(platform='lazada'):
-    """
-    Load product data from raw JSON files for specified platform
-    
-    Args:
-        platform (str): 'lazada' or 'shopee'
-        
-    Returns:
-        tuple: (products_data, productitem_data) as lists of dictionaries
-    """
-    staging_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Staging')
-    
-    # Define file names based on platform
-    products_file = os.path.join(staging_dir, f'{platform}_products_raw.json')
-    productitem_file = os.path.join(staging_dir, f'{platform}_productitem_raw.json')
-    
-    products_data = []
-    productitem_data = []
-    
-    if os.path.exists(products_file):
-        with open(products_file, 'r', encoding='utf-8') as f:
-            products_data = json.load(f)
-        print(f"✅ Loaded {len(products_data)} products from {platform}_products_raw.json")
-    else:
-        print(f"⚠️ File not found: {products_file}")
-    
-    if os.path.exists(productitem_file):
-        with open(productitem_file, 'r', encoding='utf-8') as f:
-            productitem_data = json.load(f)
-        print(f"✅ Loaded {len(productitem_data)} product items from {platform}_productitem_raw.json")
-    else:
-        print(f"⚠️ File not found: {productitem_file}")
-    
-    return products_data, productitem_data
-
-
-def load_lazada_products():
-    """
-    Load Lazada product data from raw JSON files (legacy function)
-    
-    Returns:
-        tuple: (products_data, productitem_data) as lists of dictionaries
-    """
-    return load_products_raw('lazada')
-
-import pandas as pd
-import json
-import os
-import sys
-
-# Add parent directory to path to import config
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import get_empty_dataframe, LAZADA_TO_UNIFIED_MAPPING, apply_data_types
 
 def load_lazada_products():
     """
@@ -110,53 +51,57 @@ def load_lazada_products():
     
     return products_data, productitem_data
 
-def get_category_name(primary_category, platform='lazada'):
+def load_shopee_products():
+    """
+    Load Shopee product data from raw JSON files
+    
+    Returns:
+        list: products_data as list of dictionaries
+    """
+    staging_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Staging')
+    
+    # Load products raw data
+    products_file = os.path.join(staging_dir, 'shopee_products_raw.json')
+    
+    products_data = []
+    
+    if os.path.exists(products_file):
+        with open(products_file, 'r', encoding='utf-8') as f:
+            products_data = json.load(f)
+        print(f"✅ Loaded {len(products_data)} products from shopee_products_raw.json")
+    else:
+        print(f"⚠️ File not found: {products_file}")
+    
+    return products_data
+
+def get_category_name(primary_category):
     """
     Map primary category ID to category name
-    Supports both Lazada and Shopee category structures
+    This is a placeholder - you may want to maintain a proper category mapping
     
     Args:
-        primary_category (int/str): Category ID from platform
-        platform (str): 'lazada' or 'shopee'
+        primary_category (int): Category ID from Lazada
         
     Returns:
         str: Category name
     """
-    if platform == 'lazada':
-        # Lazada category mapping
-        category_mapping = {
-            22490: "Home Fragrance",
-            7539: "Home Improvement", 
-            8632: "Health & Beauty",
-            18986: "Electronics",
-            24428: "Fashion",
-            24442: "Automotive",
-            10100546: "Baby & Toys"
-        }
-        return category_mapping.get(primary_category, f"Category_{primary_category}")
-    
-    elif platform == 'shopee':
-        # Shopee uses category_id field - map common categories
-        # Note: Shopee category structure may be different
-        if isinstance(primary_category, str):
-            return primary_category  # Already a category name
-        
-        shopee_category_mapping = {
-            # Add Shopee-specific category mappings here as needed
-            # Example mappings (adjust based on your actual data)
-        }
-        return shopee_category_mapping.get(primary_category, f"Category_{primary_category}")
-    
-    return f"Category_{primary_category}"
+    category_mapping = {
+        22490: "Home Fragrance",
+        7539: "Home Improvement", 
+        8632: "Health & Beauty",
+        18986: "Electronics",
+        24428: "Fashion",
+        24442: "Automotive",
+        10100546: "Baby & Toys"
+    }
+    return category_mapping.get(primary_category, f"Category_{primary_category}")
 
-def extract_price_from_skus(skus, platform='lazada'):
+def extract_price_from_skus(skus):
     """
     Extract price from SKU data (if available)
-    Supports both Lazada and Shopee data structures
     
     Args:
         skus (list): List of SKU objects
-        platform (str): 'lazada' or 'shopee'
         
     Returns:
         float: Price value or None
@@ -165,90 +110,50 @@ def extract_price_from_skus(skus, platform='lazada'):
         return None
     
     for sku in skus:
-        if platform == 'lazada':
-            # Lazada uses 'price' field
-            if 'price' in sku:
-                try:
-                    return float(sku['price'])
-                except (ValueError, TypeError):
-                    continue
-        elif platform == 'shopee':
-            # Shopee uses 'original_price' or 'current_price' (in cents)
-            price_field = sku.get('original_price') or sku.get('model_original_price')
-            if price_field:
-                try:
-                    # Shopee prices are in cents, convert to dollars
-                    return float(price_field) / 100
-                except (ValueError, TypeError):
-                    continue
-    
+        if 'price' in sku:
+            try:
+                return float(sku['price'])
+            except (ValueError, TypeError):
+                continue
     return None
 
-def extract_product_variants(product_data, product_key, platform='lazada'):
+def extract_product_variants(product_data, product_key):
     """
     Extract variant data from product SKUs array
-    Supports both Lazada and Shopee data structures
     
     Args:
-        product_data (dict): Raw product data from platform API
+        product_data (dict): Raw product data from Lazada API
         product_key (int): Product key from the main product record
-        platform (str): 'lazada' or 'shopee'
         
     Returns:
         list: List of variant records
     """
     variants = []
+    skus = product_data.get('skus', [])
     
-    if platform == 'lazada':
-        skus = product_data.get('skus', [])
-        
-        for sku_data in skus:
-            variant_record = {
-                'variant_key': None,  # Will be generated as surrogate key
-                'product_key': product_key,
-                'platform_sku_id': str(sku_data.get('SkuId', '')),
-                'variant_sku': str(sku_data.get('SellerSku', '')),
-                'variant_attribute_1': sku_data.get('Variation1', ''),
-                'variant_attribute_2': sku_data.get('Variation2', ''),
-                'variant_attribute_3': sku_data.get('Variation3', ''),
-                'variant_price': sku_data.get('price', None),
-                'variant_stock': sku_data.get('quantity', None),
-                'platform_key': 1  # Lazada = 1
-            }
-            variants.append(variant_record)
-    
-    elif platform == 'shopee':
-        # Shopee uses 'model' array for variants
-        models = product_data.get('model', [])
-        
-        for model_data in models:
-            # Extract tier variations (e.g., Size, Color)
-            tier_index = model_data.get('tier_index', [])
-            
-            variant_record = {
-                'variant_key': None,  # Will be generated as surrogate key
-                'product_key': product_key,
-                'platform_sku_id': str(model_data.get('model_id', '')),
-                'variant_sku': str(model_data.get('model_sku', '')),
-                'variant_attribute_1': tier_index[0] if len(tier_index) > 0 else '',
-                'variant_attribute_2': tier_index[1] if len(tier_index) > 1 else '',
-                'variant_attribute_3': '',  # Shopee typically has max 2 tiers
-                'variant_price': model_data.get('original_price', 0) / 100 if model_data.get('original_price') else None,  # Convert from cents
-                'variant_stock': model_data.get('stock_info_v2', {}).get('normal_stock', None) if 'stock_info_v2' in model_data else model_data.get('normal_stock', None),
-                'platform_key': 2  # Shopee = 2
-            }
-            variants.append(variant_record)
+    for sku_data in skus:
+        variant_record = {
+            'variant_key': None,  # Will be generated as surrogate key
+            'product_key': product_key,
+            'platform_sku_id': str(sku_data.get('SkuId', '')),
+            'variant_sku': str(sku_data.get('SellerSku', '')),
+            'variant_attribute_1': sku_data.get('Variation1', ''),  # Use Variation1 from mapping
+            'variant_attribute_2': sku_data.get('Variation2', ''),  # Use Variation2 from mapping
+            'variant_attribute_3': sku_data.get('Variation3', ''),  # Use Variation3 from mapping
+            'variant_price': sku_data.get('price', None),
+            'variant_stock': sku_data.get('quantity', None),
+            'platform_key': 1  # Lazada = 1
+        }
+        variants.append(variant_record)
     
     return variants
 
-def get_base_sku_from_variants(skus, platform='lazada'):
+def get_base_sku_from_variants(skus):
     """
     Extract base SKU from the first available variant
-    Supports both Lazada and Shopee data structures
     
     Args:
-        skus (list): List of SKU/model objects
-        platform (str): 'lazada' or 'shopee'
+        skus (list): List of SKU objects
         
     Returns:
         str: Base SKU or empty string
@@ -256,119 +161,187 @@ def get_base_sku_from_variants(skus, platform='lazada'):
     if not skus:
         return ''
     
-    first_variant = skus[0]
+    # Use the first variant's SellerSku as base, or derive from SkuId
+    first_sku = skus[0]
+    seller_sku = first_sku.get('SellerSku', '')
+    if seller_sku:
+        # Extract base part (remove variant suffixes like -RED, -L, etc.)
+        base_sku = seller_sku.split('-')[0] if '-' in seller_sku else seller_sku
+        return base_sku
     
-    if platform == 'lazada':
-        # Use the first variant's SellerSku as base, or derive from SkuId
-        seller_sku = first_variant.get('SellerSku', '')
-        if seller_sku:
-            # Extract base part (remove variant suffixes like -RED, -L, etc.)
-            base_sku = seller_sku.split('-')[0] if '-' in seller_sku else seller_sku
-            return base_sku
-        
-        # Fallback to SkuId if no SellerSku
-        return str(first_variant.get('SkuId', ''))
-    
-    elif platform == 'shopee':
-        # Shopee uses model_sku
-        model_sku = first_variant.get('model_sku', '')
-        if model_sku:
-            # Extract base part if it has separators
-            base_sku = model_sku.split('-')[0] if '-' in model_sku else model_sku
-            return base_sku
-        
-        # Fallback to model_id
-        return str(first_variant.get('model_id', ''))
-    
-    return ''
+    # Fallback to SkuId if no SellerSku
+    return str(first_sku.get('SkuId', ''))
 
-def harmonize_product_record(product_data, source_file, platform='lazada'):
+def harmonize_product_record(product_data, source_file):
     """
-    Harmonize a single product record from platform format to dimensional model
-    Supports both Lazada and Shopee data structures
+    Harmonize a single product record from Lazada format to dimensional model
     
     Args:
-        product_data (dict): Raw product data from platform API
+        product_data (dict): Raw product data from Lazada API
         source_file (str): Source file identifier ('products' or 'productitem')
-        platform (str): 'lazada' or 'shopee'
         
     Returns:
         dict: Harmonized product record
     """
-    # Platform-specific field extraction
-    if platform == 'lazada':
-        # Get product attributes
-        attributes = product_data.get('attributes', {})
-        
-        # Extract price - try multiple sources
-        price = None
-        if 'skus' in product_data and product_data['skus']:
-            price = extract_price_from_skus(product_data['skus'], platform='lazada')
-        
-        # Get base SKU from variants
-        base_sku = get_base_sku_from_variants(product_data.get('skus', []), platform='lazada')
-        
-        # Map using LAZADA_TO_UNIFIED_MAPPING
-        harmonized_record = {
-            'product_key': None,  # Will be generated as surrogate key
-            'product_item_id': str(product_data.get('item_id', '')),
-            'product_name': attributes.get('name', ''),
-            'product_sku_base': base_sku,
-            'product_category': get_category_name(product_data.get('primary_category'), platform='lazada'),
-            'product_status': product_data.get('status', ''),
-            'product_price': price,
-            'product_rating': None,  # Leave null as requested
-            'platform_key': 1  # Lazada = 1
-        }
+    # Get product attributes
+    attributes = product_data.get('attributes', {})
     
-    elif platform == 'shopee':
-        # Shopee product structure
-        # Extract price from models or use item price
-        models = product_data.get('model', [])
-        price = None
+    # Extract price - try multiple sources
+    price = None
+    if 'skus' in product_data and product_data['skus']:
+        price = extract_price_from_skus(product_data['skus'])
+    
+    # Get base SKU from variants
+    base_sku = get_base_sku_from_variants(product_data.get('skus', []))
+    
+    # Map using LAZADA_TO_UNIFIED_MAPPING
+    harmonized_record = {
+        'product_key': None,  # Will be generated as surrogate key
+        'product_item_id': str(product_data.get('item_id', '')),
+        'product_name': attributes.get('name', ''),
+        'product_sku_base': base_sku,  # Updated field name
+        'product_category': get_category_name(product_data.get('primary_category')),
+        'product_status': product_data.get('status', ''),
+        'product_price': price,
+        'product_rating': None,  # Leave null as requested
+        'platform_key': 1  # Lazada = 1
+    }
+    
+    return harmonized_record
+
+def extract_shopee_product_variants(product_data, product_key):
+    """
+    Extract variant data from Shopee product model_list array
+    
+    Args:
+        product_data (dict): Raw product data from Shopee API
+        product_key (int): Product key from the main product record
         
-        # Try to get price from first model
-        if models:
-            price = extract_price_from_skus(models, platform='shopee')
+    Returns:
+        list: List of variant records
+    """
+    variants = []
+    model_list = product_data.get('model_list', [])
+    tier_variation = product_data.get('tier_variation', [])
+    
+    for model_data in model_list:
+        # Get tier indexes
+        tier_index = model_data.get('tier_index', [])
         
-        # Fallback to item-level price
-        if not price:
-            original_price = product_data.get('price_info', {}).get('original_price')
-            if original_price:
-                price = float(original_price) / 100  # Convert from cents
+        # Map tier indexes to variation names
+        variant_attr_1 = ''
+        variant_attr_2 = ''
+        variant_attr_3 = ''
         
-        # Get base SKU from models
-        base_sku = get_base_sku_from_variants(models, platform='shopee') if models else str(product_data.get('item_id', ''))
+        if len(tier_index) > 0 and len(tier_variation) > 0:
+            tier_0 = tier_variation[0]
+            options_0 = tier_0.get('option_list', [])
+            if tier_index[0] < len(options_0):
+                variant_attr_1 = options_0[tier_index[0]].get('option', '')
         
-        # Get category - Shopee uses category_id
-        category = product_data.get('category_id')
+        if len(tier_index) > 1 and len(tier_variation) > 1:
+            tier_1 = tier_variation[1]
+            options_1 = tier_1.get('option_list', [])
+            if tier_index[1] < len(options_1):
+                variant_attr_2 = options_1[tier_index[1]].get('option', '')
         
-        # Map using SHOPEE_TO_UNIFIED_MAPPING
-        harmonized_record = {
-            'product_key': None,  # Will be generated as surrogate key
-            'product_item_id': str(product_data.get('item_id', '')),
-            'product_name': product_data.get('item_name', ''),
-            'product_sku_base': base_sku,
-            'product_category': get_category_name(category, platform='shopee'),
-            'product_status': product_data.get('item_status', ''),  # NORMAL, DELETED, BANNED, etc.
-            'product_price': price,
-            'product_rating': None,  # Leave null as requested
+        if len(tier_index) > 2 and len(tier_variation) > 2:
+            tier_2 = tier_variation[2]
+            options_2 = tier_2.get('option_list', [])
+            if tier_index[2] < len(options_2):
+                variant_attr_3 = options_2[tier_index[2]].get('option', '')
+        
+        variant_record = {
+            'variant_key': None,  # Will be generated as surrogate key
+            'product_key': product_key,
+            'platform_sku_id': str(model_data.get('model_id', '')),
+            'variant_sku': str(model_data.get('model_sku', '')),
+            'variant_attribute_1': variant_attr_1,
+            'variant_attribute_2': variant_attr_2,
+            'variant_attribute_3': variant_attr_3,
+            'variant_price': model_data.get('price', None),
+            'variant_stock': model_data.get('stock_info', {}).get('current_stock', None) if isinstance(model_data.get('stock_info'), dict) else None,
             'platform_key': 2  # Shopee = 2
         }
+        variants.append(variant_record)
     
-    else:
-        raise ValueError(f"Unsupported platform: {platform}")
+    return variants
+
+def get_shopee_base_sku_from_variants(model_list):
+    """
+    Extract base SKU from the first available Shopee variant
+    
+    Args:
+        model_list (list): List of model objects from Shopee
+        
+    Returns:
+        str: Base SKU or empty string
+    """
+    if not model_list:
+        return ''
+    
+    # Use the first variant's model_sku as base
+    first_model = model_list[0]
+    model_sku = first_model.get('model_sku', '')
+    if model_sku:
+        # Extract base part (remove variant suffixes)
+        base_sku = model_sku.split('-')[0] if '-' in model_sku else model_sku
+        return base_sku
+    
+    # Fallback to model_id if no model_sku
+    return str(first_model.get('model_id', ''))
+
+def harmonize_shopee_product_record(product_data):
+    """
+    Harmonize a single product record from Shopee format to dimensional model
+    
+    Args:
+        product_data (dict): Raw product data from Shopee API
+        
+    Returns:
+        dict: Harmonized product record
+    """
+    # Extract price from price_info
+    price = None
+    price_info = product_data.get('price_info', {})
+    if isinstance(price_info, dict):
+        current_price = price_info.get('current_price')
+        if current_price is not None:
+            try:
+                price = float(current_price)
+            except (ValueError, TypeError):
+                price = None
+    
+    # Get base SKU from model variants
+    base_sku = get_shopee_base_sku_from_variants(product_data.get('model_list', []))
+    
+    # Get category (Shopee uses category_id, may need lookup table)
+    category_id = product_data.get('category_id', '')
+    category_name = f"Category_{category_id}" if category_id else ''
+    
+    # Map using SHOPEE_TO_UNIFIED_MAPPING
+    harmonized_record = {
+        'product_key': None,  # Will be generated as surrogate key
+        'product_item_id': str(product_data.get('item_id', '')),
+        'product_name': product_data.get('item_name', ''),
+        'product_sku_base': base_sku,
+        'product_category': category_name,
+        'product_status': product_data.get('item_status', ''),
+        'product_price': price,
+        'product_rating': product_data.get('rating_star', None),
+        'platform_key': 2  # Shopee = 2
+    }
     
     return harmonized_record
 
 def harmonize_dim_product():
     """
-    Main function to harmonize product data from both Lazada and Shopee into dimensional model
+    Main function to harmonize Lazada and Shopee product data into dimensional model
     
     Returns:
         tuple: (product_df, variant_df) - Harmonized product and variant dimension tables
     """
-    print("🔄 Starting Product & Variant Dimension Harmonization (Multi-Platform)...")
+    print("🔄 Starting Product & Variant Dimension Harmonization (Lazada + Shopee)...")
     
     # Get empty DataFrames with proper structure
     dim_product_df = get_empty_dataframe('dim_product')
@@ -377,90 +350,85 @@ def harmonize_dim_product():
     print(f"📋 Product schema: {list(dim_product_df.columns)}")
     print(f"📋 Variant schema: {list(dim_product_variant_df.columns)}")
     
-    # Combine all products and variants from both platforms
+    # Load raw data from both platforms
+    print("\n📥 Loading Lazada data...")
+    products_data, productitem_data = load_lazada_products()
+    
+    print("\n📥 Loading Shopee data...")
+    shopee_products_data = load_shopee_products()
+    
+    # Combine all product data
     all_products = []
     all_variants = []
-    all_raw_products = []
+    product_key_counter = 1
+    variant_key_counter = 1
     
     # Process Lazada products
-    print("\n📦 Processing Lazada products...")
-    lazada_products_data, lazada_productitem_data = load_products_raw('lazada')
+    print(f"\n🔄 Processing Lazada products...")
     
-    if lazada_products_data or lazada_productitem_data:
-        # Process products_raw.json
-        for product in lazada_products_data:
-            harmonized = harmonize_product_record(product, 'products', platform='lazada')
+    # Process products_raw.json
+    for product in products_data:
+        harmonized = harmonize_product_record(product, 'products')
+        harmonized['product_key'] = product_key_counter
+        all_products.append(harmonized)
+        
+        # Extract variants for this product
+        variants = extract_product_variants(product, product_key_counter)
+        for variant in variants:
+            variant['variant_key'] = variant_key_counter
+            variant_key_counter += 1
+        all_variants.extend(variants)
+        
+        product_key_counter += 1
+    
+    # Process productitem_raw.json (avoid duplicates by item_id)
+    existing_item_ids = {p['product_item_id'] for p in all_products}
+    
+    for product in productitem_data:
+        item_id = str(product.get('item_id', ''))
+        if item_id not in existing_item_ids:
+            harmonized = harmonize_product_record(product, 'productitem')
+            harmonized['product_key'] = product_key_counter
             all_products.append(harmonized)
-            all_raw_products.append(('lazada', product))
-        
-        # Process productitem_raw.json (avoid duplicates by item_id)
-        existing_item_ids = {p['product_item_id'] for p in all_products}
-        
-        for product in lazada_productitem_data:
-            item_id = str(product.get('item_id', ''))
-            if item_id not in existing_item_ids:
-                harmonized = harmonize_product_record(product, 'productitem', platform='lazada')
-                all_products.append(harmonized)
-                all_raw_products.append(('lazada', product))
-                existing_item_ids.add(item_id)
-        
-        print(f"   ✓ Processed {len([p for p in all_products if p['platform_key'] == 1])} Lazada products")
-    else:
-        print("   ⚠️ No Lazada product data found")
+            
+            # Extract variants for this product
+            variants = extract_product_variants(product, product_key_counter)
+            for variant in variants:
+                variant['variant_key'] = variant_key_counter
+                variant_key_counter += 1
+            all_variants.extend(variants)
+            
+            product_key_counter += 1
+    
+    lazada_product_count = len(all_products)
+    print(f"✅ Processed {lazada_product_count} Lazada products")
     
     # Process Shopee products
-    print("\n🛍️ Processing Shopee products...")
-    shopee_products_data, shopee_productitem_data = load_products_raw('shopee')
+    print(f"\n🔄 Processing Shopee products...")
     
-    if shopee_products_data or shopee_productitem_data:
-        # Get existing item_ids to avoid duplicates
-        existing_item_ids = {p['product_item_id'] for p in all_products}
+    for product in shopee_products_data:
+        harmonized = harmonize_shopee_product_record(product)
+        harmonized['product_key'] = product_key_counter
+        all_products.append(harmonized)
         
-        # Process shopee products_raw.json
-        for product in shopee_products_data:
-            item_id = str(product.get('item_id', ''))
-            if item_id not in existing_item_ids:
-                harmonized = harmonize_product_record(product, 'products', platform='shopee')
-                all_products.append(harmonized)
-                all_raw_products.append(('shopee', product))
-                existing_item_ids.add(item_id)
+        # Extract variants for this product
+        variants = extract_shopee_product_variants(product, product_key_counter)
+        for variant in variants:
+            variant['variant_key'] = variant_key_counter
+            variant_key_counter += 1
+        all_variants.extend(variants)
         
-        # Process shopee productitem_raw.json
-        for product in shopee_productitem_data:
-            item_id = str(product.get('item_id', ''))
-            if item_id not in existing_item_ids:
-                harmonized = harmonize_product_record(product, 'productitem', platform='shopee')
-                all_products.append(harmonized)
-                all_raw_products.append(('shopee', product))
-                existing_item_ids.add(item_id)
-        
-        print(f"   ✓ Processed {len([p for p in all_products if p['platform_key'] == 2])} Shopee products")
-    else:
-        print("   ⚠️ No Shopee product data found")
+        product_key_counter += 1
     
-    # Convert products to DataFrame and generate keys
+    shopee_product_count = len(all_products) - lazada_product_count
+    print(f"✅ Processed {shopee_product_count} Shopee products")
+    
+    # Convert products to DataFrame
     if all_products:
         dim_product_df = pd.DataFrame(all_products)
         
-        # Generate surrogate keys (product_key)
-        dim_product_df['product_key'] = range(1, len(dim_product_df) + 1)
-        
         # Apply proper data types according to schema
         dim_product_df = apply_data_types(dim_product_df, 'dim_product')
-        
-        # Now extract variants using the generated product_keys and raw product data
-        variant_key_counter = 1
-        for idx, (platform, raw_product) in enumerate(all_raw_products):
-            if idx < len(dim_product_df):  # Ensure we don't exceed product count
-                product_key = dim_product_df.iloc[idx]['product_key']
-                variants = extract_product_variants(raw_product, product_key, platform=platform)
-                
-                # Add variant keys
-                for variant in variants:
-                    variant['variant_key'] = variant_key_counter
-                    variant_key_counter += 1
-                
-                all_variants.extend(variants)
         
         # Convert variants to DataFrame
         if all_variants:
@@ -468,46 +436,51 @@ def harmonize_dim_product():
             dim_product_variant_df = apply_data_types(dim_product_variant_df, 'dim_product_variant')
         
         print(f"\n✅ Harmonized {len(dim_product_df)} products and {len(dim_product_variant_df)} variants")
-        print(f"\n📊 Product Summary by Platform:")
-        lazada_count = len(dim_product_df[dim_product_df['platform_key'] == 1])
-        shopee_count = len(dim_product_df[dim_product_df['platform_key'] == 2])
-        print(f"   • Lazada products: {lazada_count}")
-        print(f"   • Shopee products: {shopee_count}")
-        print(f"   • Total products: {len(dim_product_df)}")
         
-        print(f"\n📊 Product Status:")
-        status_counts = dim_product_df['product_status'].value_counts().to_dict()
-        for status, count in status_counts.items():
-            print(f"   • {status}: {count}")
+        print(f"\n📊 Product Summary:")
+        print(f"   - Total products: {len(dim_product_df)}")
+        print(f"   - Lazada products: {len(dim_product_df[dim_product_df['platform_key'] == 1])}")
+        print(f"   - Shopee products: {len(dim_product_df[dim_product_df['platform_key'] == 2])}")
+        print(f"   - Products with prices: {len(dim_product_df[dim_product_df['product_price'].notna()])}")
+        print(f"   - Unique categories: {dim_product_df['product_category'].nunique()}")
         
-        print(f"\n📊 Additional Metrics:")
-        print(f"   • Products with prices: {len(dim_product_df[dim_product_df['product_price'].notna()])}")
-        print(f"   • Unique categories: {dim_product_df['product_category'].nunique()}")
+        print(f"\n📊 Variant Summary:")
+        print(f"   - Total variants: {len(dim_product_variant_df)}")
+        print(f"   - Lazada variants: {len(dim_product_variant_df[dim_product_variant_df['platform_key'] == 1])}")
+        print(f"   - Shopee variants: {len(dim_product_variant_df[dim_product_variant_df['platform_key'] == 2])}")
         
-        print(f"\n📊 Variant Summary by Platform:")
-        if len(dim_product_variant_df) > 0:
-            lazada_variants = len(dim_product_variant_df[dim_product_variant_df['platform_key'] == 1])
-            shopee_variants = len(dim_product_variant_df[dim_product_variant_df['platform_key'] == 2])
-            print(f"   • Lazada variants: {lazada_variants}")
-            print(f"   • Shopee variants: {shopee_variants}")
-            print(f"   • Total variants: {len(dim_product_variant_df)}")
-            print(f"   • Variants with attribute 1: {len(dim_product_variant_df[dim_product_variant_df['variant_attribute_1'] != ''])}")
-            print(f"   • Variants with attribute 2: {len(dim_product_variant_df[dim_product_variant_df['variant_attribute_2'] != ''])}")
+        # Show sample of data from each platform
+        print("\n📋 Sample of Lazada products:")
+        lazada_df = dim_product_df[dim_product_df['platform_key'] == 1]
+        if not lazada_df.empty:
+            sample_cols = ['product_key', 'product_item_id', 'product_name', 'product_sku_base', 'product_status', 'product_price', 'platform_key']
+            available_cols = [col for col in sample_cols if col in lazada_df.columns]
+            print(lazada_df[available_cols].head(3).to_string(index=False))
         
-        # Show sample of data
-        print("\n📋 Sample of harmonized product data (both platforms):")
-        sample_cols = ['product_key', 'product_item_id', 'product_name', 'product_sku_base', 'product_status', 'product_price', 'platform_key']
-        available_cols = [col for col in sample_cols if col in dim_product_df.columns]
-        print(dim_product_df[available_cols].head(5).to_string(index=False))
+        print("\n📋 Sample of Shopee products:")
+        shopee_df = dim_product_df[dim_product_df['platform_key'] == 2]
+        if not shopee_df.empty:
+            sample_cols = ['product_key', 'product_item_id', 'product_name', 'product_sku_base', 'product_status', 'product_price', 'platform_key']
+            available_cols = [col for col in sample_cols if col in shopee_df.columns]
+            print(shopee_df[available_cols].head(3).to_string(index=False))
         
         if len(dim_product_variant_df) > 0:
-            print("\n📋 Sample of harmonized variant data (both platforms):")
-            variant_cols = ['variant_key', 'product_key', 'platform_sku_id', 'variant_sku', 'variant_attribute_1', 'variant_attribute_2', 'platform_key']
-            available_variant_cols = [col for col in variant_cols if col in dim_product_variant_df.columns]
-            print(dim_product_variant_df[available_variant_cols].head(5).to_string(index=False))
+            print("\n📋 Sample of Lazada variants:")
+            lazada_variants = dim_product_variant_df[dim_product_variant_df['platform_key'] == 1]
+            if not lazada_variants.empty:
+                variant_cols = ['variant_key', 'product_key', 'platform_sku_id', 'variant_sku', 'variant_attribute_1', 'variant_attribute_2', 'platform_key']
+                available_variant_cols = [col for col in variant_cols if col in lazada_variants.columns]
+                print(lazada_variants[available_variant_cols].head(3).to_string(index=False))
+            
+            print("\n📋 Sample of Shopee variants:")
+            shopee_variants = dim_product_variant_df[dim_product_variant_df['platform_key'] == 2]
+            if not shopee_variants.empty:
+                variant_cols = ['variant_key', 'product_key', 'platform_sku_id', 'variant_sku', 'variant_attribute_1', 'variant_attribute_2', 'platform_key']
+                available_variant_cols = [col for col in variant_cols if col in shopee_variants.columns]
+                print(shopee_variants[available_variant_cols].head(3).to_string(index=False))
         
     else:
-        print("⚠️ No product data found to harmonize from any platform")
+        print("⚠️ No product data found to harmonize")
     
     return dim_product_df, dim_product_variant_df
 
@@ -541,10 +514,6 @@ def save_harmonized_data(product_df, variant_df, output_dir=None):
     return product_path, variant_path
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print("🚀 Multi-Platform Product Harmonization (Lazada & Shopee)")
-    print("=" * 70)
-    
     # Run the harmonization process
     product_df, variant_df = harmonize_dim_product()
     
@@ -553,23 +522,55 @@ if __name__ == "__main__":
         print(f"\n🎉 Product & Variant dimension harmonization completed successfully!")
         print(f"📁 Product file: {product_file}")
         print(f"📁 Variant file: {variant_file}")
-        print(f"\n✅ This dimension includes data from BOTH Lazada and Shopee platforms")
     else:
         print("❌ No data was harmonized. Please check your source files.")
-        print("   Expected files:")
-        print("   • lazada_products_raw.json")
-        print("   • lazada_productitem_raw.json")
-        print("   • shopee_products_raw.json")
-        print("   • shopee_productitem_raw.json")
         
-    # Display mapping used
+    # Display mappings used
     print(f"\n🔗 Field mappings used:")
-    print(f"\n   Lazada Mappings:")
-    for lazada_field, unified_field in list(LAZADA_TO_UNIFIED_MAPPING.items())[:5]:
-        print(f"      {lazada_field} → {unified_field}")
-    print(f"   ... and more")
     
-    print(f"\n   Shopee Mappings:")
-    for shopee_field, unified_field in list(SHOPEE_TO_UNIFIED_MAPPING.items())[:5]:
-        print(f"      {shopee_field} → {unified_field}")
-    print(f"   ... and more")
+    print(f"\nLazada Product mappings:")
+    lazada_product_mappings = {
+        'item_id': 'product_item_id',
+        'attributes.name': 'product_name',
+        'primary_category': 'product_category',
+        'status': 'product_status',
+        'skus[].price': 'product_price',
+        'skus[].SellerSku': 'product_sku_base'
+    }
+    for lazada_field, unified_field in lazada_product_mappings.items():
+        print(f"   {lazada_field} → {unified_field}")
+    
+    print(f"\nShopee Product mappings:")
+    shopee_product_mappings = {
+        'item_id': 'product_item_id',
+        'item_name': 'product_name',
+        'category_id': 'product_category',
+        'item_status': 'product_status',
+        'price_info.current_price': 'product_price',
+        'rating_star': 'product_rating',
+        'model_list[].model_sku': 'product_sku_base'
+    }
+    for shopee_field, unified_field in shopee_product_mappings.items():
+        print(f"   {shopee_field} → {unified_field}")
+    
+    print(f"\nLazada Variant mappings:")
+    lazada_variant_mappings = {
+        'skus[].SkuId': 'platform_sku_id',
+        'skus[].SellerSku': 'variant_sku',
+        'skus[].Variation1': 'variant_attribute_1',
+        'skus[].Variation2': 'variant_attribute_2',
+        'skus[].Variation3': 'variant_attribute_3'
+    }
+    for lazada_field, unified_field in lazada_variant_mappings.items():
+        print(f"   {lazada_field} → {unified_field}")
+    
+    print(f"\nShopee Variant mappings:")
+    shopee_variant_mappings = {
+        'model_list[].model_id': 'platform_sku_id',
+        'model_list[].model_sku': 'variant_sku',
+        'tier_index[0]': 'variant_attribute_1',
+        'tier_index[1]': 'variant_attribute_2',
+        'tier_index[2]': 'variant_attribute_3'
+    }
+    for shopee_field, unified_field in shopee_variant_mappings.items():
+        print(f"   {shopee_field} → {unified_field}")

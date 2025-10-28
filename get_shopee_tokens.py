@@ -29,7 +29,7 @@ PATH_GET_AUTH_URL = "/api/v2/shop/auth_partner"
 PATH_GET_TOKEN = "/api/v2/auth/token/get"
 PATH_REFRESH_TOKEN = "/api/v2/auth/access_token/get"
 
-TOKEN_FILE = "shopee_tokens.json"
+TOKEN_FILE = "tokens/shopee_tokens.json"
 
 # --- Core API Functions ---
 
@@ -37,6 +37,10 @@ def generate_signature(path, timestamp, access_token=None, shop_id=None, body=No
     """
     Generates the required HMAC-SHA256 signature for Shopee API calls.
     The base string composition depends on the type of API call.
+    
+    Format: partner_id + path + timestamp [+ access_token + shop_id] [+ body]
+    
+    For body: DO NOT include it in the base string - it's sent separately
     """
     base_string = f"{SHOPEE_PARTNER_ID}{path}{timestamp}"
 
@@ -44,9 +48,8 @@ def generate_signature(path, timestamp, access_token=None, shop_id=None, body=No
     if access_token and shop_id:
         base_string += f"{access_token}{shop_id}"
     
-    # For POST requests to get/refresh tokens, the body is part of the signature
-    if body:
-        base_string += json.dumps(body)
+    # NOTE: Body is NOT part of the signature for token/get endpoint
+    # Body is only signed for shop-level APIs
 
     signature = hmac.new(
         SHOPEE_PARTNER_KEY.encode('utf-8'),
@@ -94,7 +97,7 @@ def get_access_token(auth_code, shop_id):
         "shop_id": int(shop_id)
     }
     
-    sign = generate_signature(path, timestamp, body=body)
+    sign = generate_signature(path, timestamp)  # No body in signature for token/get
     
     url = (
         f"{BASE_URL}{path}?"
@@ -102,6 +105,21 @@ def get_access_token(auth_code, shop_id):
         f"timestamp={timestamp}&"
         f"sign={sign}"
     )
+    
+    # --- Debug Info ---
+    base_string_debug = f"{SHOPEE_PARTNER_ID}{path}{timestamp}"
+    print("\n" + "="*60)
+    print("DEBUG INFO - GET ACCESS TOKEN")
+    print(f"Path: {path}")
+    print(f"Timestamp: {timestamp}")
+    print(f"Partner ID: {SHOPEE_PARTNER_ID}")
+    print(f"Shop ID: {shop_id}")
+    print(f"Base String (NO BODY): {base_string_debug}")
+    print(f"Signature: {sign}")
+    print(f"Full URL: {url}")
+    print(f"Request Body (sent separately): {json.dumps(body)}")
+    print("="*60 + "\n")
+    # --- End Debug ---
     
     headers = {"Content-Type": "application/json"}
     
@@ -133,8 +151,8 @@ def refresh_access_token(current_refresh_token, shop_id):
         "partner_id": SHOPEE_PARTNER_ID,
         "shop_id": int(shop_id)
     }
-    # The signature for this call also includes the body
-    sign = generate_signature(path, timestamp, body=body)
+    # No body in signature for access_token/get either
+    sign = generate_signature(path, timestamp)
 
     url = (
         f"{BASE_URL}{path}?"
@@ -143,10 +161,16 @@ def refresh_access_token(current_refresh_token, shop_id):
         f"sign={sign}"
     )
     
+    print(f"🔍 Debug - Refresh Token Request:")
+    print(f"   URL: {url}")
+    print(f"   Body: {json.dumps(body, indent=2)}")
+    
     headers = {"Content-Type": "application/json"}
     
     try:
         response = requests.post(url, json=body, headers=headers, timeout=10)
+        print(f"   Response Status: {response.status_code}")
+        print(f"   Response: {response.text}")
         response.raise_for_status()
         data = response.json()
 
@@ -209,44 +233,6 @@ def get_access_token(auth_code, shop_id):
                 "raw": data,
             }
 
-        data["created_at"] = int(time.time())
-        data["success"] = True
-        return data
-
-    except requests.exceptions.RequestException as e:
-        return {"success": False, "error": str(e)}
-
-def refresh_access_token(current_refresh_token, shop_id):
-    """Refreshes an access token using a refresh token."""
-    path = PATH_REFRESH_TOKEN
-    body = {
-        "refresh_token": current_refresh_token,
-        "partner_id": SHOPEE_PARTNER_ID,
-        "shop_id": int(shop_id)
-    }
-    sign, timestamp = generate_signature(path, body)
-    
-    url = (
-        f"{BASE_URL}{path}?"
-        f"partner_id={SHOPEE_PARTNER_ID}&"
-        f"timestamp={timestamp}&"
-        f"sign={sign}"
-    )
-
-    headers = {"Content-Type": "application/json"}
-
-    try:
-        response = requests.post(url, json=body, headers=headers, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-
-        if data.get("error"):
-            return {
-                "success": False,
-                "error": data.get("message", "Refresh failed"),
-                "raw": data,
-            }
-        
         data["created_at"] = int(time.time())
         data["success"] = True
         return data
@@ -363,44 +349,6 @@ def get_new_tokens():
         if 'raw' in token_result:
             print(f"   Raw response: {token_result['raw']}")
 
-def refresh_access_token(current_refresh_token, shop_id):
-    """Refreshes an access token using a refresh token."""
-    path = PATH_REFRESH_TOKEN
-    body = {
-        "refresh_token": current_refresh_token,
-        "partner_id": SHOPEE_PARTNER_ID,
-        "shop_id": int(shop_id)
-    }
-    sign, timestamp = generate_signature(path, body)
-    
-    url = (
-        f"{BASE_URL}{path}?"
-        f"partner_id={SHOPEE_PARTNER_ID}&"
-        f"timestamp={timestamp}&"
-        f"sign={sign}"
-    )
-
-    headers = {"Content-Type": "application/json"}
-
-    try:
-        response = requests.post(url, json=body, headers=headers, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-
-        if data.get("error"):
-            return {
-                "success": False,
-                "error": data.get("message", "Refresh failed"),
-                "raw": data,
-            }
-        
-        data["created_at"] = int(time.time())
-        data["success"] = True
-        return data
-
-    except requests.exceptions.RequestException as e:
-        return {"success": False, "error": str(e)}
-
 def save_tokens(token_data):
     """Saves the given token data to the shopee_tokens.json file."""
     success = save_tokens_to_file(token_data)
@@ -505,4 +453,28 @@ def main():
             print("Invalid choice. Please try again.")
 
 if __name__ == "__main__":
-    main()
+    import sys
+    
+    # Check for command-line argument for quick refresh
+    if len(sys.argv) > 1 and sys.argv[1] == '--refresh':
+        print("=== Quick Token Refresh ===")
+        tokens = load_tokens_from_file()
+        if not tokens or 'refresh_token' not in tokens:
+            print("❌ No valid refresh token found in tokens/shopee_tokens.json")
+            print("Please run: python3 get_shopee_tokens.py")
+            sys.exit(1)
+        
+        print(f"Refreshing access token for shop ID {tokens['shop_id']}...")
+        result = refresh_access_token(tokens['refresh_token'], tokens['shop_id'])
+        
+        if result.get("success"):
+            save_tokens(result)
+            print("\n✅ Tokens refreshed and saved successfully!")
+            print(f"New access token expires in: {result.get('expire_in', 0)} seconds ({result.get('expire_in', 0)/3600:.2f} hours)")
+            sys.exit(0)
+        else:
+            print(f"\n❌ Error refreshing token: {result.get('error')}")
+            print(f"Raw response: {result.get('raw')}")
+            sys.exit(1)
+    else:
+        main()

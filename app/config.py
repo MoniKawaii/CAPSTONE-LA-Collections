@@ -7,6 +7,10 @@ import pandas as pd
 import os
 import json
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # =============================================================================
 # KEYS & ACCESS TOKENS
@@ -126,12 +130,7 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 LAZADA_API_URL = "https://api.lazada.com.ph/rest"
 LAZADA_AUTH_URL = "https://auth.lazada.com/oauth/authorize"
-SHOPEE_API_URL = "https://partner.shopeemobile.com"
-SHOPEE_TEST_API_URL = "https://partner.test-stable.shopeemobile.com"
-
-# Determine Shopee environment from env variable
-SHOPEE_API_ENV = os.getenv("SHOPEE_API_ENV", "sandbox").lower()
-SHOPEE_BASE_URL = SHOPEE_TEST_API_URL if SHOPEE_API_ENV == "sandbox" else SHOPEE_API_URL
+SHOPEE_BASE_URL = "https://partner.shopeemobile.com"
 
 # =============================================================================
 # TABLE STRUCTURE - DIMENSIONAL TABLES (Based on LA_Collections_Schema.sql)

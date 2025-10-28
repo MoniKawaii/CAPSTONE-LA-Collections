@@ -1,5 +1,5 @@
 """
-Dim_Time Generator - LA Collections (Multi-Platform: Lazada & Shopee)
+Dim_Time Generator - LA Collections
 Generates time dimension following LA_Collections_Schema.sql specifications
 
 Schema Requirements:
@@ -24,18 +24,12 @@ Business Rules:
 - date: Format YYYY-MM-DD
 - is_weekend: TRUE for Saturday and Sunday
 - is_payday: TRUE for 15th day and 30th or 31st day, or 13th month pay
-- is_mega_sale_day: TRUE for 11.11, 12.12, etc. (applies to both Lazada & Shopee)
-
-Platform Support:
-- Works with both Lazada and Shopee order data
-- Dynamically adjusts date range based on actual order timestamps
-- Philippines e-commerce sale events (applicable to both platforms)
+- is_mega_sale_day: TRUE for 11.11, 12.12, etc. black friday, christmas
 """
 
 import pandas as pd
 import sys
 import os
-import json
 from datetime import datetime, date, timedelta
 import calendar
 
@@ -51,121 +45,9 @@ except ImportError:
     def apply_data_types(df, table_name):
         return df
 
-
-def load_orders_for_date_range(platform='lazada'):
-    """
-    Load raw orders from JSON file to determine date range
-    
-    Args:
-        platform (str): 'lazada' or 'shopee'
-        
-    Returns:
-        tuple: (min_date, max_date) or (None, None) if no data
-    """
-    filename = f'{platform}_orders_raw.json'
-    staging_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Staging')
-    json_path = os.path.join(staging_dir, filename)
-    
-    try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            orders_data = json.load(f)
-        
-        if not orders_data:
-            return None, None
-        
-        dates = []
-        
-        if platform == 'lazada':
-            # Lazada uses 'created_at' field with ISO format
-            for order in orders_data:
-                created_at_str = order.get('created_at', '')
-                if created_at_str:
-                    try:
-                        dt = datetime.fromisoformat(created_at_str.replace('Z', '+00:00'))
-                        dates.append(dt.date())
-                    except (ValueError, AttributeError):
-                        pass
-        
-        elif platform == 'shopee':
-            # Shopee uses 'create_time' field with Unix timestamp
-            for order in orders_data:
-                create_time = order.get('create_time')
-                if create_time:
-                    try:
-                        dt = datetime.fromtimestamp(create_time)
-                        dates.append(dt.date())
-                    except (ValueError, TypeError, OSError):
-                        pass
-        
-        if dates:
-            return min(dates), max(dates)
-        else:
-            return None, None
-            
-    except FileNotFoundError:
-        print(f"  ⚠️ {platform.capitalize()} orders file not found: {json_path}")
-        return None, None
-    except json.JSONDecodeError as e:
-        print(f"  ❌ Error parsing {platform.capitalize()} JSON: {e}")
-        return None, None
-
-
-def determine_date_range(use_dynamic_range=True):
-    """
-    Determine date range for time dimension based on actual order data from both platforms
-    
-    Args:
-        use_dynamic_range (bool): If True, use actual order dates; if False, use fixed range
-        
-    Returns:
-        tuple: (start_date_str, end_date_str) in YYYY-MM-DD format
-    """
-    default_start = "2020-04-01"
-    default_end = "2025-04-30"
-    
-    if not use_dynamic_range:
-        return default_start, default_end
-    
-    print("  🔍 Analyzing order data to determine date range...")
-    
-    # Check Lazada orders
-    lazada_min, lazada_max = load_orders_for_date_range('lazada')
-    
-    # Check Shopee orders
-    shopee_min, shopee_max = load_orders_for_date_range('shopee')
-    
-    # Determine overall min and max
-    all_dates = []
-    
-    if lazada_min and lazada_max:
-        all_dates.extend([lazada_min, lazada_max])
-        print(f"  ✓ Lazada orders: {lazada_min} to {lazada_max}")
-    
-    if shopee_min and shopee_max:
-        all_dates.extend([shopee_min, shopee_max])
-        print(f"  ✓ Shopee orders: {shopee_min} to {shopee_max}")
-    
-    if all_dates:
-        actual_min = min(all_dates)
-        actual_max = max(all_dates)
-        
-        # Add buffer: start from beginning of month, end at end of month
-        buffer_start = actual_min.replace(day=1)
-        
-        # End at last day of max month
-        last_day = calendar.monthrange(actual_max.year, actual_max.month)[1]
-        buffer_end = actual_max.replace(day=last_day)
-        
-        print(f"  📊 Dynamic date range: {buffer_start} to {buffer_end}")
-        return buffer_start.strftime('%Y-%m-%d'), buffer_end.strftime('%Y-%m-%d')
-    else:
-        print(f"  ⚠️ No order data found, using default range: {default_start} to {default_end}")
-        return default_start, default_end
-
 def is_mega_sale_day(check_date):
     """
     Determine if a date is a mega sale day based on Philippines e-commerce patterns
-    Applies to both Lazada and Shopee platforms
     
     Args:
         check_date (datetime.date): Date to check
@@ -176,9 +58,9 @@ def is_mega_sale_day(check_date):
     month = check_date.month
     day = check_date.day
     
-    # Major sale days in Philippines (both Lazada & Shopee)
+    # Major sale days in Philippines
     mega_sale_days = [
-        # Double digit days (Lazada & Shopee mega sales)
+        # Double digit days (11.11, 12.12, etc.)
         (1, 1),   # New Year
         (2, 2),   # 2.2 Sale
         (3, 3),   # 3.3 Sale
@@ -187,41 +69,32 @@ def is_mega_sale_day(check_date):
         (6, 6),   # 6.6 Sale
         (7, 7),   # 7.7 Sale
         (8, 8),   # 8.8 Sale
-        (9, 9),   # 9.9 Sale (Big Sale for both platforms)
+        (9, 9),   # 9.9 Sale
         (10, 10), # 10.10 Sale
-        (11, 11), # Singles Day (BIGGEST sale for both Lazada & Shopee)
-        (12, 12), # 12.12 Year End Sale (both platforms)
+        (11, 11), # Singles Day (biggest sale)
+        (12, 12), # 12.12 Sale
         
-        # Major holidays and sale events (Philippines)
+        # Major holidays and sale events
         (2, 14),  # Valentine's Day
-        (3, 8),   # International Women's Day (Shopee Women's Festival)
         (5, 1),   # Labor Day
         (6, 12),  # Independence Day
         (8, 21),  # Ninoy Aquino Day (often sale day)
         (11, 1),  # All Saints Day
         (12, 24), # Christmas Eve
-        (12, 25), # Christmas (Peak shopping season)
-        (12, 26), # Boxing Day
+        (12, 25), # Christmas
         (12, 30), # Rizal Day
-        (12, 31), # New Year's Eve
         
-        # Shopee-specific mega sales
-        (3, 15),  # Shopee 3.15 Consumer Day (mid-month sale)
-        (4, 15),  # Shopee 4.15 Sale
-        (6, 16),  # Shopee 6.16 Mid-Year Sale
-        (8, 18),  # Shopee 8.18 Sale
-        (10, 20), # Shopee 10.20 Sale
-        
-        # Lazada-specific mega sales
-        (3, 27),  # Lazada Birthday Sale (end of March)
+        # Black Friday (varies - approximate to last Friday of November)
+        # We'll handle this separately
     ]
     
     # Check if it's one of the standard mega sale days
     if (month, day) in mega_sale_days:
         return True
     
-    # Black Friday (last Friday of November) - both platforms
+    # Check for Black Friday (last Friday of November)
     if month == 11:
+        # Find the last Friday of November
         last_day = calendar.monthrange(check_date.year, 11)[1]
         last_friday = None
         for d in range(last_day, 0, -1):
@@ -231,8 +104,9 @@ def is_mega_sale_day(check_date):
         if day == last_friday:
             return True
     
-    # Cyber Monday (Monday after last Thursday of November) - both platforms
+    # Check for Cyber Monday (Monday after last Thursday of November)
     if month == 11 or (month == 12 and day <= 3):
+        # Find the last Thursday of November
         last_day = calendar.monthrange(check_date.year, 11)[1]
         last_thursday = None
         for d in range(last_day, 0, -1):
@@ -282,27 +156,22 @@ def is_payday(check_date):
     
     return False
 
-def transform_dim_time(raw_data=None, start_date=None, end_date=None, use_dynamic_range=True):
+def transform_dim_time(raw_data=None, start_date="2020-04-01", end_date="2025-04-30"):
     """
     Generate Dim_Time table following LA_Collections_Schema.sql
-    Works with both Lazada and Shopee order data
+    Fixed date range: April 2020 to April 2025
     
     Args:
         raw_data: Optional raw data (not used in this version)
-        start_date (str): Start date in YYYY-MM-DD format (optional, auto-detected if None)
-        end_date (str): End date in YYYY-MM-DD format (optional, auto-detected if None)
-        use_dynamic_range (bool): If True, determine date range from actual order data
+        start_date (str): Start date in YYYY-MM-DD format (default: 2020-04-01)
+        end_date (str): End date in YYYY-MM-DD format (default: 2025-04-30)
     
     Returns:
         pd.DataFrame: Time dimension DataFrame
     """
     
-    print("🔄 Starting Dim_Time generation for multi-platform (Lazada & Shopee)...")
-    
-    # Determine date range
-    if start_date is None or end_date is None:
-        start_date, end_date = determine_date_range(use_dynamic_range=use_dynamic_range)
-    
+    print("🔄 Starting Dim_Time generation...")
+    print(f"  📅 Fixed date range: April 2020 to April 2025")
     print(f"  📅 Generating time dimension from {start_date} to {end_date}")
     
     # Parse start and end dates
@@ -389,12 +258,8 @@ def transform_dim_time(raw_data=None, start_date=None, end_date=None, use_dynami
 def main():
     """Main function to generate and save time dimension"""
     
-    print("=" * 70)
-    print("🚀 Multi-Platform Time Dimension Generator (Lazada & Shopee)")
-    print("=" * 70)
-    
-    # Generate time dimension with dynamic date range based on actual order data
-    df = transform_dim_time(use_dynamic_range=True)
+    # Generate time dimension with fixed date range: April 2020 to April 2025
+    df = transform_dim_time()
     
     # Display results
     if len(df) > 0:
@@ -410,29 +275,19 @@ def main():
         print("\n🎯 Special days found:")
         mega_sales = df[df['is_mega_sale_day'] == True]
         if len(mega_sales) > 0:
-            print(f"Mega sale days: {len(mega_sales)} total")
-            print("First 15 mega sale days:")
-            print(mega_sales[['date', 'month_name', 'day']].head(15).to_string(index=False))
-            
-            # Break down by platform-specific sales
-            print("\n📊 Platform-specific mega sales included:")
-            print("  • Both platforms: 1.1, 2.2, 3.3, ..., 11.11 (Singles Day), 12.12")
-            print("  • Shopee-specific: 3.15, 4.15, 6.16, 8.18, 10.20")
-            print("  • Lazada-specific: 3.27 (Birthday Sale)")
-            print("  • Major holidays: Christmas, New Year, Independence Day, etc.")
+            print("Mega sale days (first 10):")
+            print(mega_sales[['date', 'month_name', 'day']].head(10).to_string(index=False))
         
         paydays = df[df['is_payday'] == True]
         if len(paydays) > 0:
-            print(f"\n💰 Paydays found: {len(paydays)} (15th and end of month)")
+            print(f"\nPaydays found: {len(paydays)} (15th and end of month)")
             print("Sample paydays:")
             print(paydays[['date', 'month_name', 'day']].head(5).to_string(index=False))
         
-        # Save to data folder as time_dim.csv (root data folder, not app/data)
-        # Navigate from app/Transformation to root directory, then to data folder
-        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        data_dir = os.path.join(root_dir, 'data')
-        os.makedirs(data_dir, exist_ok=True)
-        output_file = os.path.join(data_dir, 'time_dim.csv')
+        # Save to app/Transformed folder as dim_time.csv
+        transformed_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Transformed')
+        os.makedirs(transformed_dir, exist_ok=True)
+        output_file = os.path.join(transformed_dir, 'dim_time.csv')
         df.to_csv(output_file, index=False)
         print(f"\n💾 Saved to: {output_file}")
         
@@ -450,9 +305,6 @@ def main():
         year_counts = df.groupby('year').size()
         for year, count in year_counts.items():
             print(f"    {year}: {count} days")
-        
-        print("\n✅ Time dimension generation complete!")
-        print("   This dimension works for BOTH Lazada and Shopee data")
     else:
         print("❌ No time dimension data generated")
 
