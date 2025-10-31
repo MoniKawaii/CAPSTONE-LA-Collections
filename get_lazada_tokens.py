@@ -77,8 +77,9 @@ def main():
         update_env_file_tokens(token_result)
         
         # Step 5: Save tokens to JSON file as backup
-        if save_tokens_to_file(token_result):
-            print("✅ Tokens also saved to lazada_tokens.json as backup")
+        token_file_path = os.path.join('app', 'lazada', 'lazada_tokens.json')
+        if save_tokens_to_file(token_result, token_file_path):
+            print(f"✅ Tokens also saved to {token_file_path} as backup")
         
         # Step 6: Test token refresh
         print(f"\nStep 3: Testing token refresh...")
@@ -99,7 +100,8 @@ def test_saved_tokens():
     print("\n=== Testing Saved Tokens ===")
     
     # Load tokens from file
-    tokens = load_tokens_from_file()
+    token_file_path = os.path.join('app', 'lazada', 'lazada_tokens.json')
+    tokens = load_tokens_from_file(token_file_path)
     
     if tokens:
         print("✅ Tokens loaded from file")
@@ -126,9 +128,10 @@ def test_saved_tokens():
                 
                 # Save updated tokens
                 import json
-                with open('lazada_tokens.json', 'w') as f:
+                token_file_path = os.path.join('app', 'lazada', 'lazada_tokens.json')
+                with open(token_file_path, 'w') as f:
                     json.dump(tokens, f, indent=2)
-                print("✅ Updated tokens saved")
+                print(f"✅ Updated tokens saved to {token_file_path}")
             else:
                 print(f"❌ Token refresh failed: {refresh_result['error']}")
         else:
