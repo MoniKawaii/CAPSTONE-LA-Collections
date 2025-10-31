@@ -212,13 +212,19 @@ def generate_platform_customer_id(first_name, phone):
     return platform_customer_id
 
 
-def generate_shopee_platform_customer_id(buyer_username, phone):
+def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, phone=None):
     """
-    Generate platform_customer_id for Shopee using same logic as dim_customer
-    to ensure proper foreign key relationship
+    Generate platform_customer_id for Shopee using buyer_user_id from API
+    Falls back to username+phone format if buyer_user_id is not available
+    Must match logic in harmonize_dim_customer.py for foreign key relationship
     """
     import re
     
+    # Use buyer_user_id if available (preferred method - raw value)
+    if buyer_user_id:
+        return str(buyer_user_id)
+    
+    # Fallback helper functions
     def clean_username(username):
         if not username or len(username) < 2:
             return "XX"
@@ -241,11 +247,14 @@ def generate_shopee_platform_customer_id(buyer_username, phone):
         else:
             return "00", "00"
     
-    username_chars = clean_username(buyer_username)
-    first_2, last_2 = extract_phone_digits(phone)
+    # Fallback to old method if buyer_user_id not available
+    if buyer_username and phone:
+        username_chars = clean_username(buyer_username)
+        first_2, last_2 = extract_phone_digits(phone)
+        return f"SP{username_chars}{first_2}{last_2}"
     
-    platform_customer_id = f"SP{username_chars}{first_2}{last_2}"
-    return platform_customer_id
+    # Last resort fallback
+    return f"SP_UNKNOWN_{hash(str(buyer_username or '') + str(phone or ''))}"
 
 
 def generate_time_key_from_timestamp(timestamp):
@@ -389,7 +398,7 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_order_df,
                     
                     # Create individual fact record for this order item
                     fact_record = {
-                        'order_item_key': f"OI{order_item_key_counter:08d}",  # Generate unique key
+                        'order_item_key': f"LO{order_item_key_counter:08d}",  # LO prefix for Lazada
                         'orders_key': orders_key,
                         'product_key': product_key,  # Should not be None due to earlier check
                         'product_variant_key': product_variant_key if product_variant_key else None,
@@ -493,11 +502,16 @@ def extract_order_items_from_shopee(orders_data, dim_order_df, dim_customer_df, 
                 continue
             
             # Get customer info from order
+            buyer_user_id = order.get('buyer_user_id')  # Primary ID from API
             buyer_username = order.get('buyer_username', '')
             recipient_address = order.get('recipient_address', {})
             phone = recipient_address.get('phone', '') if isinstance(recipient_address, dict) else ''
             
-            platform_customer_id = generate_shopee_platform_customer_id(buyer_username, phone)
+            platform_customer_id = generate_shopee_platform_customer_id(
+                buyer_user_id=buyer_user_id,
+                buyer_username=buyer_username,
+                phone=phone
+            )
             customer_key = customer_key_lookup.get(platform_customer_id)
             
             # Debug customer key lookup for the first few records
@@ -562,7 +576,7 @@ def extract_order_items_from_shopee(orders_data, dim_order_df, dim_customer_df, 
                     
                     # Create individual fact record for this order item
                     fact_record = {
-                        'order_item_key': f"OI{order_item_key_counter:08d}",  # Generate unique key
+                        'order_item_key': f"SO{order_item_key_counter:08d}",  # SO prefix for Shopee
                         'orders_key': orders_key,
                         'product_key': product_key,
                         'product_variant_key': product_variant_key if product_variant_key else None,

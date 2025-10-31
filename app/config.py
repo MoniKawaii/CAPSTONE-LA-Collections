@@ -476,7 +476,7 @@ COLUMN_DATA_TYPES = {
         'is_mega_sale_day': 'bool'
     },
     'dim_customer': {
-        'customer_key': 'int',
+        'customer_key': 'float64',  # Changed to float64 to handle decimal points (1.1, 1.2, etc.)
         'platform_customer_id': 'str',
         'customer_city': 'str',
         'buyer_segment': 'str',
@@ -524,7 +524,7 @@ COLUMN_DATA_TYPES = {
         'product_key': 'int',
         'product_variant_key': 'int',
         'time_key': 'int',
-        'customer_key': 'int',
+        'customer_key': 'float64',  # Changed to float64 to match dim_customer (1.1, 1.2, etc.)
         'platform_key': 'int',
         'item_quantity': 'int',
         'paid_price': 'float64',  # Decimal equivalent in pandas

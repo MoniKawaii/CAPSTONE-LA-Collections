@@ -162,22 +162,31 @@ def generate_platform_customer_id(first_name, phone):
     return platform_customer_id
 
 
-def generate_shopee_platform_customer_id(buyer_username, phone):
+def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, phone=None):
     """
-    Generate platform_customer_id using Shopee naming convention
+    Generate platform_customer_id using Shopee buyer_user_id from API
+    Falls back to username+phone format if buyer_user_id is not available
     
     Args:
-        buyer_username (str): Shopee buyer username
-        phone (str): Customer phone number
+        buyer_user_id (int/str): Shopee buyer_user_id from API (preferred)
+        buyer_username (str): Shopee buyer username (fallback)
+        phone (str): Customer phone number (fallback)
         
     Returns:
-        str: Generated platform_customer_id in format SP{first}{last}{first2}{last2}
+        str: platform_customer_id - raw buyer_user_id or fallback format
     """
-    name_chars = clean_name(buyer_username)
-    first_2, last_2 = extract_phone_digits(phone)
+    # Use buyer_user_id if available (preferred method - raw value)
+    if buyer_user_id:
+        return str(buyer_user_id)
     
-    platform_customer_id = f"SP{name_chars}{first_2}{last_2}"
-    return platform_customer_id
+    # Fallback to old method if buyer_user_id not available
+    if buyer_username and phone:
+        name_chars = clean_name(buyer_username)
+        first_2, last_2 = extract_phone_digits(phone)
+        return f"SP{name_chars}{first_2}{last_2}"
+    
+    # Last resort fallback
+    return f"SP_UNKNOWN_{hash(str(buyer_username or '') + str(phone or ''))}"
 
 
 def extract_customers_from_lazada_orders(orders_data):
@@ -247,7 +256,7 @@ def extract_customers_from_lazada_orders(orders_data):
             buyer_segment = "New Buyer" if total_orders == 1 else "Returning Buyer"
             
             customer_record = {
-                'customer_key': customer_key_counter,
+                'customer_key': float(f"1.1{customer_key_counter:04d}"),  # 1.1 prefix for Lazada (e.g., 1.10001)
                 'platform_customer_id': platform_customer_id,
                 'customer_city': customer_info['city'],
                 'buyer_segment': buyer_segment,
@@ -289,14 +298,19 @@ def extract_customers_from_shopee_orders(orders_data):
     
     for order in orders_data:
         try:
-            # Extract customer information from recipient_address
+            # Extract customer information from order and recipient_address
             recipient_address = order.get('recipient_address', {})
+            buyer_user_id = order.get('buyer_user_id')  # Primary ID from API
             buyer_username = order.get('buyer_username', '')
             phone = recipient_address.get('phone', '')
             city = recipient_address.get('city', '')
             
-            # Generate platform_customer_id
-            platform_customer_id = generate_shopee_platform_customer_id(buyer_username, phone)
+            # Generate platform_customer_id using buyer_user_id (preferred)
+            platform_customer_id = generate_shopee_platform_customer_id(
+                buyer_user_id=buyer_user_id,
+                buyer_username=buyer_username,
+                phone=phone
+            )
             
             # Extract order date for customer analytics (Shopee uses Unix timestamp)
             create_time = order.get('create_time')
@@ -341,7 +355,7 @@ def extract_customers_from_shopee_orders(orders_data):
             buyer_segment = "New Buyer" if total_orders == 1 else "Returning Buyer"
             
             customer_record = {
-                'customer_key': customer_key_counter,
+                'customer_key': float(f"1.2{customer_key_counter:04d}"),  # 1.2 prefix for Shopee (e.g., 1.20001)
                 'platform_customer_id': platform_customer_id,
                 'customer_city': customer_info['city'],
                 'buyer_segment': buyer_segment,
@@ -408,8 +422,9 @@ def harmonize_dim_customer():
     
     customers_df = pd.concat(all_customers, ignore_index=True)
     
-    # Re-assign customer_key sequentially
-    customers_df['customer_key'] = range(1, len(customers_df) + 1)
+    # Re-assign customer_key with platform-specific prefixes
+    # Keep existing customer_key values (already have 1.1 or 1.2 prefix)
+    # No need to reassign - they're already properly formatted
     
     print(f"\n✅ Successfully harmonized {len(customers_df)} customer records from both platforms")
     print(f"📊 Data shape: {customers_df.shape}")
