@@ -1,0 +1,10 @@
+-still need to resolve shopee variants by getting product model api...maybe fix it to use the getvariation not the model idk..
+- update the lazada products review
+- update fact orders and fact traffic and sales aggregate derive db schema from config mappings
+- product variant should include all base product even if theres no variant then it should show up only once, then update the column names to be 'scent' and 'volume',  but it is not directly mapped bc sometimes the object is not in attribute 3, so if any of the options has numbers and with the string 'ml' then it should be stored in volume. otherwise the other attribute is stored in the "scent" column
+- might transfer the price from dim_product to dim_product_variant and then maybe also add versioning like created at and last updated for versioning. 
+- impute the missing fields of price like an average price of the whole shop
+- impute other missing data
+- replace missing sku or smth with "not found"
+- refactor fact tables for data consistency
+- update the descriptive computations and dashboard robustness

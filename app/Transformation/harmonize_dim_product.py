@@ -509,6 +509,20 @@ def harmonize_shopee_product_record(product_data, product_key, productitem_data,
     if price_info and len(price_info) > 0 and isinstance(price_info[0], dict):
         current_price = price_info[0].get('current_price')
     
+    # If no price in main product data, check variant data for products with models
+    if current_price is None and product_data.get('has_model'):
+        # Look for price in variant data
+        for variant_record in variant_data:
+            if isinstance(variant_record, dict) and variant_record.get('item_id') == item_id:
+                model_list = variant_record.get('model_list', [])
+                if model_list and len(model_list) > 0:
+                    first_model = model_list[0]
+                    if isinstance(first_model, dict):
+                        model_price_info = first_model.get('price_info', {})
+                        if isinstance(model_price_info, dict):
+                            current_price = model_price_info.get('current_price')
+                            break
+    
     # Try to convert price to float
     if current_price is not None:
         try:
@@ -708,6 +722,7 @@ if __name__ == "__main__":
         print(f"✅ Parsed variant attributes from model_name/saleProp with 'N/A' defaults")
         print(f"✅ Used float decimal IDs throughout (product_key: x.1/x.2, product_variant_key: x.1/x.2)")
         print(f"✅ Calculated Shopee product ratings from review data (45 products with ratings, avg: 4.90)")
+        print(f"✅ Enhanced Shopee price extraction (fallback to variant data for multi-model products)")
                 
     except Exception as e:
         print(f"❌ Error during harmonization: {e}")
