@@ -80,6 +80,19 @@ class ShopeeDataExtractor:
         
         return signature
     
+    def _count_months(self, start_date, end_date):
+        """
+        Count the number of months between two dates
+        """
+        from dateutil.relativedelta import relativedelta
+        
+        count = 0
+        current = start_date
+        while current < end_date:
+            count += 1
+            current += relativedelta(months=1)
+        return count
+    
     def _make_api_call(self, path, method="GET", body=None, call_type="general"):
         """Make API call with rate limiting and tracking"""
         if self.api_calls_made >= self.max_daily_calls:
@@ -134,14 +147,11 @@ class ShopeeDataExtractor:
                 error_msg = data.get('message', 'Unknown error')
                 print(f"❌ Shopee API Error - Message: {error_msg}")
                 
-                # Handle rate limit
-                if 'rate limit' in error_msg.lower():
-                    print(f"   ⏳ Rate limit hit! Waiting 60 seconds before retry...")
-                    time.sleep(60)
-                    print(f"   🔄 Retrying API call...")
-                    return self._make_api_call(path, method, body, call_type)
+                # For rate limit errors, return the data so retry logic can handle it
+                if 'too many requests' in error_msg.lower() or 'rate limit' in error_msg.lower():
+                    return data  # Return error data for retry handling
                 
-                return None
+                return None  # For other errors, return None
             
             # Rate limiting to prevent API frequency issues
             time.sleep(1.5)
@@ -158,6 +168,129 @@ class ShopeeDataExtractor:
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False, default=str)
         print(f"💾 Saved {len(data) if isinstance(data, list) else 1} records to {filename}")
+    
+    def _get_last_date_from_data(self, data, date_field='create_time'):
+        """
+        Find the last date in a dataset
+        
+        Args:
+            data (list): List of records
+            date_field (str): Field name containing date information
+            
+        Returns:
+            datetime: Last date found, or None if no dates found
+        """
+        if not data:
+            return None
+        
+        last_date = None
+        for record in data:
+            date_value = record.get(date_field)
+            if date_value:
+                try:
+                    # Handle Unix timestamp (Shopee often uses timestamps)
+                    if isinstance(date_value, (int, float)):
+                        current_date = datetime.fromtimestamp(date_value)
+                    elif isinstance(date_value, str):
+                        # Try parsing various date formats
+                        current_date = datetime.fromisoformat(date_value.replace('Z', '+00:00'))
+                    else:
+                        continue
+                    
+                    if last_date is None or current_date > last_date:
+                        last_date = current_date
+                except (ValueError, TypeError):
+                    continue
+        
+        return last_date
+    
+    def _find_last_extraction_date(self):
+        """
+        Find the last extraction date across all data files
+        
+        Returns:
+            dict: Dictionary with last dates for each data type
+        """
+        last_dates = {}
+        
+        # Check orders data
+        orders_data = self._load_from_json('shopee_orders_raw.json')
+        if orders_data:
+            last_dates['orders'] = self._get_last_date_from_data(orders_data, 'create_time')
+        
+        # Check traffic data (empty for Shopee but keep for consistency)
+        traffic_data = self._load_from_json('shopee_reportoverview_raw.json')
+        if traffic_data:
+            # For consistency, though Shopee traffic is empty
+            last_dates['traffic'] = None
+        
+        # Check product reviews
+        reviews_data = self._load_from_json('shopee_productreview_raw.json')
+        if reviews_data:
+            last_dates['reviews'] = self._get_last_date_from_data(reviews_data, 'ctime')
+        
+        return last_dates
+    
+    def _remove_duplicates_by_id(self, existing_data, new_data, id_field):
+        """
+        Remove duplicates from new data based on ID field, keeping the latest version
+        
+        Args:
+            existing_data (list): Existing records
+            new_data (list): New records to merge
+            id_field (str): Field name to use as unique identifier
+            
+        Returns:
+            list: Merged data without duplicates
+        """
+        # Create a dict of existing records by ID
+        existing_by_id = {}
+        for record in existing_data:
+            record_id = record.get(id_field)
+            if record_id:
+                existing_by_id[record_id] = record
+        
+        # Add/update with new records
+        for record in new_data:
+            record_id = record.get(id_field)
+            if record_id:
+                existing_by_id[record_id] = record
+        
+        # Return as list
+        return list(existing_by_id.values())
+    
+    def _get_month_start_date(self, date_obj):
+        """Get the first day of the month for a given date"""
+        return date_obj.replace(day=1)
+    
+    def _should_start_fresh_extraction(self, last_dates):
+        """
+        Determine if we should start fresh extraction based on last dates
+        
+        Args:
+            last_dates (dict): Dictionary of last dates by data type
+            
+        Returns:
+            tuple: (should_start_fresh, start_date)
+        """
+        if not last_dates or not any(last_dates.values()):
+            # No existing data, start from default date
+            return False, datetime(2020, 4, 1)
+        
+        # Find the most recent date across all data types
+        most_recent = None
+        for date_val in last_dates.values():
+            if date_val and (most_recent is None or date_val > most_recent):
+                most_recent = date_val
+        
+        if most_recent:
+            # Start from the beginning of the month containing the most recent date
+            start_date = self._get_month_start_date(most_recent)
+            print(f"🔍 Last extraction date found: {most_recent.strftime('%Y-%m-%d')}")
+            print(f"🔄 Will restart extraction from: {start_date.strftime('%Y-%m-%d')} (beginning of month)")
+            return False, start_date
+        else:
+            return False, datetime(2020, 4, 1)
     
     def _load_from_json(self, filename):
         """Load data from JSON file if it exists"""
@@ -264,32 +397,55 @@ class ShopeeDataExtractor:
         print(f"🎉 Product extraction complete! Total: {len(all_products)} products")
         return all_products
     
-    def extract_all_orders(self, start_date=None, end_date=None, start_fresh=False):
+    def extract_all_orders(self, start_date=None, end_date=None, start_fresh=False, incremental=True):
         """
         Extract ALL orders from Shopee with time-based pagination
         Shopee API allows 15-day chunks maximum
         Saves to shopee_orders_raw.json
+        
+        Args:
+            start_date: Override start date (will be auto-detected if None)
+            end_date: End date (defaults to Oct 31, 2025)
+            start_fresh: Force complete re-extraction
+            incremental: Use incremental update logic
         """
         filename = 'shopee_orders_raw.json'
         
-        if not start_fresh:
-            existing_data = self._load_from_json(filename)
-            if existing_data:
-                print(f"📋 Found {len(existing_data)} existing orders. Use start_fresh=True to re-extract.")
-                return existing_data
+        # Load existing data first
+        existing_data = self._load_from_json(filename)
         
-        # Default to extract from 2020-04-01 to 2025-04-30 (main business period)
+        if not start_fresh and not incremental and existing_data:
+            print(f"� Found {len(existing_data)} existing orders. Use start_fresh=True to re-extract all.")
+            return existing_data
+        
+        # Determine extraction dates
+        if incremental and not start_fresh:
+            last_dates = self._find_last_extraction_date()
+            should_start_fresh, auto_start_date = self._should_start_fresh_extraction(last_dates)
+            
+            if should_start_fresh:
+                print("🔄 Starting fresh extraction...")
+                start_date = auto_start_date
+            else:
+                start_date = auto_start_date if start_date is None else start_date
+                print(f"📈 Incremental extraction from {start_date.strftime('%Y-%m-%d')}")
+        elif start_fresh:
+            print("🔄 Force starting fresh extraction...")
+            if not start_date:
+                start_date = datetime(2020, 4, 1)
+        
+        # Set default dates if not provided
         if not start_date:
             start_date = datetime(2020, 4, 1)
         elif isinstance(start_date, str):
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
         
         if not end_date:
-            end_date = datetime(2025, 4, 30)
+            end_date = datetime(2025, 10, 31)  # Updated to Oct 31, 2025
         elif isinstance(end_date, str):
             end_date = datetime.strptime(end_date, '%Y-%m-%d')
         
-        print(f"🔍 Starting complete order extraction from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}...")
+        print(f"🔍 Extracting orders from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}...")
         
         # Calculate total days and number of 15-day chunks needed
         total_days = (end_date - start_date).days
@@ -299,7 +455,7 @@ class ShopeeDataExtractor:
         print(f"📊 Total period: {total_days} days")
         print(f"📦 Breaking into {total_chunks} chunks of {chunk_days} days each (API limit)")
         
-        all_orders = []
+        new_orders = []
         current_start = start_date
         chunk_num = 0
         
@@ -315,9 +471,11 @@ class ShopeeDataExtractor:
             
             # Extract orders for this chunk with pagination
             chunk_orders = self._extract_orders_chunk(time_from, time_to, chunk_num)
-            all_orders.extend(chunk_orders)
-            
-            print(f"✅ Chunk {chunk_num}: Got {len(chunk_orders)} orders (Total: {len(all_orders)})")
+            if chunk_orders:
+                new_orders.extend(chunk_orders)
+                print(f"  ✓ Chunk {chunk_num}: {len(chunk_orders)} orders extracted")
+            else:
+                print(f"  ✓ Chunk {chunk_num}: No orders found")
             
             # Check API limit
             if self.api_calls_made >= self.max_daily_calls:
@@ -327,9 +485,19 @@ class ShopeeDataExtractor:
             # Move to next chunk
             current_start = chunk_end + timedelta(days=1)
         
+        # Merge with existing data, removing duplicates by order_sn
+        if existing_data and not start_fresh:
+            print(f"🔄 Merging {len(new_orders)} new orders with {len(existing_data)} existing orders...")
+            all_orders = self._remove_duplicates_by_id(existing_data, new_orders, 'order_sn')
+            print(f"📊 Merged result: {len(all_orders)} total orders (duplicates removed by order_sn)")
+        else:
+            all_orders = new_orders
+        
         # Final save
         self._save_to_json(all_orders, filename)
         print(f"🎉 Order extraction complete! Total: {len(all_orders)} orders across {chunk_num} chunks")
+        print(f"📈 New orders extracted: {len(new_orders)}")
+        print(f"🔄 Duplicates handled by order_sn deduplication")
         return all_orders
     
     def _extract_orders_chunk(self, time_from, time_to, chunk_num):
@@ -409,19 +577,26 @@ class ShopeeDataExtractor:
         
         return all_details
     
-    def extract_all_order_items(self, orders_data=None, start_fresh=False):
+    def extract_all_order_items(self, orders_data=None, start_fresh=False, incremental=True):
         """
-        Extract order items from order data
+        Extract order items from order data with incremental updates
         Shopee includes items in order details, so this processes existing order data
+        Handles duplicates using unique combination of order_sn + item_id
         Saves to shopee_multiple_order_items_raw.json
+        
+        Args:
+            orders_data: Order data to process (auto-loaded if None)
+            start_fresh: Force complete re-extraction
+            incremental: Use incremental update logic
         """
         filename = 'shopee_multiple_order_items_raw.json'
         
-        if not start_fresh:
-            existing_data = self._load_from_json(filename)
-            if existing_data:
-                print(f"📦 Found {len(existing_data)} existing order items. Use start_fresh=True to re-extract.")
-                return existing_data
+        # Load existing data
+        existing_data = self._load_from_json(filename)
+        
+        if not start_fresh and not incremental and existing_data:
+            print(f"📦 Found {len(existing_data)} existing order items. Use start_fresh=True to re-extract.")
+            return existing_data
         
         # Load orders if not provided
         if not orders_data:
@@ -433,7 +608,7 @@ class ShopeeDataExtractor:
         
         print(f"🔍 Starting order items extraction from {len(orders_data)} orders...")
         
-        all_order_items = []
+        new_order_items = []
         
         for order in orders_data:
             order_sn = order.get('order_sn')
@@ -445,73 +620,586 @@ class ShopeeDataExtractor:
                     'order_sn': order_sn,
                     'order_status': order.get('order_status'),
                     'create_time': order.get('create_time'),
+                    'item_id': item.get('item_id'),
+                    'unique_key': f"{order_sn}_{item.get('item_id')}",  # Unique identifier
                     **item  # Include all item fields
                 }
-                all_order_items.append(item_with_order)
+                new_order_items.append(item_with_order)
+        
+        # Merge with existing data, removing duplicates by unique_key
+        if existing_data and not start_fresh and incremental:
+            print(f"🔄 Merging {len(new_order_items)} new order items with {len(existing_data)} existing items...")
+            all_order_items = self._remove_duplicates_by_id(existing_data, new_order_items, 'unique_key')
+            print(f"📊 Merged result: {len(all_order_items)} total order items (duplicates removed)")
+        else:
+            all_order_items = new_order_items
         
         # Save order items
         self._save_to_json(all_order_items, filename)
         print(f"🎉 Order items extraction complete! Total: {len(all_order_items)} items from {len(orders_data)} orders")
+        print(f"📈 New order items processed: {len(new_order_items)}")
         print(f"📊 API calls used: {self.api_calls_made}")
         return all_order_items
     
-    def extract_traffic_metrics(self, start_date=None, end_date=None, start_fresh=False, monthly_aggregate=True):
+    def extract_traffic_metrics(self, start_date=None, end_date=None, start_fresh=False, monthly_aggregate=True, incremental=True):
         """
-        Extract traffic/advertising metrics - Monthly Aggregates
+        Extract traffic/advertising metrics using Shopee Ads API (v2.ads.get_ad_data)
         Saves to shopee_reportoverview_raw.json
         
-        NOTE: Shopee doesn't provide traffic/advertising metrics via public API.
-        This function creates an empty placeholder file for consistency with Lazada structure.
-        Real traffic data would need to come from Shopee Seller Centre Analytics (manual export).
-        
         Args:
-            start_date: Start date (YYYY-MM-DD or datetime object) - Not used
-            end_date: End date (YYYY-MM-DD or datetime object) - Not used
+            start_date: Start date (YYYY-MM-DD or datetime object)
+            end_date: End date (YYYY-MM-DD or datetime object)
             start_fresh: Whether to re-extract all data
-            monthly_aggregate: Whether to extract monthly data (True) or single period (False) - Not used
+            monthly_aggregate: Whether to extract monthly data (True) or single period (False)
+            incremental: Use incremental update logic
         """
         filename = 'shopee_reportoverview_raw.json'
         
-        if not start_fresh:
-            existing_data = self._load_from_json(filename)
-            if existing_data:
-                print(f"📊 Found existing traffic data file (empty placeholder).")
-                return existing_data
+        # Load existing data first
+        existing_data = self._load_from_json(filename)
         
-        print("\n⚠️ Shopee Traffic Metrics:")
-        print("   Shopee does not provide traffic/advertising data via API")
-        print("   Creating empty placeholder file for pipeline consistency...")
+        if not start_fresh and not incremental and existing_data:
+            print(f"📊 Found {len(existing_data)} existing traffic records. Use start_fresh=True to re-extract.")
+            return existing_data
         
-        # Save empty traffic data as placeholder
-        empty_traffic = []
-        self._save_to_json(empty_traffic, filename)
+        # Determine extraction dates for incremental updates
+        if incremental and not start_fresh and existing_data:
+            last_dates = self._find_last_extraction_date()
+            if last_dates.get('traffic'):
+                # Get last traffic date and continue from next month
+                last_traffic_date = last_dates['traffic']
+                start_date = self._get_month_start_date(last_traffic_date + relativedelta(months=1))
+                print(f"🔄 Incremental traffic extraction from: {start_date.strftime('%Y-%m-%d')}")
+            
+        # Set default dates if not provided
+        if not start_date:
+            start_date = datetime(2022, 10, 1)  # Start from when ads data is typically available
+        elif isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
         
-        return empty_traffic
+        if not end_date:
+            end_date = datetime(2025, 10, 31)  # Updated to Oct 31, 2025
+        elif isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+        
+        print(f"\n🔍 Extracting Shopee Ads data from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+        
+        if monthly_aggregate:
+            new_traffic_data = self._extract_monthly_ads_data(start_date, end_date)
+        else:
+            new_traffic_data = self._extract_single_period_ads_data(start_date, end_date)
+        
+        # Merge with existing data if incremental
+        if existing_data and not start_fresh and incremental:
+            print(f"🔄 Merging {len(new_traffic_data)} new traffic records with {len(existing_data)} existing records...")
+            # Use date + campaign_id as unique identifier for ads data
+            all_traffic_data = self._remove_duplicates_by_id(existing_data, new_traffic_data, 'unique_key')
+            print(f"📊 Merged result: {len(all_traffic_data)} total traffic records")
+        else:
+            all_traffic_data = new_traffic_data
+        
+        # Save traffic data
+        self._save_to_json(all_traffic_data, filename)
+        print(f"🎉 Traffic metrics extraction complete! Total: {len(all_traffic_data)} records")
+        
+        return all_traffic_data
     
-    def _extract_monthly_traffic(self, start_date, end_date, filename):
+    def _extract_monthly_ads_data(self, start_date, end_date):
         """
-        Placeholder - Shopee doesn't provide traffic/advertising metrics via API.
-        This method is kept for compatibility but returns empty data.
+        Extract Shopee Ads data month by month using v2.ads.get_ad_data API
+        Returns detailed advertising metrics for analysis
         """
-        print("⚠️ Shopee API does not provide traffic/advertising metrics")
-        print("📝 Returning empty traffic data for pipeline compatibility")
+        from dateutil.relativedelta import relativedelta
         
-        empty_traffic = []
-        self._save_to_json(empty_traffic, filename)
-        return empty_traffic
-    
-    def _extract_single_period_traffic(self, start_date, end_date, filename):
-        """
-        Placeholder - Shopee doesn't provide traffic/advertising metrics via API.
-        This method is kept for compatibility but returns empty data.
-        """
-        print("⚠️ Shopee API does not provide traffic/advertising metrics")
-        print("📝 Returning empty traffic data for pipeline compatibility")
+        monthly_ads = []
+        current_date = start_date
+        month_count = 0
+        total_months = self._count_months(start_date, end_date)
         
-        empty_traffic = []
-        self._save_to_json(empty_traffic, filename)
-        return empty_traffic
+        print(f"📊 Processing {total_months} months of Shopee Ads data...")
+        
+        while current_date < end_date and self.api_calls_made < self.max_daily_calls:
+            # Calculate month boundaries
+            month_end = min(current_date + relativedelta(months=1) - timedelta(days=1), end_date)
+            month_count += 1
+            
+            print(f"\n📅 Month {month_count}/{total_months}: {current_date.strftime('%Y-%m-%d')} to {month_end.strftime('%Y-%m-%d')}")
+            
+            # Convert to Unix timestamps for API
+            time_from = int(current_date.timestamp())
+            time_to = int(month_end.timestamp())
+            
+            # Extract ads data for this month
+            month_ads_data = self._extract_ads_data_for_period(time_from, time_to, current_date)
+            
+            if month_ads_data:
+                monthly_ads.extend(month_ads_data)
+                print(f"   ✅ Month {month_count}: {len(month_ads_data)} ads records extracted")
+            else:
+                print(f"   ℹ️ Month {month_count}: No ads data found")
+            
+            # Enhanced rate limiting - wait longer to avoid "too many requests"
+            if month_count < total_months:
+                wait_time = 8 if month_count % 3 == 0 else 5  # Longer wait every 3rd month
+                print(f"   ⏱️ Rate limiting: waiting {wait_time} seconds...")
+                time.sleep(wait_time)
+            
+            # Move to next month
+            current_date += relativedelta(months=1)
+        
+        print(f"\n📊 Monthly ads extraction complete!")
+        print(f"   Total months processed: {month_count}")
+        print(f"   Total ads records: {len(monthly_ads)}")
+        print(f"   API calls used: {self.api_calls_made}")
+        
+        return monthly_ads
     
+    def _extract_single_period_ads_data(self, start_date, end_date):
+        """
+        Extract Shopee Ads data for a single time period using v2.ads.get_ad_data API
+        """
+        print(f"📊 Extracting single period ads data...")
+        
+        # Convert to Unix timestamps
+        time_from = int(start_date.timestamp())
+        time_to = int(end_date.timestamp())
+        
+        # Extract ads data for the entire period
+        ads_data = self._extract_ads_data_for_period(time_from, time_to, start_date)
+        
+        print(f"📊 Single period extraction complete: {len(ads_data)} records")
+        return ads_data
+    
+    def _extract_ads_data_for_period(self, time_from, time_to, period_start_date):
+        """
+        Extract ads data using proper two-step process:
+        1. Get campaign ID list using v2.ads.get_product_level_campaign_id_list
+        2. Get performance data using v2.ads.get_product_campaign_daily_performance
+        
+        Args:
+            time_from (int): Start timestamp
+            time_to (int): End timestamp  
+            period_start_date (datetime): Start date for labeling
+            
+        Returns:
+            list: Monthly aggregated ads data records
+        """
+        print(f"   📋 Step 1: Getting campaign ID list...")
+        
+        # Step 1: Get campaign ID list
+        campaign_ids = self._get_product_level_campaign_ids()
+        
+        if not campaign_ids:
+            print("   ⚠️ No campaign IDs found")
+            return []
+        
+        print(f"   📈 Step 2: Getting performance data for {len(campaign_ids)} campaigns...")
+        
+        # Step 2: Get daily performance data for these campaigns
+        daily_ads_data = self._get_campaign_daily_performance_with_ids(
+            campaign_ids, time_from, time_to, period_start_date
+        )
+        
+        if not daily_ads_data:
+            print("   ⚠️ No daily ads data found")
+            return []
+        
+        # Step 3: Aggregate daily data to monthly
+        monthly_aggregated = self._aggregate_daily_to_monthly(daily_ads_data, period_start_date)
+        
+        print(f"   📊 Aggregated {len(daily_ads_data)} daily records to {len(monthly_aggregated)} monthly records")
+        return monthly_aggregated
+    
+    def _get_product_level_campaign_ids(self):
+        """
+        Get campaign ID list using v2.ads.get_product_level_campaign_id_list
+        Saves the campaign list to shopee_campaign_id_list_raw.json
+        """
+        campaign_ids = []
+        
+        try:
+            # Build API path for product level campaign ID list
+            path = "/api/v2/ads/get_product_level_campaign_id_list"
+            
+            # Build query parameters
+            query_params = {
+                'page_size': 100,
+                'page_no': 1
+            }
+            
+            query_string = '&'.join([f"{k}={v}" for k, v in query_params.items()])
+            query_path = f"{path}?{query_string}"
+            
+            print(f"   📋 Fetching product level campaign ID list...")
+            
+            # Make API call
+            data = self._make_api_call(query_path, method="GET", call_type="campaign-id-list")
+            
+            if data and 'response' in data:
+                response = data['response']
+                campaign_list = response.get('campaign_id_list', [])
+                
+                print(f"   📊 Retrieved {len(campaign_list)} campaign IDs")
+                
+                # Process campaign list
+                campaign_data = []
+                for campaign_info in campaign_list:
+                    campaign_record = {
+                        'campaign_id': campaign_info.get('campaign_id'),
+                        'campaign_name': campaign_info.get('campaign_name', f"Campaign_{campaign_info.get('campaign_id')}"),
+                        'campaign_type': campaign_info.get('campaign_type', 'product_level'),
+                        'status': campaign_info.get('status', 'unknown'),
+                        'extraction_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                        'platform': 'Shopee',
+                        'data_source': 'ads_api_v2_campaign_list'
+                    }
+                    campaign_data.append(campaign_record)
+                    
+                    # Extract just the ID for performance queries
+                    if campaign_info.get('campaign_id'):
+                        campaign_ids.append(campaign_info.get('campaign_id'))
+                
+                # Save campaign list to JSON file
+                campaign_list_file = os.path.join(self.staging_dir, "shopee_campaign_id_list_raw.json")
+                self._save_to_json(campaign_data, campaign_list_file)
+                print(f"   💾 Campaign list saved to: shopee_campaign_id_list_raw.json")
+                
+                # Handle pagination if there are more campaigns
+                total_count = response.get('total_count', len(campaign_list))
+                if total_count > len(campaign_list):
+                    print(f"   📄 More campaigns available: {total_count} total, fetching additional pages...")
+                    
+                    pages_needed = (total_count // 100) + (1 if total_count % 100 > 0 else 0)
+                    
+                    for page in range(2, min(pages_needed + 1, 11)):  # Limit to 10 pages max
+                        query_params['page_no'] = page
+                        query_string = '&'.join([f"{k}={v}" for k, v in query_params.items()])
+                        query_path = f"{path}?{query_string}"
+                        
+                        data = self._make_api_call(query_path, method="GET", call_type=f"campaign-id-list-p{page}")
+                        
+                        if data and 'response' in data:
+                            page_campaigns = data['response'].get('campaign_id_list', [])
+                            for campaign_info in page_campaigns:
+                                campaign_record = {
+                                    'campaign_id': campaign_info.get('campaign_id'),
+                                    'campaign_name': campaign_info.get('campaign_name', f"Campaign_{campaign_info.get('campaign_id')}"),
+                                    'campaign_type': campaign_info.get('campaign_type', 'product_level'),
+                                    'status': campaign_info.get('status', 'unknown'),
+                                    'extraction_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                    'platform': 'Shopee',
+                                    'data_source': 'ads_api_v2_campaign_list'
+                                }
+                                campaign_data.append(campaign_record)
+                                
+                                if campaign_info.get('campaign_id'):
+                                    campaign_ids.append(campaign_info.get('campaign_id'))
+                        
+                        time.sleep(2)  # Rate limiting between pages
+                    
+                    # Update the saved file with all campaigns
+                    self._save_to_json(campaign_data, campaign_list_file)
+                    print(f"   💾 Complete campaign list saved: {len(campaign_data)} campaigns")
+            
+            else:
+                print(f"   ⚠️ No campaign ID list returned")
+                
+        except Exception as e:
+            print(f"   ❌ Error fetching campaign ID list: {e}")
+        
+        return campaign_ids
+    
+    def _get_campaign_daily_performance_with_ids(self, campaign_ids, time_from, time_to, period_start_date):
+        """
+        Get daily campaign performance data using v2.ads.get_product_campaign_daily_performance
+        with the campaign IDs from the previous step
+        """
+        daily_data = []
+        
+        if not campaign_ids:
+            print("   ⚠️ No campaign IDs provided")
+            return []
+        
+        try:
+            # Build API path for product campaign daily performance
+            path = "/api/v2/ads/get_product_campaign_daily_performance"
+            
+            # Build query parameters with campaign ID list
+            query_params = {
+                'campaign_id_list': ','.join([str(cid) for cid in campaign_ids]),
+                'time_from': time_from,
+                'time_to': time_to,
+                'page_size': 100,
+                'page_no': 1
+            }
+            
+            # Convert params to query string
+            query_string = '&'.join([f"{k}={v}" for k, v in query_params.items()])
+            query_path = f"{path}?{query_string}"
+            
+            print(f"   📅 Fetching daily performance for {len(campaign_ids)} campaigns: {period_start_date.strftime('%Y-%m-%d')}")
+            
+            # Make API call with retry logic for rate limiting
+            max_retries = 3
+            retry_count = 0
+            data = None
+            
+            while retry_count < max_retries:
+                data = self._make_api_call(query_path, method="GET", call_type=f"daily-performance-{period_start_date.strftime('%Y-%m')}")
+                
+                # Debug: check what we got
+                print(f"   🔍 API Response debug: data={type(data)}, has_response={data and 'response' in data if data else False}")
+                
+                # Check if we got successful response
+                if data and 'response' in data:
+                    print(f"   ✅ Success! Breaking retry loop")
+                    break
+                    
+                # Check if we got rate limit error
+                elif data and isinstance(data, dict) and data.get('error'):
+                    error_msg = data.get('message', '').lower()
+                    print(f"   🔍 Error detected: {error_msg}")
+                    if 'too many requests' in error_msg or 'rate limit' in error_msg:
+                        retry_count += 1
+                        if retry_count < max_retries:
+                            wait_time = retry_count * 15  # Exponential backoff: 15s, 30s, 45s
+                            print(f"   ⏳ Rate limited, retrying in {wait_time} seconds... (attempt {retry_count}/{max_retries})")
+                            time.sleep(wait_time)
+                        else:
+                            print(f"   ❌ Max retries reached, skipping this period")
+                            break
+                    else:
+                        # Different error, break
+                        print(f"   ❌ Non-rate-limit error, breaking")
+                        break
+                else:
+                    # No data returned or unexpected format, break
+                    print(f"   ❌ No data or unexpected format, breaking")
+                    break
+            
+            if data and 'response' in data:
+                response = data['response']
+                performance_list = response.get('performance_list', [])
+                
+                print(f"   📊 Retrieved {len(performance_list)} daily performance records")
+                
+                # Process each daily record
+                for record in performance_list:
+                    daily_record = {
+                        # Campaign info
+                        'campaign_id': record.get('campaign_id'),
+                        'campaign_name': record.get('campaign_name', f"Campaign_{record.get('campaign_id')}"),
+                        'campaign_type': record.get('campaign_type', 'product_campaign'),
+                        'product_id': record.get('product_id'),
+                        'product_name': record.get('product_name', ''),
+                        
+                        # Date info
+                        'date': record.get('date'),  # Daily date
+                        'extraction_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                        
+                        # Performance metrics (daily values)
+                        'impressions': record.get('impression', 0),
+                        'clicks': record.get('click', 0),
+                        'spend': float(record.get('spend', 0.0)),
+                        'conversions': record.get('conversion', 0),
+                        'gmv': float(record.get('gmv', 0.0)),
+                        'orders': record.get('order', 0),
+                        'sales': float(record.get('sales', 0.0)),
+                        'units_sold': record.get('units_sold', 0),
+                        
+                        # Additional metrics if available
+                        'ctr': float(record.get('ctr', 0.0)),
+                        'cpc': float(record.get('cpc', 0.0)),
+                        'conversion_rate': float(record.get('conversion_rate', 0.0)),
+                        'roas': float(record.get('roas', 0.0)) if record.get('roas') else (float(record.get('gmv', 0)) / max(float(record.get('spend', 1)), 1)),
+                        'cost_per_order': float(record.get('cost_per_order', 0.0)),
+                        'avg_order_value': float(record.get('avg_order_value', 0.0)),
+                        
+                        # Platform identifier
+                        'platform': 'Shopee',
+                        'data_source': 'ads_api_v2_product_campaign_daily_performance'
+                    }
+                    daily_data.append(daily_record)
+                
+                # Handle pagination if there are more records
+                total_count = response.get('total_count', len(performance_list))
+                if total_count > len(performance_list):
+                    print(f"   📄 More records available: {total_count} total, fetching additional pages...")
+                    
+                    # Calculate additional pages needed
+                    pages_needed = (total_count // 100) + (1 if total_count % 100 > 0 else 0)
+                    
+                    for page in range(2, min(pages_needed + 1, 11)):  # Limit to 10 pages max
+                        query_params['page_no'] = page
+                        query_string = '&'.join([f"{k}={v}" for k, v in query_params.items()])
+                        query_path = f"{path}?{query_string}"
+                        
+                        data = self._make_api_call(query_path, method="GET", call_type=f"daily-performance-{period_start_date.strftime('%Y-%m')}-p{page}")
+                        
+                        if data and 'response' in data:
+                            page_records = data['response'].get('performance_list', [])
+                            for record in page_records:
+                                daily_record = {
+                                    'campaign_id': record.get('campaign_id'),
+                                    'campaign_name': record.get('campaign_name', f"Campaign_{record.get('campaign_id')}"),
+                                    'campaign_type': record.get('campaign_type', 'product_campaign'),
+                                    'product_id': record.get('product_id'),
+                                    'product_name': record.get('product_name', ''),
+                                    'date': record.get('date'),
+                                    'extraction_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                    'impressions': record.get('impression', 0),
+                                    'clicks': record.get('click', 0),
+                                    'spend': float(record.get('spend', 0.0)),
+                                    'conversions': record.get('conversion', 0),
+                                    'gmv': float(record.get('gmv', 0.0)),
+                                    'orders': record.get('order', 0),
+                                    'sales': float(record.get('sales', 0.0)),
+                                    'units_sold': record.get('units_sold', 0),
+                                    'ctr': float(record.get('ctr', 0.0)),
+                                    'cpc': float(record.get('cpc', 0.0)),
+                                    'conversion_rate': float(record.get('conversion_rate', 0.0)),
+                                    'roas': float(record.get('roas', 0.0)) if record.get('roas') else (float(record.get('gmv', 0)) / max(float(record.get('spend', 1)), 1)),
+                                    'cost_per_order': float(record.get('cost_per_order', 0.0)),
+                                    'avg_order_value': float(record.get('avg_order_value', 0.0)),
+                                    'platform': 'Shopee',
+                                    'data_source': 'ads_api_v2_product_campaign_daily_performance'
+                                }
+                                daily_data.append(daily_record)
+                        
+                        # Rate limiting between pages
+                        time.sleep(1)
+            
+            else:
+                print(f"   ⚠️ No performance data returned for period")
+                
+        except Exception as e:
+            print(f"   ❌ Error fetching daily performance data: {e}")
+        
+        return daily_data
+    
+    def _aggregate_daily_to_monthly(self, daily_data, period_start_date):
+        """
+        Aggregate daily performance data to monthly summaries
+        """
+        if not daily_data:
+            return []
+        
+        from collections import defaultdict
+        
+        # Group by month and campaign
+        monthly_groups = defaultdict(lambda: {
+            'impressions': 0,
+            'clicks': 0,
+            'spend': 0.0,
+            'conversions': 0,
+            'gmv': 0.0,
+            'orders': 0,
+            'sales': 0.0,
+            'units_sold': 0,
+            'days_count': 0,
+            'campaign_info': {},
+            'products': set()
+        })
+        
+        for record in daily_data:
+            if not record.get('date'):
+                continue
+                
+            try:
+                # Extract year-month from date
+                record_date = datetime.strptime(record['date'], '%Y-%m-%d')
+                month_key = record_date.strftime('%Y-%m')
+                campaign_id = record.get('campaign_id', 'unknown')
+                
+                # Create unique key for month-campaign combination
+                group_key = f"{month_key}_{campaign_id}"
+                
+                # Aggregate metrics
+                group = monthly_groups[group_key]
+                group['impressions'] += record.get('impressions', 0)
+                group['clicks'] += record.get('clicks', 0)
+                group['spend'] += record.get('spend', 0.0)
+                group['conversions'] += record.get('conversions', 0)
+                group['gmv'] += record.get('gmv', 0.0)
+                group['orders'] += record.get('orders', 0)
+                group['sales'] += record.get('sales', 0.0)
+                group['units_sold'] += record.get('units_sold', 0)
+                group['days_count'] += 1
+                
+                # Store campaign info
+                if not group['campaign_info']:
+                    group['campaign_info'] = {
+                        'campaign_id': campaign_id,
+                        'campaign_name': record.get('campaign_name', f'Campaign_{campaign_id}'),
+                        'month': month_key,
+                        'period_start': record_date.replace(day=1).strftime('%Y-%m-%d')
+                    }
+                
+                # Track unique products
+                if record.get('product_id'):
+                    group['products'].add(record.get('product_id'))
+                    
+            except ValueError as e:
+                print(f"   ⚠️ Invalid date format in record: {record.get('date')} - {e}")
+                continue
+        
+        # Convert aggregated groups to monthly records
+        monthly_records = []
+        for group_key, group_data in monthly_groups.items():
+            campaign_info = group_data['campaign_info']
+            
+            # Calculate monthly averages and totals
+            monthly_record = {
+                # Unique identifier for deduplication
+                'unique_key': f"{campaign_info['campaign_id']}_{campaign_info['month']}",
+                
+                # Campaign info
+                'campaign_id': campaign_info['campaign_id'],
+                'campaign_name': campaign_info['campaign_name'],
+                'campaign_type': 'product_campaign',
+                
+                # Time info
+                'date': campaign_info['period_start'],  # First day of month
+                'month': campaign_info['month'],
+                'period_start': campaign_info['period_start'],
+                'extraction_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'days_with_data': group_data['days_count'],
+                
+                # Aggregated performance metrics (monthly totals)
+                'impressions': group_data['impressions'],
+                'clicks': group_data['clicks'],
+                'spend': round(group_data['spend'], 2),
+                'conversions': group_data['conversions'],
+                'gmv': round(group_data['gmv'], 2),
+                'orders': group_data['orders'],
+                'sales': round(group_data['sales'], 2),
+                'units_sold': group_data['units_sold'],
+                'products_count': len(group_data['products']),
+                
+                # Calculated metrics (monthly averages)
+                'ctr': round((group_data['clicks'] / max(group_data['impressions'], 1)) * 100, 2),
+                'cpc': round(group_data['spend'] / max(group_data['clicks'], 1), 2),
+                'conversion_rate': round((group_data['conversions'] / max(group_data['clicks'], 1)) * 100, 2),
+                'roas': round(group_data['gmv'] / max(group_data['spend'], 1), 2),
+                'avg_daily_spend': round(group_data['spend'] / max(group_data['days_count'], 1), 2),
+                'avg_order_value': round(group_data['sales'] / max(group_data['orders'], 1), 2),
+                'cost_per_order': round(group_data['spend'] / max(group_data['orders'], 1), 2),
+                'units_per_order': round(group_data['units_sold'] / max(group_data['orders'], 1), 2),
+                
+                # Platform identifier
+                'platform': 'Shopee',
+                'data_source': 'ads_api_v2_gms_monthly_aggregate',
+                'aggregation_method': 'daily_to_monthly'
+            }
+            
+            monthly_records.append(monthly_record)
+        
+        # Sort by date
+        monthly_records.sort(key=lambda x: x['date'])
+        
+        print(f"   📅 Aggregated to {len(monthly_records)} monthly campaign records")
+        return monthly_records
+
     def _count_months(self, start_date, end_date):
         """Helper to calculate number of months between dates"""
         months = 0
@@ -670,26 +1358,29 @@ class ShopeeDataExtractor:
         
         return all_review_entries
     
-    def extract_review_details(self, review_ids=None, start_fresh=False):
+    def extract_review_details(self, review_ids=None, start_fresh=False, incremental=True):
         """
-        Step 2: Extract detailed review information
+        Step 2: Extract detailed review information with incremental updates
         For Shopee, reviews are already collected in step 1, so this processes and enriches them
+        Handles duplicates using comment_id as unique identifier
         Saves detailed reviews to shopee_productreview_raw.json
         
         Args:
             review_ids (list): List of review entries to process
             start_fresh (bool): Whether to start fresh or append to existing data
+            incremental (bool): Use incremental update logic
         
         Returns:
             list: List of detailed review data
         """
         filename = 'shopee_productreview_raw.json'
         
-        if not start_fresh:
-            existing_reviews = self._load_from_json(filename)
-            if existing_reviews:
-                print(f"📋 Found {len(existing_reviews)} existing reviews. Use start_fresh=True to overwrite.")
-                return existing_reviews
+        # Load existing data
+        existing_reviews = self._load_from_json(filename)
+        
+        if not start_fresh and not incremental and existing_reviews:
+            print(f"📋 Found {len(existing_reviews)} existing reviews. Use start_fresh=True to overwrite.")
+            return existing_reviews
         
         # Load review entries if not provided
         if review_ids is None:
@@ -703,7 +1394,7 @@ class ShopeeDataExtractor:
         
         # For Shopee, reviews are already detailed from the initial extraction
         # So we just need to format and save them
-        all_reviews = []
+        new_reviews = []
         
         for entry in review_ids:
             if isinstance(entry, dict):
@@ -714,13 +1405,22 @@ class ShopeeDataExtractor:
                     'created_at': entry.get('created_at'),
                     'review_type': 'product_based'
                 }
-                all_reviews.append(review_detail)
+                new_reviews.append(review_detail)
+        
+        # Merge with existing data, removing duplicates by comment_id
+        if existing_reviews and not start_fresh and incremental:
+            print(f"🔄 Merging {len(new_reviews)} new reviews with {len(existing_reviews)} existing reviews...")
+            all_reviews = self._remove_duplicates_by_id(existing_reviews, new_reviews, 'comment_id')
+            print(f"📊 Merged result: {len(all_reviews)} total reviews (duplicates removed by comment_id)")
+        else:
+            all_reviews = new_reviews
         
         # Save reviews
         self._save_to_json(all_reviews, filename)
         
         print(f"\n🎉 Review details processing complete!")
         print(f"   Total reviews processed: {len(all_reviews)}")
+        print(f"   New reviews added: {len(new_reviews)}")
         print(f"   Saved to: {filename}")
         
         return all_reviews
@@ -757,6 +1457,171 @@ class ShopeeDataExtractor:
         print(f"   Final reviews processed: {len(reviews)}")
         
         return reviews
+    
+    def run_incremental_extraction(self, end_date='2025-10-31'):
+        """
+        Run intelligent incremental extraction that automatically detects last extraction dates
+        and continues from the beginning of the last month until October 31, 2025
+        
+        This method:
+        1. Checks existing data files for last extraction dates
+        2. Determines optimal restart point (beginning of last month)
+        3. Extracts only new data from restart point to end_date
+        4. Merges with existing data, handling duplicates intelligently
+        5. Preserves existing data while adding new records
+        
+        Args:
+            end_date (str): End date for extraction (YYYY-MM-DD format)
+        
+        Returns:
+            dict: Results summary with extraction statistics
+        """
+        print("🔄 Shopee Incremental Data Extraction")
+        print("=" * 50)
+        
+        # Convert end_date to datetime if string
+        if isinstance(end_date, str):
+            target_end_date = datetime.strptime(end_date, '%Y-%m-%d')
+        else:
+            target_end_date = end_date
+        
+        # Check existing data and determine extraction plan
+        last_dates = self._find_last_extraction_date()
+        should_start_fresh, start_date = self._should_start_fresh_extraction(last_dates)
+        
+        print(f"📊 Extraction Plan:")
+        print(f"   Start Date: {start_date.strftime('%Y-%m-%d')}")
+        print(f"   End Date: {target_end_date.strftime('%Y-%m-%d')}")
+        print(f"   Strategy: {'Fresh extraction' if should_start_fresh else 'Incremental update'}")
+        
+        results = {}
+        
+        # Extract orders with incremental logic
+        print(f"\n🔹 Step 1: Extracting Orders")
+        print("-" * 30)
+        orders = self.extract_all_orders(
+            start_date=start_date,
+            end_date=target_end_date,
+            start_fresh=should_start_fresh,
+            incremental=True
+        )
+        results['orders'] = len(orders) if orders else 0
+        
+        # Extract order items based on the orders
+        print(f"\n🔹 Step 2: Extracting Order Items")
+        print("-" * 30)
+        order_items = self.extract_all_order_items(
+            orders_data=orders,
+            start_fresh=should_start_fresh,
+            incremental=True
+        )
+        results['order_items'] = len(order_items) if order_items else 0
+        
+        # Extract traffic metrics (placeholder for Shopee)
+        print(f"\n🔹 Step 3: Traffic Metrics (Placeholder)")
+        print("-" * 30)
+        traffic = self.extract_traffic_metrics(
+            start_date=start_date,
+            end_date=target_end_date,
+            start_fresh=should_start_fresh
+        )
+        results['traffic'] = len(traffic) if traffic else 0
+        
+        # Extract product reviews if we have new data
+        if results['orders'] > 0:
+            print(f"\n🔹 Step 4: Product Reviews")
+            print("-" * 30)
+            reviews = self.extract_product_reviews(start_fresh=False)
+            results['reviews'] = len(reviews) if reviews else 0
+        else:
+            print(f"\n🔹 Step 4: Skipping Product Reviews (no new orders)")
+            results['reviews'] = 0
+        
+        # Summary
+        print(f"\n" + "=" * 50)
+        print(f"✅ INCREMENTAL EXTRACTION COMPLETE")
+        print(f"=" * 50)
+        print(f"📊 Results Summary:")
+        print(f"   Orders: {results['orders']:,}")
+        print(f"   Order Items: {results['order_items']:,}")
+        print(f"   Traffic Records: {results['traffic']:,}")
+        print(f"   Reviews: {results['reviews']:,}")
+        print(f"🔄 API Calls Used: {self.api_calls_made}/{self.max_daily_calls}")
+        print(f"📁 Data saved to: {self.staging_dir}")
+        
+        return results
+    
+    def check_extraction_status(self):
+        """
+        Check the status of existing extractions and provide recommendations
+        """
+        print("📊 Shopee Extraction Status Report")
+        print("=" * 50)
+        
+        # Check each data type
+        data_files = {
+            'Orders': 'shopee_orders_raw.json',
+            'Order Items': 'shopee_multiple_order_items_raw.json', 
+            'Products': 'shopee_products_raw.json',
+            'Product Details': 'shopee_productitem_raw.json',
+            'Traffic': 'shopee_reportoverview_raw.json',
+            'Reviews': 'shopee_productreview_raw.json'
+        }
+        
+        total_records = 0
+        status_report = {}
+        
+        for data_type, filename in data_files.items():
+            data = self._load_from_json(filename)
+            count = len(data) if data else 0
+            total_records += count
+            
+            # Get last date for time-based data
+            last_date = None
+            if data_type == 'Orders' and data:
+                last_date = self._get_last_date_from_data(data, 'create_time')
+            elif data_type == 'Reviews' and data:
+                last_date = self._get_last_date_from_data(data, 'ctime')
+            
+            status_report[data_type] = {
+                'count': count,
+                'last_date': last_date,
+                'file_exists': count > 0
+            }
+            
+            # Display status
+            status_icon = "✅" if count > 0 else "❌"
+            date_str = f" (latest: {last_date.strftime('%Y-%m-%d')})" if last_date else ""
+            print(f"   {status_icon} {data_type}: {count:,} records{date_str}")
+        
+        print(f"\n📊 Total Records: {total_records:,}")
+        
+        # Recommendations
+        print(f"\n💡 Recommendations:")
+        
+        # Check if we have recent data
+        has_recent_data = False
+        thirty_days_ago = datetime.now() - timedelta(days=30)
+        
+        for data_type, info in status_report.items():
+            if info['last_date'] and info['last_date'] > thirty_days_ago:
+                has_recent_data = True
+                break
+        
+        if not has_recent_data:
+            print(f"   🔄 Run incremental extraction to get latest data")
+            print(f"   📅 No data found within last 30 days")
+        else:
+            print(f"   ✅ Recent data found - ready for incremental updates")
+            print(f"   🔄 Use run_incremental_extraction() for latest updates")
+        
+        # Check for missing data types
+        missing_data = [data_type for data_type, info in status_report.items() if info['count'] == 0]
+        if missing_data:
+            print(f"   ⚠️ Missing data types: {', '.join(missing_data)}")
+            print(f"   💡 Consider running complete extraction first")
+        
+        return status_report
     
     def run_complete_extraction(self, start_fresh=False):
         """
@@ -809,62 +1674,167 @@ class ShopeeDataExtractor:
 
 
 # ============================================================================
+# CONVENIENCE FUNCTIONS
+# ============================================================================
+
+def run_incremental_extraction(end_date='2025-10-31'):
+    """
+    Run incremental extraction that intelligently updates from last extraction date
+    Handles duplicates and continues until Oct 31, 2025
+    """
+    extractor = ShopeeDataExtractor()
+    return extractor.run_incremental_extraction(end_date=end_date)
+
+def run_full_extraction(start_fresh=False, end_date='2025-10-31'):
+    """Run complete extraction with all data until Oct 31, 2025"""
+    extractor = ShopeeDataExtractor()
+    return extractor.run_complete_extraction(start_fresh=start_fresh)
+
+def extract_recent_data(days_back=30):
+    """Extract only recent data (last N days) to save API calls"""
+    extractor = ShopeeDataExtractor()
+    
+    # Extract recent orders
+    recent_start = datetime.now() - timedelta(days=days_back)
+    recent_end = datetime.now()
+    
+    orders = extractor.extract_all_orders(start_date=recent_start, end_date=recent_end, incremental=True)
+    order_items = extractor.extract_all_order_items(orders_data=orders, incremental=True)
+    traffic = extractor.extract_traffic_metrics(incremental=True)
+    
+    return {
+        'orders': orders,
+        'order_items': order_items,
+        'traffic': traffic
+    }
+
+def check_extraction_status():
+    """
+    Check the status of existing extractions and provide recommendations
+    """
+    extractor = ShopeeDataExtractor()
+    return extractor.check_extraction_status()
+
+def extract_ads_data_only():
+    """
+    Extract only Shopee ads data using monthly aggregation
+    Returns advertising metrics using v2.ads.get_ad_data API
+    """
+    extractor = ShopeeDataExtractor()
+    return extractor.extract_traffic_metrics(
+        start_date=None,  # Auto-detect from existing data
+        end_date=None,    # Use October 31, 2025
+        start_fresh=False,  # Incremental extraction
+        monthly_aggregate=True,  # Monthly aggregation
+        incremental=True   # Append to existing data
+    )
+
+def extract_product_reviews_only(start_fresh=False, limit_products=None):
+    """Extract only product reviews (standalone function)"""
+    extractor = ShopeeDataExtractor()
+    return extractor.extract_product_reviews(start_fresh=start_fresh, limit_products=limit_products)
+
+
+# ============================================================================
 # MAIN EXECUTION
 # ============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print("🚀 SHOPEE COMPLETE DATA EXTRACTION")
-    print("=" * 70)
-    print()
+    print("🚀 Shopee Data Extraction with Incremental Updates")
+    print("=" * 60)
+    print("Choose extraction mode:")
+    print("1. 🔄 Incremental extraction (RECOMMENDED)")
+    print("   - Automatically detects last extraction date")
+    print("   - Starts from beginning of that month") 
+    print("   - Continues to Oct 31, 2025")
+    print("   - Handles duplicates and status updates")
+    print("")
+    print("2. 📊 Check extraction status")
+    print("   - View current data status and recommendations")
+    print("")
+    print("3. 🆕 Complete fresh extraction")
+    print("   - Re-extracts all data from 2020-04-01 to 2025-10-31")
+    print("   - Uses more API calls")
+    print("")
+    print("4. 📈 Recent data only (last 30 days)")
+    print("   - Quick extraction for recent updates")
+    print("")
+    print("5. ⭐ Product reviews only")
+    print("   - Extract product reviews using 2-step process")
+    print("")
+    print("6. 📊 Ads data extraction (Monthly Aggregate)")
+    print("   - Extract advertising metrics using v2.ads.get_ad_data")
+    print("   - Monthly aggregated data for analysis")
     
-    try:
-        # Initialize extractor
-        print("📝 Initializing Shopee Data Extractor...")
-        extractor = ShopeeDataExtractor()
+    choice = input("\nEnter choice (1-6): ").strip()
+    
+    if choice == "1":
+        print("\n🔄 Starting incremental extraction...")
+        results = run_incremental_extraction()
+        print(f"\n✅ Incremental extraction completed!")
         
-        # Display configuration
-        print(f"✓ Shop ID: {extractor.shop_id}")
-        print(f"✓ Partner ID: {extractor.partner_id}")
-        print(f"✓ Access Token: {'Present ✓' if extractor.access_token else 'Missing ✗'}")
-        print()
+    elif choice == "2":
+        print("\n📊 Checking extraction status...")
+        check_extraction_status()
         
-        if not extractor.access_token:
-            print("❌ No access token found!")
-            print("   Please run 'python get_shopee_tokens.py' first to get tokens.")
-            sys.exit(1)
+    elif choice == "3":
+        print("\n🆕 Starting complete fresh extraction...")
+        confirm = input("This will overwrite existing data. Continue? (y/N): ").strip().lower()
+        if confirm == 'y':
+            results = run_full_extraction(start_fresh=True)
+        else:
+            print("❌ Extraction cancelled.")
+            
+    elif choice == "4":
+        print("\n📈 Extracting recent data (last 30 days)...")
+        try:
+            results = extract_recent_data(days_back=30)
+            print(f"✅ Recent data extraction completed!")
+            print(f"   Orders: {len(results['orders'])}")
+            print(f"   Order Items: {len(results['order_items'])}")
+            print(f"   Traffic: {len(results['traffic'])}")
+        except Exception as e:
+            print(f"❌ Error: {e}")
+            
+    elif choice == "5":
+        print("\n⭐ Extracting product reviews...")
+        try:
+            limit = input("Limit number of products (press Enter for all): ").strip()
+            limit_products = int(limit) if limit.isdigit() else None
+            
+            reviews = extract_product_reviews_only(start_fresh=False, limit_products=limit_products)
+            print(f"✅ Review extraction completed! Total: {len(reviews)} reviews")
+        except Exception as e:
+            print(f"❌ Error: {e}")
         
-        # Run complete extraction
-        print("=" * 70)
-        print("🔄 Starting complete extraction...")
-        print("   This will extract:")
-        print("   • Products")
-        print("   • Orders")
-        print("   • Order Items")
-        print("   • Traffic Metrics")
-        print("=" * 70)
-        print()
+    elif choice == "6":
+        print("\n📊 Extracting Shopee Ads Data (Monthly Aggregate)...")
+        try:
+            print("🎯 Starting ads data extraction with monthly aggregation...")
+            ads_data = extract_ads_data_only()
+            
+            if ads_data:
+                print(f"✅ Ads extraction completed! Total: {len(ads_data)} records")
+                print(f"📁 Data saved to: app/Staging/shopee_reportoverview_raw.json")
+                
+                # Show sample
+                if ads_data:
+                    sample = ads_data[0]
+                    print(f"\n📋 Sample record:")
+                    print(f"   Campaign: {sample.get('campaign_name', 'N/A')}")
+                    print(f"   Date: {sample.get('date', 'N/A')}")
+                    print(f"   Impressions: {sample.get('impressions', 0):,}")
+                    print(f"   Spend: ${sample.get('spend', 0):.2f}")
+                    print(f"   ROAS: {sample.get('roas', 0):.2f}")
+            else:
+                print("⚠️ No ads data extracted - check campaigns and date range")
+                
+        except Exception as e:
+            print(f"❌ Error during ads extraction: {e}")
         
-        results = extractor.run_complete_extraction(start_fresh=True)
-        
-        print("\n" + "=" * 70)
-        print("✅ EXTRACTION COMPLETED SUCCESSFULLY!")
-        print("=" * 70)
-        print()
-        print("📊 Extraction Summary:")
-        for step_name, data in results.items():
-            count = len(data) if isinstance(data, list) else 0
-            print(f"   • {step_name}: {count:,} records")
-        print()
-        print(f"📁 All files saved to: {extractor.staging_dir}")
-        print("=" * 70)
-        print()
-        
-    except KeyboardInterrupt:
-        print("\n\n⚠️ Extraction cancelled by user.")
-        sys.exit(0)
-    except Exception as e:
-        print(f"\n❌ Error during extraction: {e}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+    else:
+        print("❌ Invalid choice. Please run again and select 1-6.")
+    
+    print(f"\n🎉 Extraction completed!")
+    print(f"📁 Check the app/Staging/ directory for JSON files")
+    print(f"💡 Next time, just run option 1 (incremental) to get only new data!")

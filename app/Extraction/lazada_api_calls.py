@@ -1,8 +1,17 @@
 try:
-    import lazop
+    import lazop_sdk as lazop
+    # Make sure the classes are available
+    if hasattr(lazop, 'LazopClient') and hasattr(lazop, 'LazopRequest'):
+        print("✅ Lazop SDK imported successfully")
+    else:
+        raise ImportError("Lazop classes not found")
 except ImportError:
-    print("⚠️ Warning: lazop-sdk not found. Please install with: pip install lazop-sdk")
-    lazop = None
+    try:
+        import lazop
+        print("✅ Lazop imported as fallback")
+    except ImportError:
+        print("⚠️ Warning: lazop-sdk not found. Please install with: pip install lazop-sdk")
+        lazop = None
     
 import json
 import pandas as pd
@@ -12,6 +21,7 @@ import sys
 import os
 import time
 import math
+from collections import defaultdict
 
 # Add parent directory to path to import config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -86,7 +96,13 @@ class LazadaDataExtractor:
         self.app_key = LAZADA_TOKENS["app_key"]
         self.app_secret = LAZADA_TOKENS["app_secret"]
         self.access_token = LAZADA_TOKENS["access_token"]
-        self.client = lazop.LazopClient(self.url, self.app_key, self.app_secret)
+        
+        # Initialize client only if lazop is available
+        if lazop:
+            self.client = lazop.LazopClient(self.url, self.app_key, self.app_secret)
+        else:
+            self.client = None
+            print("⚠️ Warning: lazop SDK not available. API calls will not work.")
         
         # API call tracking
         self.api_calls_made = 0
@@ -101,9 +117,15 @@ class LazadaDataExtractor:
         print(f"Lazada Extractor initialized")
         print(f"Staging directory: {self.staging_dir}")
         print(f"Daily API limit: {self.max_daily_calls}")
+        if not lazop:
+            print("📊 Running in status-check-only mode (no API capabilities)")
     
     def _make_api_call(self, request, call_type="general"):
         """Make API call with rate limiting and tracking"""
+        if not self.client:
+            print("❌ Cannot make API calls: lazop SDK not available")
+            return None
+            
         if self.api_calls_made >= self.max_daily_calls:
             print(f"Daily API limit ({self.max_daily_calls}) reached!")
             return None
@@ -156,6 +178,139 @@ class LazadaDataExtractor:
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False, default=str)
         print(f"Saved {len(data) if isinstance(data, list) else 1} records to {filename}")
+    
+    def _get_last_date_from_data(self, data, date_field='created_at'):
+        """
+        Find the last date in a dataset
+        
+        Args:
+            data (list): List of records
+            date_field (str): Field name containing date information
+            
+        Returns:
+            datetime: Last date found, or None if no dates found
+        """
+        if not data:
+            return None
+        
+        last_date = None
+        for record in data:
+            date_str = record.get(date_field)
+            if date_str:
+                try:
+                    # Handle various date formats
+                    if 'T' in str(date_str):
+                        # ISO format with time
+                        parsed_date = datetime.fromisoformat(str(date_str).replace('Z', '+00:00').replace('+08:00', ''))
+                    else:
+                        # Try parsing as date only
+                        parsed_date = datetime.strptime(str(date_str)[:10], '%Y-%m-%d')
+                    
+                    if last_date is None or parsed_date > last_date:
+                        last_date = parsed_date
+                except (ValueError, TypeError) as e:
+                    continue
+        
+        return last_date
+    
+    def _find_last_extraction_date(self):
+        """
+        Find the last extraction date across all data files
+        
+        Returns:
+            dict: Dictionary with last dates for each data type
+        """
+        last_dates = {}
+        
+        # Check orders data
+        orders_data = self._load_from_json('lazada_orders_raw.json')
+        if orders_data:
+            last_dates['orders'] = self._get_last_date_from_data(orders_data, 'created_at')
+        
+        # Check traffic data  
+        traffic_data = self._load_from_json('lazada_reportoverview_raw.json')
+        if traffic_data:
+            # Traffic data might have different date field structure
+            traffic_last = None
+            for record in traffic_data:
+                if 'time_key' in record:
+                    try:
+                        time_key_str = str(record['time_key'])
+                        if len(time_key_str) >= 8:
+                            parsed_date = datetime.strptime(time_key_str[:8], '%Y%m%d')
+                            if traffic_last is None or parsed_date > traffic_last:
+                                traffic_last = parsed_date
+                    except ValueError:
+                        continue
+            last_dates['traffic'] = traffic_last
+        
+        # Check product reviews
+        reviews_data = self._load_from_json('lazada_productreview_raw.json')
+        if reviews_data:
+            last_dates['reviews'] = self._get_last_date_from_data(reviews_data, 'created_at')
+        
+        return last_dates
+    
+    def _remove_duplicates_by_id(self, existing_data, new_data, id_field):
+        """
+        Remove duplicates from new data based on ID field, keeping the latest version
+        
+        Args:
+            existing_data (list): Existing records
+            new_data (list): New records to merge
+            id_field (str): Field name to use as unique identifier
+            
+        Returns:
+            list: Merged data without duplicates
+        """
+        # Create a dict of existing records by ID
+        existing_by_id = {}
+        for record in existing_data:
+            record_id = record.get(id_field)
+            if record_id:
+                existing_by_id[str(record_id)] = record
+        
+        # Add/update with new records
+        for record in new_data:
+            record_id = record.get(id_field)
+            if record_id:
+                existing_by_id[str(record_id)] = record  # This will overwrite if duplicate
+        
+        # Return as list
+        return list(existing_by_id.values())
+    
+    def _get_month_start_date(self, date_obj):
+        """Get the first day of the month for a given date"""
+        return date_obj.replace(day=1)
+    
+    def _should_start_fresh_extraction(self, last_dates):
+        """
+        Determine if we should start fresh extraction based on last dates
+        
+        Args:
+            last_dates (dict): Dictionary of last dates by data type
+            
+        Returns:
+            tuple: (should_start_fresh, start_date)
+        """
+        if not last_dates or not any(last_dates.values()):
+            # No existing data, start from default date
+            return True, datetime(2020, 4, 1)
+        
+        # Find the most recent date across all data types
+        most_recent = None
+        for date_val in last_dates.values():
+            if date_val and (most_recent is None or date_val > most_recent):
+                most_recent = date_val
+        
+        if most_recent:
+            # Start from the beginning of the month containing the most recent date
+            start_from = self._get_month_start_date(most_recent)
+            print(f"📅 Last data found: {most_recent.strftime('%Y-%m-%d')}")
+            print(f"📅 Will restart extraction from: {start_from.strftime('%Y-%m-%d')} (beginning of that month)")
+            return False, start_from
+        else:
+            return True, datetime(2020, 4, 1)
     
     def _load_from_json(self, filename):
         """Load data from JSON file if it exists"""
@@ -223,32 +378,59 @@ class LazadaDataExtractor:
         print(f"🎉 Product extraction complete! Total: {len(all_products)} products")
         return all_products
     
-    def extract_all_orders(self, start_date=None, end_date=None, start_fresh=False):
+    def extract_all_orders(self, start_date=None, end_date=None, start_fresh=False, incremental=True):
         """
-        Extract ALL orders from Lazada with 90-day chunks (API limitation)
-        Automatically chunks large date ranges into 90-day batches
+        Extract ALL orders from Lazada with intelligent incremental updates
+        Automatically detects last extraction date and continues from there
+        Handles duplicates using order_id as unique identifier
         Saves to lazada_orders_raw.json
+        
+        Args:
+            start_date: Override start date (will be auto-detected if None)
+            end_date: End date (defaults to Oct 31, 2025)
+            start_fresh: Force complete re-extraction
+            incremental: Use incremental update logic
         """
         filename = 'lazada_orders_raw.json'
         
-        if not start_fresh:
-            existing_data = self._load_from_json(filename)
-            if existing_data:
-                print(f"📋 Found {len(existing_data)} existing orders. Use start_fresh=True to re-extract.")
-                return existing_data
+        # Load existing data first
+        existing_data = self._load_from_json(filename)
         
-        # Default to extract from 2020-04-01 to 2025-04-30 (main business period)
+        if not start_fresh and not incremental and existing_data:
+            print(f"📋 Found {len(existing_data)} existing orders. Use start_fresh=True or incremental=True to update.")
+            return existing_data
+        
+        # Determine extraction dates
+        if incremental and not start_fresh:
+            # Find last extraction dates
+            last_dates = self._find_last_extraction_date()
+            should_start_fresh, calculated_start = self._should_start_fresh_extraction(last_dates)
+            
+            if should_start_fresh:
+                print("🆕 No existing data found, starting fresh extraction...")
+                start_date = calculated_start
+                existing_data = []
+            else:
+                start_date = calculated_start
+                print(f"🔄 Incremental update from {start_date.strftime('%Y-%m-%d')}")
+        elif start_fresh:
+            print("🆕 Starting fresh extraction (start_fresh=True)...")
+            existing_data = []
+            if not start_date:
+                start_date = datetime(2020, 4, 1)
+        
+        # Set default dates if not provided
         if not start_date:
             start_date = datetime(2020, 4, 1)
         elif isinstance(start_date, str):
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
         
         if not end_date:
-            end_date = datetime(2025, 4, 30)
+            end_date = datetime(2025, 10, 31)  # Updated to Oct 31, 2025
         elif isinstance(end_date, str):
             end_date = datetime.strptime(end_date, '%Y-%m-%d')
         
-        print(f"🔍 Starting complete order extraction from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}...")
+        print(f"🔍 Extracting orders from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}...")
         
         # Calculate total days and number of 90-day chunks needed
         total_days = (end_date - start_date).days
@@ -258,7 +440,7 @@ class LazadaDataExtractor:
         print(f"📊 Total period: {total_days} days")
         print(f"📦 Breaking into {total_chunks} chunks of {chunk_days} days each (API limit)")
         
-        all_orders = []
+        new_orders = []
         current_start = start_date
         chunk_num = 0
         
@@ -274,9 +456,9 @@ class LazadaDataExtractor:
             
             # Extract orders for this chunk with pagination
             chunk_orders = self._extract_orders_chunk(start_str, end_str, chunk_num)
-            all_orders.extend(chunk_orders)
+            new_orders.extend(chunk_orders)
             
-            print(f"✅ Chunk {chunk_num}: Got {len(chunk_orders)} orders (Total: {len(all_orders)})")
+            print(f"✅ Chunk {chunk_num}: Got {len(chunk_orders)} orders (New total: {len(new_orders)})")
             
             # Check API limit
             if self.api_calls_made >= self.max_daily_calls:
@@ -286,9 +468,19 @@ class LazadaDataExtractor:
             # Move to next chunk
             current_start = chunk_end + timedelta(days=1)
         
+        # Merge with existing data, removing duplicates by order_id
+        if existing_data and not start_fresh:
+            print(f"🔄 Merging {len(new_orders)} new orders with {len(existing_data)} existing orders...")
+            all_orders = self._remove_duplicates_by_id(existing_data, new_orders, 'order_id')
+            print(f"📊 After deduplication: {len(all_orders)} total orders")
+        else:
+            all_orders = new_orders
+        
         # Final save
         self._save_to_json(all_orders, filename)
-        print(f"Order extraction complete! Total: {len(all_orders)} orders across {chunk_num} chunks")
+        print(f"🎉 Order extraction complete! Total: {len(all_orders)} orders across {chunk_num} chunks")
+        print(f"📈 New orders extracted: {len(new_orders)}")
+        print(f"🔄 Duplicates handled by order_id deduplication")
         return all_orders
     
     def _extract_orders_chunk(self, start_date_str, end_date_str, chunk_num):
@@ -329,19 +521,21 @@ class LazadaDataExtractor:
         
         return chunk_orders
     
-    def extract_all_order_items(self, orders_data=None, start_fresh=False):
+    def extract_all_order_items(self, orders_data=None, start_fresh=False, incremental=True):
         """
         Extract order items for all orders using /orders/items/get API
+        Uses incremental update approach based on order data
         Processes up to 50 order IDs per API call (API limitation)
         Saves to lazada_multiple_order_items_raw.json
         """
         filename = 'lazada_multiple_order_items_raw.json'
         
-        if not start_fresh:
-            existing_data = self._load_from_json(filename)
-            if existing_data:
-                print(f"Found {len(existing_data)} existing order items. Use start_fresh=True to re-extract.")
-                return existing_data
+        # Load existing data
+        existing_data = self._load_from_json(filename)
+        
+        if not start_fresh and not incremental and existing_data:
+            print(f"Found {len(existing_data)} existing order items. Use start_fresh=True or incremental=True to update.")
+            return existing_data
         
         # Load orders if not provided
         if not orders_data:
@@ -440,48 +634,82 @@ class LazadaDataExtractor:
         print(f"API calls used: {self.api_calls_made}")
         return all_order_items
     
-    def extract_traffic_metrics(self, start_date=None, end_date=None, start_fresh=False, monthly_aggregate=True):
+    def extract_traffic_metrics(self, start_date=None, end_date=None, start_fresh=False, monthly_aggregate=True, incremental=True):
         """
-        Extract traffic/advertising metrics - Monthly Aggregates
+        Extract traffic/advertising metrics with incremental updates
+        Automatically detects last extraction date and continues from there
         Saves to lazada_reportoverview_raw.json
         
         Args:
-            start_date: Start date (YYYY-MM-DD or datetime object)
-            end_date: End date (YYYY-MM-DD or datetime object)
+            start_date: Override start date (will be auto-detected if None)
+            end_date: End date (defaults to Oct 31, 2025)
             start_fresh: Whether to re-extract all data
             monthly_aggregate: Whether to extract monthly data (True) or single period (False)
+            incremental: Use incremental update logic
         """
         filename = 'lazada_reportoverview_raw.json'
         
-        if not start_fresh:
-            existing_data = self._load_from_json(filename)
-            if existing_data:
-                print(f"Found existing traffic data. Use start_fresh=True to re-extract.")
-                return existing_data
+        # Load existing data
+        existing_data = self._load_from_json(filename)
         
-        # Default date range: 2022-10-01 to 2025-04-30 for comprehensive historical data
-        if not start_date:
-            start_date = '2022-10-01'
-        if not end_date:
-            end_date = '2025-04-30'
+        if not start_fresh and not incremental and existing_data:
+            print(f"Found existing traffic data. Use start_fresh=True or incremental=True to update.")
+            return existing_data
         
-        # Convert string dates to datetime objects if needed
-        if isinstance(start_date, str):
-            start_dt = datetime.strptime(start_date, '%Y-%m-%d')
-        else:
-            start_dt = start_date
+        # Determine extraction dates
+        if incremental and not start_fresh and existing_data:
+            # Find last traffic date from existing data
+            last_traffic_date = None
+            for record in existing_data:
+                if 'time_key' in record:
+                    try:
+                        time_key_str = str(record['time_key'])
+                        if len(time_key_str) >= 8:
+                            parsed_date = datetime.strptime(time_key_str[:8], '%Y%m%d')
+                            if last_traffic_date is None or parsed_date > last_traffic_date:
+                                last_traffic_date = parsed_date
+                    except ValueError:
+                        continue
             
-        if isinstance(end_date, str):
-            end_dt = datetime.strptime(end_date, '%Y-%m-%d')
-        else:
-            end_dt = end_date
+            if last_traffic_date:
+                # Start from the beginning of the month containing the last traffic date
+                start_date = self._get_month_start_date(last_traffic_date)
+                print(f"📅 Last traffic data: {last_traffic_date.strftime('%Y-%m-%d')}")
+                print(f"📅 Incremental update from: {start_date.strftime('%Y-%m-%d')}")
+            else:
+                start_date = datetime(2022, 10, 1)  # Default start
+                existing_data = []
+        elif start_fresh:
+            print("🆕 Starting fresh traffic extraction...")
+            existing_data = []
+        
+        # Default date range: 2022-10-01 to 2025-10-31 for comprehensive historical data
+        if not start_date:
+            start_date = datetime(2022, 10, 1)
+        elif isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        
+        if not end_date:
+            end_date = datetime(2025, 10, 31)  # Updated to Oct 31, 2025
+        elif isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
         
         if monthly_aggregate:
-            print(f"Extracting monthly traffic metrics from {start_dt.strftime('%Y-%m-%d')} to {end_dt.strftime('%Y-%m-%d')}...")
-            return self._extract_monthly_traffic(start_dt, end_dt, filename)
+            print(f"Extracting monthly traffic metrics from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}...")
+            new_traffic_data = self._extract_monthly_traffic(start_date, end_date, filename)
         else:
-            print(f"Extracting single period traffic metrics from {start_date} to {end_date}...")
-            return self._extract_single_period_traffic(start_date, end_date, filename)
+            print(f"Extracting single period traffic metrics from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}...")
+            new_traffic_data = self._extract_single_period_traffic(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'), filename)
+        
+        # Merge with existing data if incremental
+        if existing_data and not start_fresh and incremental:
+            print(f"🔄 Merging {len(new_traffic_data)} new traffic records with {len(existing_data)} existing records...")
+            all_traffic_data = self._remove_duplicates_by_id(existing_data, new_traffic_data, 'time_key')
+            print(f"📊 After deduplication: {len(all_traffic_data)} total traffic records")
+            self._save_to_json(all_traffic_data, filename)
+            return all_traffic_data
+        else:
+            return new_traffic_data
     
     def _extract_monthly_traffic(self, start_date, end_date, filename):
         """Extract traffic data month by month for detailed analysis"""
@@ -682,143 +910,504 @@ class LazadaDataExtractor:
         print(f"🎉 Product details extraction complete! Total: {len(all_product_details)} items")
         return all_product_details
     
-    def extract_review_history_list(self, start_fresh=False, limit_products=None):
+    def extract_product_review_complete(self, start_fresh=False, limit_products=None):
         """
-        Step 1: Extract review IDs using product item_ids from lazada_products_raw.json
-        Uses /review/seller/list endpoint with item_id parameter
-        Saves review IDs to lazada_reviewhistorylist_raw.json
+        Complete two-step Lazada review extraction process:
         
-        Args:
-            start_fresh (bool): Whether to start fresh or append to existing data
-            limit_products (int): Limit number of products to process (for testing)
+        Step 1: Extract review IDs using /review/seller/history/list API for each item_id
+        Step 2: Extract detailed review content using /review/seller/list/v2 API
         
-        Returns:
-            list: List of review IDs
+        This follows the exact requirement:
+        1. Create temporary item_id list from lazada_products_raw.json
+        2. Use /review/seller/history/list for each item_id (store in lazada_reviewhistorylist_raw.json)
+        3. Retrieve product reviews using id_list (max 10 at a time, store in lazada_productreview_raw.json)
         """
-        filename = 'lazada_reviewhistorylist_raw.json'
+        print("🔄 Starting complete Lazada review extraction process...")
         
-        if not start_fresh:
-            existing_ids = self._load_from_json(filename)
-            if existing_ids:
-                print(f"📋 Found {len(existing_ids)} existing review IDs. Use start_fresh=True to overwrite.")
-                return existing_ids
-        
-        print(f"🔍 Starting product-based review extraction...")
-        
-        # Load product data to get item_ids
-        products = self._load_from_json('lazada_products_raw.json')
-        if not products:
-            print("❌ No products found. Please extract products first.")
-            return []
-        
-        # Extract item_ids from products
-        item_ids = []
-        for product in products:
-            if 'item_id' in product:
-                item_ids.append(product['item_id'])
-        
+        # Step 1: Create temporary item_id list from products
+        print("\n📝 Step 1: Creating temporary item_id list from lazada_products_raw.json")
+        item_ids = self._create_temporary_item_list(limit_products)
         if not item_ids:
-            print("❌ No item_ids found in products data.")
+            print("❌ No item_ids found. Cannot proceed.")
+            return {}
+        
+        # Step 2: Extract review IDs for each item_id
+        print(f"\n🔍 Step 2: Extracting review IDs for {len(item_ids)} products...")
+        review_ids = self._extract_review_ids_by_item(item_ids, start_fresh)
+        if not review_ids:
+            print("❌ No review IDs found. Cannot proceed to detailed extraction.")
+            return {}
+        
+        # Step 3: Extract detailed review content
+        print(f"\n📖 Step 3: Extracting detailed review content for {len(review_ids)} review IDs...")
+        detailed_reviews = self._extract_detailed_reviews_by_id_list(review_ids, start_fresh)
+        
+        print(f"\n🎉 Complete review extraction finished!")
+        print(f"   📊 Total review IDs found: {len(review_ids)}")
+        print(f"   📝 Detailed reviews extracted: {len(detailed_reviews) if detailed_reviews else 0}")
+        
+        return detailed_reviews
+    
+    def _create_temporary_item_list(self, limit_products=None):
+        """Create temporary item_id list from lazada_products_raw.json"""
+        products_file = os.path.join(self.staging_dir, 'lazada_products_raw.json')
+        temp_item_file = os.path.join(self.staging_dir, 'temp_lazada_item_ids.json')
+        
+        if not os.path.exists(products_file):
+            print(f"❌ Products file not found: {products_file}")
             return []
         
-        # Limit products for testing if specified
+        print(f"📂 Loading products from: {products_file}")
+        with open(products_file, 'r', encoding='utf-8') as f:
+            products_data = json.load(f)
+        
+        if not products_data:
+            print("❌ No product data available")
+            return []
+        
+        # Extract item_ids
+        item_ids = []
+        for product in products_data:
+            if product.get('item_id'):
+                item_ids.append({
+                    'item_id': str(product['item_id']),
+                    'title': product.get('attributes', {}).get('name', 'Unknown Product')[:50]
+                })
+        
         if limit_products:
             item_ids = item_ids[:limit_products]
-            print(f"🔬 Testing mode: Processing first {len(item_ids)} products")
         
-        print(f"📦 Processing reviews for {len(item_ids)} products...")
+        # Save temporary item list
+        print(f"💾 Saving {len(item_ids)} item_ids to temporary file: {temp_item_file}")
+        with open(temp_item_file, 'w', encoding='utf-8') as f:
+            json.dump(item_ids, f, indent=2)
         
-        all_review_ids = []
-        processed_count = 0
+        return item_ids
+    
+    def _extract_review_ids_by_item(self, item_list, start_fresh=False):
+        """Extract review IDs using /review/seller/history/list for each item_id"""
+        history_file = os.path.join(self.staging_dir, 'lazada_reviewhistorylist_raw.json')
         
-        for i, item_id in enumerate(item_ids):
+        if not start_fresh and os.path.exists(history_file):
+            print(f"📋 Loading existing review IDs from {history_file}")
+            with open(history_file, 'r', encoding='utf-8') as f:
+                existing_data = json.load(f)
+            if existing_data:
+                print(f"✅ Found {len(existing_data)} existing review IDs")
+                return existing_data
+        
+        all_review_ids = {}
+        
+        # Date range: 30 days back maximum (API limitation)
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=30)
+        
+        print(f"📅 Extracting review IDs from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+        print(f"⚠️ API Limitations: requires item_id, 7-day chunks max, recent dates only")
+        
+        for i, item_info in enumerate(item_list):
             if self.api_calls_made >= self.max_daily_calls:
                 print("⚠️ Daily API limit reached")
                 break
             
-            processed_count += 1
-            print(f"� Product {processed_count}/{len(item_ids)}: Getting reviews for item_id {item_id}")
+            item_id = item_info['item_id']
+            product_title = item_info['title']
             
-            # Add rate limiting between calls
-            if processed_count > 1:
+            print(f"\n📦 Product {i+1}/{len(item_list)}: {item_id} - {product_title}")
+            
+            # Process in 7-day chunks
+            current_date = start_date
+            chunk_count = 0
+            
+            while current_date < end_date:
+                if self.api_calls_made >= self.max_daily_calls:
+                    break
+                
+                chunk_count += 1
+                chunk_end = min(current_date + timedelta(days=7), end_date)
+                
+                start_timestamp = int(current_date.timestamp() * 1000)
+                end_timestamp = int(chunk_end.timestamp() * 1000)
+                
+                print(f"   📅 Chunk {chunk_count}: {current_date.strftime('%Y-%m-%d')} to {chunk_end.strftime('%Y-%m-%d')}")
+                
+                # Rate limiting
+                if i > 0 or chunk_count > 1:
+                    import time
+                    print(f"   ⏳ Rate limiting: waiting 3 seconds...")
+                    time.sleep(3)
+                
+                try:
+                    # API call: /review/seller/history/list
+                    request = lazop.LazopRequest('/review/seller/history/list', 'GET')
+                    request.add_api_param('item_id', str(item_id))
+                    request.add_api_param('start_time', str(start_timestamp))
+                    request.add_api_param('end_time', str(end_timestamp))
+                    request.add_api_param('current', '1')
+                    request.add_api_param('limit', '100')
+                    
+                    print(f"   📡 API Call: /review/seller/history/list for item_id={item_id}")
+                    
+                    response_data = self._make_api_call(request, f"review-history-{item_id}-{chunk_count}")
+                    
+                    if response_data and response_data.get('data', {}).get('id_list'):
+                        chunk_ids = response_data['data']['id_list']
+                        print(f"   ✅ Found {len(chunk_ids)} review IDs")
+                        
+                        # Store IDs with metadata
+                        for review_id in chunk_ids:
+                            all_review_ids[str(review_id)] = {
+                                'id': review_id,
+                                'item_id': item_id,
+                                'product_title': product_title,
+                                'chunk': chunk_count,
+                                'period': f"{current_date.strftime('%Y-%m-%d')} to {chunk_end.strftime('%Y-%m-%d')}"
+                            }
+                        
+                        # Handle pagination if needed
+                        total_count = response_data['data'].get('total_count', len(chunk_ids))
+                        if total_count > 100:
+                            pages_needed = min(3, (total_count // 100) + 1)  # Limit to 3 pages
+                            for page in range(2, pages_needed + 1):
+                                request = lazop.LazopRequest('/review/seller/history/list', 'GET')
+                                request.add_api_param('item_id', str(item_id))
+                                request.add_api_param('start_time', str(start_timestamp))
+                                request.add_api_param('end_time', str(end_timestamp))
+                                request.add_api_param('current', str(page))
+                                request.add_api_param('limit', '100')
+                                
+                                page_data = self._make_api_call(request, f"review-history-{item_id}-{chunk_count}-p{page}")
+                                
+                                if page_data and page_data.get('data', {}).get('id_list'):
+                                    page_ids = page_data['data']['id_list']
+                                    print(f"   ✅ Page {page}: Found {len(page_ids)} additional review IDs")
+                                    
+                                    for review_id in page_ids:
+                                        all_review_ids[str(review_id)] = {
+                                            'id': review_id,
+                                            'item_id': item_id,
+                                            'product_title': product_title,
+                                            'chunk': chunk_count,
+                                            'page': page,
+                                            'period': f"{current_date.strftime('%Y-%m-%d')} to {chunk_end.strftime('%Y-%m-%d')}"
+                                        }
+                    else:
+                        print(f"   ℹ️ No review IDs found for this period")
+                        
+                except Exception as e:
+                    print(f"   ❌ Error: {e}")
+                
+                current_date = chunk_end
+        
+        # Save review IDs to lazada_reviewhistorylist_raw.json
+        print(f"\n💾 Saving {len(all_review_ids)} review IDs to lazada_reviewhistorylist_raw.json")
+        with open(history_file, 'w', encoding='utf-8') as f:
+            json.dump(all_review_ids, f, indent=2)
+        
+        return all_review_ids
+    
+    def _extract_detailed_reviews_by_id_list(self, review_ids_dict, start_fresh=False):
+        """Extract detailed reviews using /review/seller/list/v2 with id_list (max 10 at a time)"""
+        reviews_file = os.path.join(self.staging_dir, 'lazada_productreview_raw.json')
+        
+        if not start_fresh and os.path.exists(reviews_file):
+            print(f"📋 Loading existing detailed reviews from {reviews_file}")
+            with open(reviews_file, 'r', encoding='utf-8') as f:
+                existing_reviews = json.load(f)
+            if existing_reviews:
+                print(f"✅ Found {len(existing_reviews)} existing detailed reviews")
+                return existing_reviews
+        
+        all_detailed_reviews = []
+        
+        # Convert review_ids_dict to list of IDs
+        review_ids = [data['id'] for data in review_ids_dict.values()]
+        
+        print(f"📝 Processing {len(review_ids)} review IDs in batches of 10...")
+        
+        # Process in batches of 10 (API limitation)
+        batch_size = 10
+        total_batches = (len(review_ids) + batch_size - 1) // batch_size
+        
+        for batch_num in range(0, len(review_ids), batch_size):
+            if self.api_calls_made >= self.max_daily_calls:
+                print("⚠️ Daily API limit reached")
+                break
+            
+            batch_ids = review_ids[batch_num:batch_num + batch_size]
+            batch_index = (batch_num // batch_size) + 1
+            
+            print(f"\n📦 Batch {batch_index}/{total_batches}: Processing {len(batch_ids)} review IDs")
+            
+            # Rate limiting
+            if batch_num > 0:
                 import time
-                print(f"   ⏳ Rate limiting: waiting 30 seconds...")
-                time.sleep(30)
+                print(f"   ⏳ Rate limiting: waiting 3 seconds...")
+                time.sleep(3)
             
             try:
-                # API call to get reviews for specific product
-                request = lazop.LazopRequest('/review/seller/list', 'GET')
-                request.add_api_param('item_id', str(item_id))
-                request.add_api_param('current', '1')  # Page number
-                request.add_api_param('limit', '100')  # Max reviews per product
+                # API call: /review/seller/list/v2
+                request = lazop.LazopRequest('/review/seller/list/v2', 'GET')
                 
-                print(f"   📡 API Call: /review/seller/list for item_id {item_id}")
+                # Try different parameter formats - API might expect JSON array format
+                id_list_array = [str(id) for id in batch_ids]
+                id_list_json = json.dumps(id_list_array)
                 
-                review_data = self._make_api_call(request, f"product-reviews-{item_id}")
+                request.add_api_param('id_list', id_list_json)
                 
-                if review_data and review_data.get('data'):
-                    data = review_data['data']
+                print(f"   📡 API Call: /review/seller/list/v2 with {len(batch_ids)} IDs")
+                print(f"   📋 ID List (JSON): {id_list_json}")
+                
+                batch_data = self._make_api_call(request, f"review-details-batch-{batch_index}")
+                
+                # Debug: Print the full response to understand structure
+                print(f"   🔍 Debug - Full API response: {batch_data}")
+                
+                if batch_data and batch_data.get('data'):
+                    data = batch_data['data']
+                    print(f"   🔍 Data keys available: {list(data.keys()) if data else 'None'}")
                     
-                    # Check if we got reviews directly
-                    if 'reviews' in data and data['reviews']:
+                    # Check different possible response structures
+                    reviews = []
+                    if data.get('reviews'):
                         reviews = data['reviews']
-                        print(f"   ✅ Found {len(reviews)} reviews for product {item_id}")
-                        
-                        # Save review IDs with product context
-                        for review in reviews:
-                            review_entry = {
-                                'item_id': item_id,
-                                'review_id': review.get('review_id', f"review_{item_id}_{len(all_review_ids)}"),
-                                'rating': review.get('rating', 0),
-                                'created_at': review.get('created_at', ''),
-                                'type': 'product_review'
-                            }
-                            all_review_ids.append(review_entry)
-                    
-                    # Check if we got review IDs to fetch later
-                    elif 'review_ids' in data or 'id_list' in data:
-                        ids = data.get('review_ids', data.get('id_list', []))
-                        print(f"   ✅ Found {len(ids)} review IDs for product {item_id}")
-                        
-                        for review_id in ids:
-                            review_entry = {
-                                'item_id': item_id,
-                                'review_id': review_id,
-                                'type': 'review_id_to_fetch'
-                            }
-                            all_review_ids.append(review_entry)
+                        print(f"   ✅ Found 'reviews' key with {len(reviews)} reviews")
+                    elif data.get('review_list'):
+                        reviews = data['review_list']
+                        print(f"   ✅ Found 'review_list' key with {len(reviews)} reviews")
+                    elif data.get('list'):
+                        reviews = data['list']
+                        print(f"   ✅ Found 'list' key with {len(reviews)} reviews")
                     else:
-                        print(f"   ℹ️ No reviews found for product {item_id}")
+                        print(f"   ⚠️ No recognizable review data structure found")
+                        print(f"   📋 Available data: {data}")
+                    
+                    if reviews:
+                        print(f"   ✅ Retrieved {len(reviews)} detailed reviews")
+                        
+                        # Process each detailed review
+                        for review in reviews:
+                            # Get metadata from original review_ids_dict
+                            review_id = str(review.get('id', ''))
+                            metadata = review_ids_dict.get(review_id, {})
+                            
+                            detailed_review = {
+                                'id': review.get('id'),
+                                'item_id': metadata.get('item_id', review.get('item_id')),
+                                'product_title': metadata.get('product_title', ''),
+                                'buyer_name': review.get('buyer_name', ''),
+                                'rating': review.get('rating'),
+                                'review_comment': review.get('review_comment', ''),
+                                'review_time': review.get('review_time'),
+                                'reply_comment': review.get('reply_comment', ''),
+                                'reply_time': review.get('reply_time'),
+                                'status': review.get('status'),
+                                'extraction_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                'batch_number': batch_index,
+                                'metadata': metadata
+                            }
+                            all_detailed_reviews.append(detailed_review)
                 else:
-                    print(f"   ⚠️ No data returned for product {item_id}")
+                    print(f"   ⚠️ No detailed reviews found for this batch")
                     
             except Exception as e:
-                print(f"   ❌ Error processing product {item_id}: {e}")
-                continue
+                print(f"   ❌ Error processing batch {batch_index}: {e}")
         
-        # Save review IDs
-        self._save_to_json(all_review_ids, filename)
+        # Save detailed reviews to lazada_productreview_raw.json
+        print(f"\n💾 Saving {len(all_detailed_reviews)} detailed reviews to lazada_productreview_raw.json")
+        with open(reviews_file, 'w', encoding='utf-8') as f:
+            json.dump(all_detailed_reviews, f, indent=2, ensure_ascii=False)
         
-        print(f"\n🎉 Product-based review extraction complete!")
-        print(f"   Products processed: {processed_count}")
-        print(f"   Total review entries collected: {len(all_review_ids)}")
-        print(f"   Saved to: {filename}")
+        return all_detailed_reviews
+    
+    def extract_review_history_list(self, start_fresh=False, limit_products=None):
+        """
+        Legacy method - redirects to new complete process
+        """
+        print("🔄 Redirecting to complete review extraction process...")
+        return self.extract_product_review_complete(start_fresh=start_fresh, limit_products=limit_products)
+        
+        print(f"🔍 Starting historical review ID extraction using /review/seller/history/list...")
+        
+        # Load product data to get item_ids (required by API)
+        products_file = os.path.join(self.staging_dir, 'lazada_products_raw.json')
+        if not os.path.exists(products_file):
+            print(f"❌ Products file not found: {products_file}")
+            print("   Run extract_products() first to get product data")
+            return {}
+        
+        with open(products_file, 'r', encoding='utf-8') as f:
+            products_data = json.load(f)
+        
+        if not products_data:
+            print("❌ No product data available")
+            return {}
+        
+        # Get item_ids from products data
+        item_ids = [str(prod.get('item_id')) for prod in products_data if prod.get('item_id')]
+        if limit_products:
+            item_ids = item_ids[:limit_products]
+        
+        all_review_ids = {}
+
+        # Calculate date ranges - API limitation: 3 months back maximum, 7-day chunks
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=30)  # 30 days back to start with a smaller range
+        
+        print(f"📅 Extracting review IDs from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+        print(f"📦 Processing reviews for {len(item_ids)} products")
+        print(f"⚠️ API Limitations: requires item_id, 7-day chunks maximum, 3-month historical limit")
+        
+        product_count = 0
+        
+        # Iterate through each product (item_id is required by API)
+        for item_id in item_ids:
+            if self.api_calls_made >= self.max_daily_calls:
+                print("⚠️ Daily API limit reached")
+                break
+            
+            product_count += 1
+            print(f"\n📦 Product {product_count}/{len(item_ids)}: item_id={item_id}")
+            
+            # Process in 7-day chunks (API requirement)
+            current_date = start_date
+            chunk_count = 0
+            
+            while current_date < end_date:
+                if self.api_calls_made >= self.max_daily_calls:
+                    print("⚠️ Daily API limit reached")
+                    break
+
+                chunk_count += 1
+                
+                # Calculate chunk end date (7-day maximum)
+                chunk_end = min(current_date + timedelta(days=7), end_date)
+                
+                # Format dates for API (timestamp format)
+                start_timestamp = int(current_date.timestamp() * 1000)  # milliseconds
+                end_timestamp = int(chunk_end.timestamp() * 1000)  # milliseconds
+                
+                print(f"   📅 Chunk {chunk_count}: {current_date.strftime('%Y-%m-%d')} to {chunk_end.strftime('%Y-%m-%d')}")
+                
+                # Add rate limiting between calls
+                if product_count > 1 or chunk_count > 1:
+                    import time
+                    print(f"   ⏳ Rate limiting: waiting 15 seconds...")
+                    time.sleep(15)
+                
+                try:
+                    # API call to get historical review IDs - with required item_id
+                    request = lazop.LazopRequest('/review/seller/history/list', 'GET')
+                    request.add_api_param('item_id', str(item_id))  # Required parameter
+                    request.add_api_param('start_time', str(start_timestamp))
+                    request.add_api_param('end_time', str(end_timestamp))
+                    request.add_api_param('current', '1')  # Page number
+                    request.add_api_param('limit', '100')  # Max IDs per page
+                    
+                    print(f"   📡 API Call: /review/seller/history/list for item_id={item_id}")
+                    
+                    response_data = self._make_api_call(request, f"review-history-{item_id}-{chunk_count}")
+                    
+                    if response_data and response_data.get('data'):
+                        data = response_data['data']
+                        
+                        # Check for review ID list
+                        if data.get('id_list'):
+                            chunk_ids = data['id_list']
+                            print(f"   ✅ Found {len(chunk_ids)} review IDs")
+                            
+                            # Store IDs with metadata
+                            for review_id in chunk_ids:
+                                all_review_ids[str(review_id)] = {
+                                    'id': review_id,
+                                    'item_id': item_id,
+                                    'chunk': chunk_count,
+                                    'period': f"{current_date.strftime('%Y-%m-%d')} to {chunk_end.strftime('%Y-%m-%d')}"
+                                }
+                            
+                            # Handle pagination if needed
+                            total_count = data.get('total_count', len(chunk_ids))
+                            if total_count > 100:
+                                pages_needed = math.ceil(total_count / 100)
+                                print(f"   📄 Processing {pages_needed} pages of results...")
+                                
+                                # Get additional pages (limit to 3 pages max per chunk)
+                                for page in range(2, min(pages_needed + 1, 4)):
+                                    request = lazop.LazopRequest('/review/seller/history/list', 'GET')
+                                    request.add_api_param('item_id', str(item_id))
+                                    request.add_api_param('start_time', str(start_timestamp))
+                                    request.add_api_param('end_time', str(end_timestamp))
+                                    request.add_api_param('current', str(page))
+                                    request.add_api_param('limit', '100')
+                                    
+                                    page_data = self._make_api_call(request, f"review-history-{item_id}-{chunk_count}-p{page}")
+                                    
+                                    if page_data and page_data.get('data', {}).get('id_list'):
+                                        page_ids = page_data['data']['id_list']
+                                        print(f"   ✅ Page {page}: Found {len(page_ids)} additional review IDs")
+                                        
+                                        for review_id in page_ids:
+                                            all_review_ids[str(review_id)] = {
+                                                'id': review_id,
+                                                'item_id': item_id,
+                                                'chunk': chunk_count,
+                                                'page': page,
+                                                'period': f"{current_date.strftime('%Y-%m-%d')} to {chunk_end.strftime('%Y-%m-%d')}"
+                                            }
+                                    else:
+                                        print(f"   ⚠️ Page {page}: No data returned")
+                                        break
+                        else:
+                            print(f"   ⚠️ No review IDs found for this time period")
+                    else:
+                        print(f"   ⚠️ No data returned for this time period")
+                        
+                except Exception as e:
+                    print(f"   ❌ Error processing chunk {chunk_count}: {e}")
+                
+                # Move to next chunk
+                current_date = chunk_end
+        
+        # Save all collected review IDs
+                            
+            
+        # Save all collected review IDs
+        filename = 'lazada_reviewhistorylist_raw.json'
+        
+        if start_fresh or not os.path.exists(os.path.join(self.staging_dir, filename)):
+            print(f"\n💾 Saving {len(all_review_ids)} review IDs to {filename}")
+            self._save_to_json(all_review_ids, filename)
+        else:
+            # Append mode - merge with existing data
+            existing_ids = self._load_from_json(filename) or {}
+            existing_ids.update(all_review_ids)
+            
+            print(f"\n💾 Appending {len(all_review_ids)} new review IDs (total: {len(existing_ids)}) to {filename}")
+            self._save_to_json(existing_ids, filename)
+            all_review_ids = existing_ids
+        
+        print(f"\n� Review History Extraction Summary:")
+        print(f"   📊 Total review IDs collected: {len(all_review_ids)}")
+        print(f"   📦 Products processed: {product_count}/{len(item_ids)}")
+        print(f"   📅 Date range: {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
+        print(f"   🔥 API calls made: {self.api_calls_made}")
+        print(f"   ⚠️ Note: These are IDs only. Use extract_review_details() to get content.")
         
         return all_review_ids
     
     def extract_review_details(self, review_ids=None, start_fresh=False):
         """
-        Step 2: Extract detailed review information 
-        For product-based reviews, this mainly processes already collected review data
-        For review IDs that need fetching, uses /review/seller/list/v2
+        Step 2: Extract detailed review content using GetReviewListByIdList API
+        Takes the review IDs from extract_review_history_list() and fetches full review content
+        Uses batched approach for efficiency
         Saves detailed reviews to lazada_productreview_raw.json
         
         Args:
-            review_ids (list): List of review entries to process
+            review_ids (list): List of review entries with review_id fields
             start_fresh (bool): Whether to start fresh or append to existing data
         
         Returns:
-            list: List of detailed review data
+            list: List of detailed review data with full content
         """
         filename = 'lazada_productreview_raw.json'
         
@@ -828,125 +1417,134 @@ class LazadaDataExtractor:
                 print(f"📋 Found {len(existing_reviews)} existing reviews. Use start_fresh=True to overwrite.")
                 return existing_reviews
         
-        # Load review entries if not provided
+        # Load review IDs if not provided
         if review_ids is None:
             review_ids = self._load_from_json('lazada_reviewhistorylist_raw.json')
         
         if not review_ids:
-            print("❌ No review data found. Please run extract_review_history_list() first.")
+            print("❌ No review IDs found. Please run extract_review_history_list() first.")
             return []
         
-        print(f"🔍 Starting detailed review processing for {len(review_ids)} review entries...")
+        print(f"🔍 Starting detailed review content extraction for {len(review_ids)} review IDs...")
         
-        # Separate different types of review data
-        product_reviews = []  # Reviews already collected from products
-        ids_to_fetch = []     # Review IDs that need detailed fetching
+        # Extract just the review IDs from the historical data
+        id_list = []
+        if isinstance(review_ids, dict):
+            # New format: dictionary with review_id as key and metadata as value
+            for review_id, metadata in review_ids.items():
+                if isinstance(metadata, dict) and 'id' in metadata:
+                    id_list.append(metadata['id'])
+                else:
+                    id_list.append(review_id)  # Use key as review_id
+        elif isinstance(review_ids, list):
+            # Legacy format: list of review entries
+            for item in review_ids:
+                if isinstance(item, dict):
+                    # Try different possible key names
+                    if 'id' in item:
+                        id_list.append(item['id'])
+                    elif 'review_id' in item:
+                        id_list.append(item['review_id'])
+                elif isinstance(item, (str, int)):
+                    id_list.append(item)
         
-        for item in review_ids:
-            if isinstance(item, dict):
-                if item.get('type') == 'product_review':
-                    # These are complete reviews from the product endpoint
-                    review_detail = {
-                        'item_id': item.get('item_id'),
-                        'review_id': item.get('review_id'),
-                        'rating': item.get('rating'),
-                        'created_at': item.get('created_at'),
-                        'review_type': 'product_based'
-                    }
-                    product_reviews.append(review_detail)
-                    
-                elif item.get('type') == 'review_id_to_fetch':
-                    # These need to be fetched with detailed API call
-                    ids_to_fetch.append({
-                        'item_id': item.get('item_id'),
-                        'review_id': item.get('review_id')
-                    })
-            else:
-                # Legacy format - assume it's a review ID
-                ids_to_fetch.append({'review_id': item})
+        if not id_list:
+            print("❌ No valid review IDs found in the data.")
+            return []
         
-        print(f"📋 Product-based reviews ready: {len(product_reviews)}")
-        print(f"📋 Review IDs to fetch details for: {len(ids_to_fetch)}")
+        print(f"📋 Found {len(id_list)} review IDs to fetch detailed content for...")
         
-        # Start with product-based reviews
-        all_reviews = product_reviews.copy()
+        all_reviews = []
+        batch_size = 20  # Reasonable batch size for review content API
+        total_batches = math.ceil(len(id_list) / batch_size)
         
-        # Process IDs that need detailed fetching
-        if ids_to_fetch:
-            batch_size = 10
-            total_batches = math.ceil(len(ids_to_fetch) / batch_size)
+        print(f"📦 Processing {len(id_list)} review IDs in {total_batches} batches of {batch_size}...")
+        
+        for i in range(0, len(id_list), batch_size):
+            if self.api_calls_made >= self.max_daily_calls:
+                print("⚠️ Daily API limit reached during review details extraction")
+                break
             
-            print(f"📦 Processing {len(ids_to_fetch)} review IDs in {total_batches} batches of {batch_size}...")
+            batch_ids = id_list[i:i + batch_size]
+            batch_num = (i // batch_size) + 1
             
-            for i in range(0, len(ids_to_fetch), batch_size):
-                if self.api_calls_made >= self.max_daily_calls:
-                    print("⚠️ Daily API limit reached during review details extraction")
-                    break
-                
-                batch_entries = ids_to_fetch[i:i + batch_size]
-                batch_num = (i // batch_size) + 1
-                
-                print(f"📦 Batch {batch_num}/{total_batches}: Processing {len(batch_entries)} review details...")
-                
-                # Add rate limiting between batches
-                if batch_num > 1:
-                    import time
-                    print(f"   ⏳ Rate limiting: waiting 5 seconds...")
-                    time.sleep(5)
-                
-                # Extract just the review IDs for the API call
-                batch_ids = [entry.get('review_id') for entry in batch_entries if entry.get('review_id')]
-                
-                if not batch_ids:
-                    print(f"   ⚠️ No valid review IDs in batch {batch_num}")
-                    continue
-                
-                # API call to get detailed review information
+            print(f"\n📦 Batch {batch_num}/{total_batches}: Processing {len(batch_ids)} review details...")
+            
+            # Add rate limiting between batches
+            if batch_num > 1:
+                import time
+                print(f"   ⏳ Rate limiting: waiting 5 seconds...")
+                time.sleep(5)
+            
+            try:
+                # API call to get detailed review content using GetReviewListByIdList
                 request = lazop.LazopRequest('/review/seller/list/v2', 'GET')
                 id_list_str = ','.join(str(id) for id in batch_ids)
                 request.add_api_param('id_list', id_list_str)
                 
-                print(f"   📡 API Call: /review/seller/list/v2 (IDs: {id_list_str})")
+                print(f"   📡 API Call: GetReviewListByIdList with {len(batch_ids)} IDs")
                 
                 batch_data = self._make_api_call(request, f"review-details-batch-{batch_num}")
                 
                 if batch_data and batch_data.get('data', {}).get('reviews'):
                     reviews = batch_data['data']['reviews']
+                    print(f"   ✅ Retrieved {len(reviews)} detailed reviews")
                     
-                    # Add item_id context to detailed reviews
+                    # Process each detailed review
                     for review in reviews:
-                        # Find the corresponding item_id from the batch
-                        review_id = review.get('review_id')
-                        item_id = None
-                        for entry in batch_entries:
-                            if str(entry.get('review_id')) == str(review_id):
-                                item_id = entry.get('item_id')
-                                break
-                        
-                        review['item_id'] = item_id
-                        review['review_type'] = 'detailed_fetch'
+                        detailed_review = {
+                            # Basic review info
+                            'review_id': review.get('review_id'),
+                            'product_id': review.get('product_id'),
+                            'item_id': review.get('item_id'),
+                            'buyer_id': review.get('buyer_id'),
+                            
+                            # Review content
+                            'review_content': review.get('review_content', ''),
+                            'review_title': review.get('review_title', ''),
+                            'rating': review.get('rating', 0),
+                            
+                            # Dates
+                            'created_at': review.get('created_at', ''),
+                            'updated_at': review.get('updated_at', ''),
+                            'extraction_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                            
+                            # Seller response (if any)
+                            'seller_response': review.get('seller_response', ''),
+                            'seller_response_date': review.get('seller_response_date', ''),
+                            
+                            # Additional metadata
+                            'review_status': review.get('status', ''),
+                            'buyer_name': review.get('buyer_name', ''),
+                            'product_name': review.get('product_name', ''),
+                            
+                            # Platform identifier
+                            'platform': 'Lazada',
+                            'data_source': 'review_seller_list_v2_api',
+                            'extraction_method': 'historical_id_list'
+                        }
+                        all_reviews.append(detailed_review)
                     
-                    all_reviews.extend(reviews)
-                    print(f"   ✅ Extracted {len(reviews)} detailed reviews")
-                    
-                    # Save progress every 5 batches
-                    if batch_num % 5 == 0:
+                    # Save progress every 10 batches
+                    if batch_num % 10 == 0:
                         self._save_to_json(all_reviews, filename)
                         print(f"   💾 Progress saved: {len(all_reviews)} reviews")
+                        
                 else:
                     print(f"   ⚠️ No review details found for batch {batch_num}")
-        else:
-            print("📋 All reviews already available from product data")
+                    
+            except Exception as e:
+                print(f"   ❌ Error processing batch {batch_num}: {e}")
+                continue
         
         # Final save
         self._save_to_json(all_reviews, filename)
         
         # Summary
-        print(f"\n🎉 Detailed review processing complete!")
-        print(f"   Total review entries processed: {len(review_ids)}")
-        print(f"   Product-based reviews: {len(product_reviews)}")
-        print(f"   Detailed fetched reviews: {len(all_reviews) - len(product_reviews)}")
-        print(f"   Total reviews extracted: {len(all_reviews)}")
+        print(f"\n🎉 Detailed review content extraction complete!")
+        print(f"   Review IDs processed: {len(id_list)}")
+        print(f"   Detailed reviews extracted: {len(all_reviews)}")
+        print(f"   Success rate: {(len(all_reviews)/len(id_list)*100):.1f}%")
         print(f"   Saved to: {filename}")
         
         return all_reviews
@@ -984,79 +1582,223 @@ class LazadaDataExtractor:
         
         return reviews
     
-    def run_complete_extraction(self, start_fresh=False):
+    def run_incremental_extraction(self, end_date='2025-10-31'):
+        """
+        Run intelligent incremental data extraction that:
+        1. Detects last extraction dates from existing data
+        2. Starts from beginning of month containing last date
+        3. Continues until end_date (default: Oct 31, 2025)
+        4. Handles duplicates using unique IDs
+        5. Updates orders with changed statuses
+        
+        Args:
+            end_date (str): End date for extraction (YYYY-MM-DD)
+        """
+        print("🚀 Starting INCREMENTAL Lazada data extraction...")
+        print("=" * 70)
+        
+        # Check existing data and find last dates
+        print("\n🔍 Step 1: Analyzing existing data...")
+        last_dates = self._find_last_extraction_date()
+        
+        print(f"📊 Last extraction dates found:")
+        for data_type, date_val in last_dates.items():
+            if date_val:
+                print(f"  • {data_type}: {date_val.strftime('%Y-%m-%d')}")
+            else:
+                print(f"  • {data_type}: No data found")
+        
+        extraction_results = {}
+        
+        # Extract Orders (with incremental logic)
+        print("\n📋 Step 2: Extracting Orders...")
+        print("-" * 40)
+        try:
+            orders = self.extract_all_orders(end_date=end_date, incremental=True)
+            extraction_results['orders'] = orders
+            print(f"✅ Orders: {len(orders)} total records")
+        except Exception as e:
+            print(f"❌ Orders extraction failed: {e}")
+            extraction_results['orders'] = []
+        
+        # Extract Order Items (incremental based on orders)
+        if extraction_results['orders']:
+            print("\n📦 Step 3: Extracting Order Items...")
+            print("-" * 40)
+            try:
+                order_items = self.extract_all_order_items(
+                    orders_data=extraction_results['orders'], 
+                    incremental=True
+                )
+                extraction_results['order_items'] = order_items
+                print(f"✅ Order Items: {len(order_items)} total records")
+            except Exception as e:
+                print(f"❌ Order Items extraction failed: {e}")
+                extraction_results['order_items'] = []
+        
+        # Extract Traffic Metrics (incremental)
+        print("\n📈 Step 4: Extracting Traffic Metrics...")
+        print("-" * 40)
+        try:
+            traffic = self.extract_traffic_metrics(
+                end_date=end_date, 
+                incremental=True, 
+                monthly_aggregate=True
+            )
+            extraction_results['traffic'] = traffic
+            print(f"✅ Traffic: {len(traffic)} total records")
+        except Exception as e:
+            print(f"❌ Traffic extraction failed: {e}")
+            extraction_results['traffic'] = []
+        
+        # Extract Products (if needed - this is usually stable)
+        print("\n🛍️ Step 5: Checking Products...")
+        print("-" * 40)
+        existing_products = self._load_from_json('lazada_products_raw.json')
+        if not existing_products or len(existing_products) < 100:
+            print("No products found or very few. Extracting fresh product data...")
+            try:
+                products = self.extract_all_products(start_fresh=False)
+                extraction_results['products'] = products
+                print(f"✅ Products: {len(products)} total records")
+            except Exception as e:
+                print(f"❌ Products extraction failed: {e}")
+                extraction_results['products'] = existing_products
+        else:
+            print(f"✅ Products: {len(existing_products)} existing records (skipping)")
+            extraction_results['products'] = existing_products
+        
+        # Extract Product Details (if we have products)
+        if extraction_results.get('products'):
+            print("\n🔍 Step 6: Extracting Product Details...")
+            print("-" * 40)
+            try:
+                product_details = self.extract_product_details(start_fresh=False)
+                extraction_results['product_details'] = product_details
+                print(f"✅ Product Details: {len(product_details)} total records")
+            except Exception as e:
+                print(f"❌ Product Details extraction failed: {e}")
+                extraction_results['product_details'] = []
+        
+        # Extract Product Reviews (incremental approach)
+        print("\n⭐ Step 7: Extracting Product Reviews...")
+        print("-" * 40)
+        try:
+            reviews = self.extract_product_reviews(start_fresh=False, limit_products=None)
+            extraction_results['reviews'] = reviews
+            print(f"✅ Reviews: {len(reviews)} total records")
+        except Exception as e:
+            print(f"❌ Reviews extraction failed: {e}")
+            extraction_results['reviews'] = []
+        
+        # Summary
+        print("\n" + "=" * 70)
+        print("📊 INCREMENTAL EXTRACTION SUMMARY")
+        print("=" * 70)
+        
+        total_api_calls = self.api_calls_made
+        for data_type, data in extraction_results.items():
+            count = len(data) if isinstance(data, list) else 0
+            print(f"✅ {data_type.replace('_', ' ').title()}: {count:,} records")
+        
+        print(f"\n📡 Total API calls used: {total_api_calls:,}/{self.max_daily_calls:,}")
+        print(f"📁 All data saved to: {self.staging_dir}")
+        
+        # Data quality checks
+        print(f"\n🔍 Data Quality Summary:")
+        if extraction_results.get('orders'):
+            unique_order_ids = len(set(str(o.get('order_id', '')) for o in extraction_results['orders'] if o.get('order_id')))
+            print(f"  • Unique Order IDs: {unique_order_ids:,}")
+        
+        if extraction_results.get('order_items'):
+            order_items_with_order_id = sum(1 for item in extraction_results['order_items'] if item.get('order_id'))
+            print(f"  • Order Items with Order ID: {order_items_with_order_id:,}")
+        
+        # Check for recent data
+        if extraction_results.get('orders'):
+            recent_orders = [o for o in extraction_results['orders'] 
+                           if o.get('created_at') and o['created_at'] >= (datetime.now() - timedelta(days=30)).isoformat()]
+            print(f"  • Orders from last 30 days: {len(recent_orders):,}")
+        
+        print(f"\n🎉 Incremental extraction completed successfully!")
+        print(f"💡 Tip: Run this same command again to get only new data since this extraction")
+        
+        return extraction_results
+
+    def run_complete_extraction(self, start_fresh=False, end_date='2025-10-31'):
         """
         Run complete data extraction in optimal order
+        Updated to extract until Oct 31, 2025
         """
-        print(" Starting COMPLETE Lazada data extraction...")
+        print("🚀 Starting COMPLETE Lazada data extraction...")
         print("=" * 60)
         
         extraction_plan = [
-            ("Products", self.extract_all_products),
-            ("Orders", self.extract_all_orders),
-            ("Order Items", self.extract_all_order_items),
-            ("Traffic Metrics", self.extract_traffic_metrics),
-            ("Product Details", self.extract_product_details),
-            ("Product Reviews", self.extract_product_reviews)
+            ("Products", lambda: self.extract_all_products(start_fresh=start_fresh)),
+            ("Orders", lambda: self.extract_all_orders(start_fresh=start_fresh, end_date=end_date)),
+            ("Order Items", lambda: self.extract_all_order_items(start_fresh=start_fresh)),
+            ("Traffic Metrics", lambda: self.extract_traffic_metrics(start_fresh=start_fresh, end_date=end_date)),
+            ("Product Details", lambda: self.extract_product_details(start_fresh=start_fresh)),
+            ("Product Reviews", lambda: self.extract_product_reviews(start_fresh=start_fresh))
         ]
         
         results = {}
         
         for step_name, extraction_func in extraction_plan:
-            print(f"\n Step: {step_name}")
+            print(f"\n🔄 Step: {step_name}")
             print("-" * 40)
             
             if self.api_calls_made >= self.max_daily_calls:
-                print(f" Daily API limit reached. Stopping at {step_name}")
+                print(f"⚠️ Daily API limit reached. Stopping at {step_name}")
                 break
             
             try:
-                if step_name == "Product Details":
-                    # Only extract details for first 50 products to save API calls
-                    results[step_name] = extraction_func(start_fresh=start_fresh)
-                elif step_name == "Product Reviews":
-                    # Extract reviews from last 3 months
-                    results[step_name] = extraction_func(start_fresh=start_fresh, months_back=3)
-                else:
-                    results[step_name] = extraction_func(start_fresh=start_fresh)
-                    
-                print(f" {step_name} completed")
-                print(f" API calls used: {self.api_calls_made}/{self.max_daily_calls}")
+                results[step_name] = extraction_func()
+                print(f"✅ {step_name} completed")
+                print(f"📡 API calls used: {self.api_calls_made}/{self.max_daily_calls}")
                 
             except Exception as e:
-                print(f" Error in {step_name}: {e}")
+                print(f"❌ Error in {step_name}: {e}")
                 continue
         
         print("\n" + "=" * 60)
-        print(" EXTRACTION SUMMARY")
+        print("📊 EXTRACTION SUMMARY")
         print("=" * 60)
         
         for step_name, data in results.items():
             count = len(data) if isinstance(data, list) else 0
-            print(f" {step_name}: {count} records")
+            print(f"✅ {step_name}: {count:,} records")
         
-        print(f" Total API calls used: {self.api_calls_made}/{self.max_daily_calls}")
-        print(f" All data saved to: {self.staging_dir}")
+        print(f"\n📡 Total API calls used: {self.api_calls_made}/{self.max_daily_calls}")
+        print(f"📁 All data saved to: {self.staging_dir}")
         
         return results
 
 # Convenience functions
-def run_full_extraction(start_fresh=False):
-    """Run complete extraction with all data"""
+def run_incremental_extraction(end_date='2025-10-31'):
+    """
+    Run incremental extraction that intelligently updates from last extraction date
+    Handles duplicates and continues until Oct 31, 2025
+    """
     extractor = LazadaDataExtractor()
-    return extractor.run_complete_extraction(start_fresh=start_fresh)
+    return extractor.run_incremental_extraction(end_date=end_date)
 
-def extract_recent_data():
-    """Extract only recent data (last 30 days) to save API calls"""
+def run_full_extraction(start_fresh=False, end_date='2025-10-31'):
+    """Run complete extraction with all data until Oct 31, 2025"""
+    extractor = LazadaDataExtractor()
+    return extractor.run_complete_extraction(start_fresh=start_fresh, end_date=end_date)
+
+def extract_recent_data(days_back=30):
+    """Extract only recent data (last N days) to save API calls"""
     extractor = LazadaDataExtractor()
     
     # Extract recent orders
-    recent_start = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%dT%H:%M:%S+08:00')
+    recent_start = (datetime.now() - timedelta(days=days_back)).strftime('%Y-%m-%dT%H:%M:%S+08:00')
     recent_end = datetime.now().strftime('%Y-%m-%dT%H:%M:%S+08:00')
     
-    orders = extractor.extract_all_orders(start_date=recent_start, end_date=recent_end)
-    order_items = extractor.extract_all_order_items(orders_data=orders)
-    traffic = extractor.extract_traffic_metrics()
+    orders = extractor.extract_all_orders(start_date=recent_start, end_date=recent_end, incremental=True)
+    order_items = extractor.extract_all_order_items(orders_data=orders, incremental=True)
+    traffic = extractor.extract_traffic_metrics(incremental=True)
     
     return {
         'orders': orders,
@@ -1064,10 +1806,122 @@ def extract_recent_data():
         'traffic': traffic
     }
 
+def check_extraction_status():
+    """
+    Check the status of existing extractions and provide recommendations
+    """
+    extractor = LazadaDataExtractor()
+    
+    print("📊 Lazada Extraction Status Report")
+    print("=" * 50)
+    
+    # Check each data type
+    data_files = {
+        'Orders': 'lazada_orders_raw.json',
+        'Order Items': 'lazada_multiple_order_items_raw.json', 
+        'Products': 'lazada_products_raw.json',
+        'Product Details': 'lazada_productitem_raw.json',
+        'Traffic': 'lazada_reportoverview_raw.json',
+        'Reviews': 'lazada_productreview_raw.json'
+    }
+    
+    total_records = 0
+    status_report = {}
+    
+    for data_type, filename in data_files.items():
+        data = extractor._load_from_json(filename)
+        count = len(data) if data else 0
+        total_records += count
+        
+        # Get date range for this data type
+        if data and count > 0:
+            if data_type in ['Orders', 'Reviews']:
+                last_date = extractor._get_last_date_from_data(data, 'created_at')
+                first_date = min([
+                    extractor._get_last_date_from_data([record], 'created_at') 
+                    for record in data 
+                    if extractor._get_last_date_from_data([record], 'created_at')
+                ], default=None)
+            elif data_type == 'Traffic':
+                dates = []
+                for record in data:
+                    if 'time_key' in record:
+                        try:
+                            time_key_str = str(record['time_key'])
+                            if len(time_key_str) >= 8:
+                                dates.append(datetime.strptime(time_key_str[:8], '%Y%m%d'))
+                        except ValueError:
+                            continue
+                last_date = max(dates) if dates else None
+                first_date = min(dates) if dates else None
+            else:
+                last_date = None
+                first_date = None
+            
+            status_report[data_type] = {
+                'count': count,
+                'first_date': first_date,
+                'last_date': last_date
+            }
+        else:
+            status_report[data_type] = {
+                'count': 0,
+                'first_date': None,
+                'last_date': None
+            }
+        
+        print(f"📂 {data_type}: {count:,} records")
+        if status_report[data_type]['first_date'] and status_report[data_type]['last_date']:
+            print(f"   📅 Date range: {status_report[data_type]['first_date'].strftime('%Y-%m-%d')} to {status_report[data_type]['last_date'].strftime('%Y-%m-%d')}")
+        elif count == 0:
+            print(f"   ⚠️ No data found")
+        else:
+            print(f"   📅 Date range: Could not determine")
+    
+    print(f"\n📊 Total Records: {total_records:,}")
+    
+    # Recommendations
+    print(f"\n💡 Recommendations:")
+    
+    # Check if we have recent data
+    has_recent_data = False
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    
+    for data_type, info in status_report.items():
+        if info['last_date'] and info['last_date'] > thirty_days_ago:
+            has_recent_data = True
+            break
+    
+    if not has_recent_data:
+        print(f"   🔄 Run incremental extraction: run_incremental_extraction()")
+        print(f"   📅 No recent data found (last 30 days)")
+    else:
+        print(f"   ✅ Recent data found - incremental extraction recommended")
+        print(f"   🔄 Run: run_incremental_extraction() to get latest updates")
+    
+    # Check for missing data types
+    missing_data = [data_type for data_type, info in status_report.items() if info['count'] == 0]
+    if missing_data:
+        print(f"   ⚠️ Missing data types: {', '.join(missing_data)}")
+        print(f"   🔄 Run complete extraction: run_full_extraction(start_fresh=True)")
+    
+    return status_report
+
 def extract_product_reviews_only(start_fresh=False, limit_products=None):
     """Extract only product reviews (standalone function)"""
     extractor = LazadaDataExtractor()
     return extractor.extract_product_reviews(start_fresh=start_fresh, limit_products=limit_products)
+
+def extract_product_review_complete_only(start_fresh=False, limit_products=None):
+    """
+    Convenience function to run complete Lazada review extraction
+    
+    This creates the complete two-step process:
+    1. Extract review IDs for each item_id -> lazada_reviewhistorylist_raw.json
+    2. Extract detailed reviews by id_list -> lazada_productreview_raw.json
+    """
+    extractor = LazadaDataExtractor()
+    return extractor.extract_product_review_complete(start_fresh=start_fresh, limit_products=limit_products)
 
 def extract_review_history_only(start_fresh=False, limit_products=None):
     """Extract only review history by product (Step 1)"""
@@ -1080,38 +1934,99 @@ def extract_review_details_only(review_ids=None, start_fresh=False):
     return extractor.extract_review_details(review_ids=review_ids, start_fresh=start_fresh)
 
 if __name__ == "__main__":
-    print("🚀 Lazada Complete Data Extraction")
+    print("🚀 Lazada Data Extraction with Incremental Updates")
+    print("=" * 60)
     print("Choose extraction mode:")
-    print("1. Complete historical extraction (uses more API calls)")
-    print("2. Recent data only (last 30 days)")
-    print("3. Product reviews - complete 2-step process")
-    print("4. Product reviews - Step 1 only (IDs)")
-    print("5. Product reviews - Step 2 only (details)")
+    print("1. 🔄 Incremental extraction (RECOMMENDED)")
+    print("   - Automatically detects last extraction date")
+    print("   - Starts from beginning of that month") 
+    print("   - Continues to Oct 31, 2025")
+    print("   - Handles duplicates and status updates")
+    print("")
+    print("2. 📊 Check extraction status")
+    print("   - View current data status and recommendations")
+    print("")
+    print("3. 🆕 Complete fresh extraction")
+    print("   - Re-extracts all data from 2020-04-01 to 2025-10-31")
+    print("   - Uses more API calls")
+    print("")
+    print("4. 📈 Recent data only (last 30 days)")
+    print("   - Quick extraction for recent updates")
+    print("")
+    print("5. ⭐ Product reviews - complete process")
+    print("   - Extract product reviews using 2-step process")
+    print("")
+    print("6. 📋 Product reviews - Step 1 only (IDs)")
+    print("   - Extract review IDs by product")
+    print("")
+    print("7. 📃 Product reviews - Step 2 only (details)")
+    print("   - Process detailed review information")
     
-    choice = input("Enter choice (1-5): ").strip()
+    choice = input("\nEnter choice (1-7): ").strip()
     
     if choice == "1":
-        print("📊 Running complete extraction...")
-        results = run_full_extraction(start_fresh=False)
+        print("🔄 Running incremental extraction...")
+        print("This will automatically detect your last extraction date and continue from there.")
+        results = run_incremental_extraction()
+        print(f"\n✅ Incremental extraction completed!")
+        
     elif choice == "2":
-        print("📈 Running recent data extraction...")
-        results = extract_recent_data()
+        print("📊 Checking extraction status...")
+        status = check_extraction_status()
+        
     elif choice == "3":
-        print("⭐ Running complete product reviews extraction (2 steps)...")
-        results = extract_product_reviews_only(start_fresh=True, limit_products=5)  # Test with 5 products
-        print(f"📝 Extracted {len(results)} reviews")
+        confirm = input("⚠️ This will re-extract ALL data and use many API calls. Continue? (y/N): ")
+        if confirm.lower() in ['y', 'yes']:
+            print("🆕 Running complete fresh extraction...")
+            results = run_full_extraction(start_fresh=True)
+        else:
+            print("❌ Cancelled complete extraction")
+            
     elif choice == "4":
-        print("📋 Running review history extraction (Step 1)...")
-        results = extract_review_history_only(start_fresh=True, limit_products=5)  # Test with 5 products
-        print(f"📝 Extracted {len(results)} review entries")
+        days = input("Enter number of days back (default 30): ").strip()
+        try:
+            days_back = int(days) if days else 30
+        except ValueError:
+            days_back = 30
+        
+        print(f"📈 Running recent data extraction (last {days_back} days)...")
+        results = extract_recent_data(days_back=days_back)
+        print(f"📝 Extracted recent data:")
+        for data_type, data in results.items():
+            print(f"  • {data_type}: {len(data)} records")
+            
     elif choice == "5":
+        limit = input("Limit to N products for testing (press Enter for all): ").strip()
+        try:
+            limit_products = int(limit) if limit else None
+        except ValueError:
+            limit_products = None
+            
+        print("⭐ Running complete product reviews extraction...")
+        results = extract_product_reviews_only(start_fresh=False, limit_products=limit_products)
+        print(f"📝 Extracted {len(results)} reviews")
+        
+    elif choice == "6":
+        limit = input("Limit to N products for testing (press Enter for all): ").strip()
+        try:
+            limit_products = int(limit) if limit else None
+        except ValueError:
+            limit_products = None
+            
+        print("📋 Running review history extraction (Step 1)...")
+        results = extract_review_history_only(start_fresh=False, limit_products=limit_products)
+        print(f"📝 Extracted {len(results)} review entries")
+        
+    elif choice == "7":
         print("📃 Running review details extraction (Step 2)...")
-        results = extract_review_details_only(start_fresh=True)
+        results = extract_review_details_only(start_fresh=False)
         print(f"📝 Extracted {len(results)} detailed reviews")
+        
     else:
-        print("❌ Invalid choice. Running recent data extraction by default...")
-        results = extract_recent_data()
+        print("❌ Invalid choice. Running incremental extraction by default...")
+        results = run_incremental_extraction()
     
-    print("\n✅ Extraction completed!")
-    print("📁 Check the app/Staging/ directory for JSON files")
+    print(f"\n🎉 Extraction completed!")
+    print(f"📁 Check the app/Staging/ directory for JSON files")
+    print(f"💡 Next time, just run option 1 (incremental) to get only new data!")
 

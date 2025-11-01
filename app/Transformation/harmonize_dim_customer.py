@@ -18,10 +18,10 @@ Key Requirements from Schema:
 Platform Customer ID Generation Logic:
 Since Lazada doesn't provide platform_customer_id, we generate it using:
 'LZ' + first_char(first_name) + last_char(first_name) + first2_digits(phone) + last2_digits(phone)
-
+For Shopee, it is directly taken from the buyer_user_id provided in the API.
 Example: 
 - first_name: "Antonio", phone: "639123456789"
-- platform_customer_id: "LZAo1289"
+- platform_customer_id: "LZAO1289" must be toUppercase match the example above.
 """
 
 import pandas as pd

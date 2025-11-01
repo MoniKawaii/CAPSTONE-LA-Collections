@@ -486,7 +486,7 @@ COLUMN_DATA_TYPES = {
         'platform_key': 'int'
     },
     'dim_product': {
-        'product_key': 'int',
+        'product_key': 'float64',   
         'product_item_id': 'str',
         'product_name': 'str',
         'product_sku_base': 'str',
@@ -497,8 +497,8 @@ COLUMN_DATA_TYPES = {
         'platform_key': 'int'
     },
     'dim_product_variant': {
-        'product_variant_key': 'int',
-        'product_key': 'int',
+        'product_variant_key': 'float64',
+        'product_key': 'float64',
         'platform_sku_id': 'str',
         'variant_sku': 'str',
         'variant_attribute_1': 'str',
@@ -507,7 +507,7 @@ COLUMN_DATA_TYPES = {
         'platform_key': 'int'
     },
     'dim_order': {
-        'orders_key': 'int',
+        'orders_key': 'float64',
         'platform_order_id': 'str',
         'order_status': 'str',
         'order_date': 'datetime64[D]',  # Date only, not datetime
@@ -520,10 +520,10 @@ COLUMN_DATA_TYPES = {
     },
     'fact_orders': {
         'order_item_key': 'str',
-        'orders_key': 'int',
-        'product_key': 'int',
-        'product_variant_key': 'int',
-        'time_key': 'int',
+        'orders_key': 'float64',
+        'product_key': 'float64',
+        'product_variant_key': 'float64',
+        'time_key': 'float64',
         'customer_key': 'float64',  # Changed to float64 to match dim_customer (1.1, 1.2, etc.)
         'platform_key': 'int',
         'item_quantity': 'int',

@@ -156,22 +156,22 @@ def is_payday(check_date):
     
     return False
 
-def transform_dim_time(raw_data=None, start_date="2020-04-01", end_date="2025-04-30"):
+def transform_dim_time(raw_data=None, start_date="2020-04-01", end_date="2025-10-31"):
     """
     Generate Dim_Time table following LA_Collections_Schema.sql
-    Fixed date range: April 2020 to April 2025
+    Fixed date range: April 2020 to October 2025
     
     Args:
         raw_data: Optional raw data (not used in this version)
         start_date (str): Start date in YYYY-MM-DD format (default: 2020-04-01)
-        end_date (str): End date in YYYY-MM-DD format (default: 2025-04-30)
+        end_date (str): End date in YYYY-MM-DD format (default: 2025-10-31)
     
     Returns:
         pd.DataFrame: Time dimension DataFrame
     """
     
     print("🔄 Starting Dim_Time generation...")
-    print(f"  📅 Fixed date range: April 2020 to April 2025")
+    print(f"  📅 Fixed date range: April 2020 to October 2025")
     print(f"  📅 Generating time dimension from {start_date} to {end_date}")
     
     # Parse start and end dates
@@ -258,7 +258,7 @@ def transform_dim_time(raw_data=None, start_date="2020-04-01", end_date="2025-04
 def main():
     """Main function to generate and save time dimension"""
     
-    # Generate time dimension with fixed date range: April 2020 to April 2025
+    # Generate time dimension with fixed date range: April 2020 to October 2025
     df = transform_dim_time()
     
     # Display results
