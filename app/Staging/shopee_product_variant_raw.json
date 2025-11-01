@@ -1,0 +1,638 @@
+[
+  {
+    "item_id": 24720910252,
+    "model_list": [
+      {
+        "model_id": 24720910252001,
+        "promotion_id": 0,
+        "model_sku": "FLUFFY-WIPES-3PACK",
+        "normal_stock": 50,
+        "committed_stock": 5,
+        "tier_index": [0],
+        "price_info": {
+          "current_price": 159.0,
+          "original_price": 199.0,
+          "inflated_price_of_current_price": 159.0,
+          "inflated_price_of_original_price": 199.0
+        },
+        "gtin_code": "",
+        "model_name": "Pack of 3"
+      },
+      {
+        "model_id": 24720910252002,
+        "promotion_id": 0,
+        "model_sku": "FLUFFY-WIPES-6PACK",
+        "normal_stock": 25,
+        "committed_stock": 3,
+        "tier_index": [1],
+        "price_info": {
+          "current_price": 299.0,
+          "original_price": 380.0,
+          "inflated_price_of_current_price": 299.0,
+          "inflated_price_of_original_price": 380.0
+        },
+        "gtin_code": "",
+        "model_name": "Pack of 6"
+      }
+    ]
+  },
+  {
+    "item_id": 29170344623,
+    "model_list": [
+      {
+        "model_id": 29170344623001,
+        "promotion_id": 386101823292312,
+        "model_sku": "ROOM-SPRAY-VANILLA-250",
+        "normal_stock": 30,
+        "committed_stock": 2,
+        "tier_index": [0, 0],
+        "price_info": {
+          "current_price": 150.0,
+          "original_price": 180.0,
+          "inflated_price_of_current_price": 150.0,
+          "inflated_price_of_original_price": 180.0
+        },
+        "gtin_code": "",
+        "model_name": "Vanilla Dreams,250ml"
+      },
+      {
+        "model_id": 29170344623002,
+        "promotion_id": 386101823292312,
+        "model_sku": "ROOM-SPRAY-VANILLA-500",
+        "normal_stock": 20,
+        "committed_stock": 1,
+        "tier_index": [0, 1],
+        "price_info": {
+          "current_price": 280.0,
+          "original_price": 320.0,
+          "inflated_price_of_current_price": 280.0,
+          "inflated_price_of_original_price": 320.0
+        },
+        "gtin_code": "",
+        "model_name": "Vanilla Dreams,500ml"
+      },
+      {
+        "model_id": 29170344623003,
+        "promotion_id": 386101823292312,
+        "model_sku": "ROOM-SPRAY-LINEN-250",
+        "normal_stock": 25,
+        "committed_stock": 1,
+        "tier_index": [1, 0],
+        "price_info": {
+          "current_price": 150.0,
+          "original_price": 180.0,
+          "inflated_price_of_current_price": 150.0,
+          "inflated_price_of_original_price": 180.0
+        },
+        "gtin_code": "",
+        "model_name": "Fresh Linen,250ml"
+      },
+      {
+        "model_id": 29170344623004,
+        "promotion_id": 386101823292312,
+        "model_sku": "ROOM-SPRAY-LINEN-500",
+        "normal_stock": 15,
+        "committed_stock": 0,
+        "tier_index": [1, 1],
+        "price_info": {
+          "current_price": 280.0,
+          "original_price": 320.0,
+          "inflated_price_of_current_price": 280.0,
+          "inflated_price_of_original_price": 320.0
+        },
+        "gtin_code": "",
+        "model_name": "Fresh Linen,500ml"
+      },
+      {
+        "model_id": 29170344623005,
+        "promotion_id": 386101823292312,
+        "model_sku": "ROOM-SPRAY-CITRUS-250",
+        "normal_stock": 20,
+        "committed_stock": 2,
+        "tier_index": [2, 0],
+        "price_info": {
+          "current_price": 150.0,
+          "original_price": 180.0,
+          "inflated_price_of_current_price": 150.0,
+          "inflated_price_of_original_price": 180.0
+        },
+        "gtin_code": "",
+        "model_name": "Citrus Burst,250ml"
+      },
+      {
+        "model_id": 29170344623006,
+        "promotion_id": 386101823292312,
+        "model_sku": "ROOM-SPRAY-CITRUS-500",
+        "normal_stock": 10,
+        "committed_stock": 0,
+        "tier_index": [2, 1],
+        "price_info": {
+          "current_price": 280.0,
+          "original_price": 320.0,
+          "inflated_price_of_current_price": 280.0,
+          "inflated_price_of_original_price": 320.0
+        },
+        "gtin_code": "",
+        "model_name": "Citrus Burst,500ml"
+      }
+    ]
+  },
+  {
+    "item_id": 7871666518,
+    "model_list": [
+      {
+        "model_id": 7871666518001,
+        "promotion_id": 0,
+        "model_sku": "HOTEL-SCENT-100ML-VANILLA",
+        "normal_stock": 40,
+        "committed_stock": 3,
+        "tier_index": [0],
+        "price_info": {
+          "current_price": 120.0,
+          "original_price": 150.0,
+          "inflated_price_of_current_price": 120.0,
+          "inflated_price_of_original_price": 150.0
+        },
+        "gtin_code": "",
+        "model_name": "Vanilla Scent"
+      },
+      {
+        "model_id": 7871666518002,
+        "promotion_id": 0,
+        "model_sku": "HOTEL-SCENT-100ML-LAVENDER",
+        "normal_stock": 35,
+        "committed_stock": 2,
+        "tier_index": [1],
+        "price_info": {
+          "current_price": 120.0,
+          "original_price": 150.0,
+          "inflated_price_of_current_price": 120.0,
+          "inflated_price_of_original_price": 150.0
+        },
+        "gtin_code": "",
+        "model_name": "Lavender Scent"
+      },
+      {
+        "model_id": 7871666518003,
+        "promotion_id": 0,
+        "model_sku": "HOTEL-SCENT-100ML-CITRUS",
+        "normal_stock": 30,
+        "committed_stock": 1,
+        "tier_index": [2],
+        "price_info": {
+          "current_price": 120.0,
+          "original_price": 150.0,
+          "inflated_price_of_current_price": 120.0,
+          "inflated_price_of_original_price": 150.0
+        },
+        "gtin_code": "",
+        "model_name": "Citrus Scent"
+      }
+    ]
+  },
+  {
+    "item_id": 5584672956,
+    "model_list": [
+      {
+        "model_id": 5584672956001,
+        "promotion_id": 0,
+        "model_sku": "ESSENTIAL-OIL-1L-VANILLA",
+        "normal_stock": 25,
+        "committed_stock": 2,
+        "tier_index": [0],
+        "price_info": {
+          "current_price": 250.0,
+          "original_price": 300.0,
+          "inflated_price_of_current_price": 250.0,
+          "inflated_price_of_original_price": 300.0
+        },
+        "gtin_code": "",
+        "model_name": "Vanilla Essence"
+      },
+      {
+        "model_id": 5584672956002,
+        "promotion_id": 0,
+        "model_sku": "ESSENTIAL-OIL-1L-LAVENDER",
+        "normal_stock": 20,
+        "committed_stock": 1,
+        "tier_index": [1],
+        "price_info": {
+          "current_price": 250.0,
+          "original_price": 300.0,
+          "inflated_price_of_current_price": 250.0,
+          "inflated_price_of_original_price": 300.0
+        },
+        "gtin_code": "",
+        "model_name": "Lavender Essence"
+      }
+    ]
+  },
+  {
+    "item_id": 3561704640,
+    "model_list": [
+      {
+        "model_id": 3561704640001,
+        "promotion_id": 367199009521745,
+        "model_sku": "SHANGRI-LA-1L-CLASSIC",
+        "normal_stock": 15,
+        "committed_stock": 1,
+        "tier_index": [0],
+        "price_info": {
+          "current_price": 320.0,
+          "original_price": 380.0,
+          "inflated_price_of_current_price": 320.0,
+          "inflated_price_of_original_price": 380.0
+        },
+        "gtin_code": "",
+        "model_name": "Classic Hotel Scent"
+      },
+      {
+        "model_id": 3561704640002,
+        "promotion_id": 367199009521745,
+        "model_sku": "SHANGRI-LA-1L-PREMIUM",
+        "normal_stock": 12,
+        "committed_stock": 0,
+        "tier_index": [1],
+        "price_info": {
+          "current_price": 350.0,
+          "original_price": 420.0,
+          "inflated_price_of_current_price": 350.0,
+          "inflated_price_of_original_price": 420.0
+        },
+        "gtin_code": "",
+        "model_name": "Premium Hotel Scent"
+      }
+    ]
+  },
+  {
+    "item_id": 19729473020,
+    "model_list": [
+      {
+        "model_id": 19729473020001,
+        "promotion_id": 0,
+        "model_sku": "ESSENTIAL-OIL-250ML-VANILLA",
+        "normal_stock": 50,
+        "committed_stock": 5,
+        "tier_index": [0, 0],
+        "price_info": {
+          "current_price": 95.0,
+          "original_price": 120.0,
+          "inflated_price_of_current_price": 95.0,
+          "inflated_price_of_original_price": 120.0
+        },
+        "gtin_code": "",
+        "model_name": "Vanilla,250ml"
+      },
+      {
+        "model_id": 19729473020002,
+        "promotion_id": 0,
+        "model_sku": "ESSENTIAL-OIL-500ML-VANILLA",
+        "normal_stock": 30,
+        "committed_stock": 2,
+        "tier_index": [0, 1],
+        "price_info": {
+          "current_price": 180.0,
+          "original_price": 220.0,
+          "inflated_price_of_current_price": 180.0,
+          "inflated_price_of_original_price": 220.0
+        },
+        "gtin_code": "",
+        "model_name": "Vanilla,500ml"
+      },
+      {
+        "model_id": 19729473020003,
+        "promotion_id": 0,
+        "model_sku": "ESSENTIAL-OIL-250ML-LAVENDER",
+        "normal_stock": 45,
+        "committed_stock": 3,
+        "tier_index": [1, 0],
+        "price_info": {
+          "current_price": 95.0,
+          "original_price": 120.0,
+          "inflated_price_of_current_price": 95.0,
+          "inflated_price_of_original_price": 120.0
+        },
+        "gtin_code": "",
+        "model_name": "Lavender,250ml"
+      },
+      {
+        "model_id": 19729473020004,
+        "promotion_id": 0,
+        "model_sku": "ESSENTIAL-OIL-500ML-LAVENDER",
+        "normal_stock": 25,
+        "committed_stock": 1,
+        "tier_index": [1, 1],
+        "price_info": {
+          "current_price": 180.0,
+          "original_price": 220.0,
+          "inflated_price_of_current_price": 180.0,
+          "inflated_price_of_original_price": 220.0
+        },
+        "gtin_code": "",
+        "model_name": "Lavender,500ml"
+      }
+    ]
+  },
+  {
+    "item_id": 9978639899,
+    "model_list": [
+      {
+        "model_id": 9978639899001,
+        "promotion_id": 0,
+        "model_sku": "TISSUE-REGULAR-24PACK",
+        "normal_stock": 100,
+        "committed_stock": 10,
+        "tier_index": [0],
+        "price_info": {
+          "current_price": 180.0,
+          "original_price": 220.0,
+          "inflated_price_of_current_price": 180.0,
+          "inflated_price_of_original_price": 220.0
+        },
+        "gtin_code": "",
+        "model_name": "Regular 24-pack"
+      },
+      {
+        "model_id": 9978639899002,
+        "promotion_id": 0,
+        "model_sku": "TISSUE-REGULAR-48PACK",
+        "normal_stock": 50,
+        "committed_stock": 5,
+        "tier_index": [1],
+        "price_info": {
+          "current_price": 320.0,
+          "original_price": 400.0,
+          "inflated_price_of_current_price": 320.0,
+          "inflated_price_of_original_price": 400.0
+        },
+        "gtin_code": "",
+        "model_name": "Regular 48-pack"
+      }
+    ]
+  },
+  {
+    "item_id": 17834073885,
+    "model_list": [
+      {
+        "model_id": 17834073885001,
+        "promotion_id": 0,
+        "model_sku": "LINEN-SPRAY-250ML-VANILLA",
+        "normal_stock": 35,
+        "committed_stock": 3,
+        "tier_index": [0, 0],
+        "price_info": {
+          "current_price": 140.0,
+          "original_price": 170.0,
+          "inflated_price_of_current_price": 140.0,
+          "inflated_price_of_original_price": 170.0
+        },
+        "gtin_code": "",
+        "model_name": "Vanilla,250ml"
+      },
+      {
+        "model_id": 17834073885002,
+        "promotion_id": 0,
+        "model_sku": "LINEN-SPRAY-500ML-VANILLA",
+        "normal_stock": 25,
+        "committed_stock": 2,
+        "tier_index": [0, 1],
+        "price_info": {
+          "current_price": 260.0,
+          "original_price": 300.0,
+          "inflated_price_of_current_price": 260.0,
+          "inflated_price_of_original_price": 300.0
+        },
+        "gtin_code": "",
+        "model_name": "Vanilla,500ml"
+      },
+      {
+        "model_id": 17834073885003,
+        "promotion_id": 0,
+        "model_sku": "LINEN-SPRAY-250ML-FRESH",
+        "normal_stock": 30,
+        "committed_stock": 2,
+        "tier_index": [1, 0],
+        "price_info": {
+          "current_price": 140.0,
+          "original_price": 170.0,
+          "inflated_price_of_current_price": 140.0,
+          "inflated_price_of_original_price": 170.0
+        },
+        "gtin_code": "",
+        "model_name": "Fresh Scent,250ml"
+      },
+      {
+        "model_id": 17834073885004,
+        "promotion_id": 0,
+        "model_sku": "LINEN-SPRAY-500ML-FRESH",
+        "normal_stock": 20,
+        "committed_stock": 1,
+        "tier_index": [1, 1],
+        "price_info": {
+          "current_price": 260.0,
+          "original_price": 300.0,
+          "inflated_price_of_current_price": 260.0,
+          "inflated_price_of_original_price": 300.0
+        },
+        "gtin_code": "",
+        "model_name": "Fresh Scent,500ml"
+      }
+    ]
+  },
+  {
+    "item_id": 38969746090,
+    "model_list": [
+      {
+        "model_id": 38969746090001,
+        "promotion_id": 0,
+        "model_sku": "DETERGENT-POWDER-1KG",
+        "normal_stock": 60,
+        "committed_stock": 6,
+        "tier_index": [0],
+        "price_info": {
+          "current_price": 85.0,
+          "original_price": 100.0,
+          "inflated_price_of_current_price": 85.0,
+          "inflated_price_of_original_price": 100.0
+        },
+        "gtin_code": "",
+        "model_name": "1kg Pack"
+      },
+      {
+        "model_id": 38969746090002,
+        "promotion_id": 0,
+        "model_sku": "DETERGENT-POWDER-3KG",
+        "normal_stock": 40,
+        "committed_stock": 4,
+        "tier_index": [1],
+        "price_info": {
+          "current_price": 220.0,
+          "original_price": 260.0,
+          "inflated_price_of_current_price": 220.0,
+          "inflated_price_of_original_price": 260.0
+        },
+        "gtin_code": "",
+        "model_name": "3kg Pack"
+      },
+      {
+        "model_id": 38969746090003,
+        "promotion_id": 0,
+        "model_sku": "DETERGENT-POWDER-5KG",
+        "normal_stock": 25,
+        "committed_stock": 2,
+        "tier_index": [2],
+        "price_info": {
+          "current_price": 350.0,
+          "original_price": 420.0,
+          "inflated_price_of_current_price": 350.0,
+          "inflated_price_of_original_price": 420.0
+        },
+        "gtin_code": "",
+        "model_name": "5kg Pack"
+      }
+    ]
+  },
+  {
+    "item_id": 36058779506,
+    "model_list": [
+      {
+        "model_id": 36058779506001,
+        "promotion_id": 0,
+        "model_sku": "FABRIC-SOFTENER-1L-FLORAL",
+        "normal_stock": 30,
+        "committed_stock": 3,
+        "tier_index": [0],
+        "price_info": {
+          "current_price": 120.0,
+          "original_price": 150.0,
+          "inflated_price_of_current_price": 120.0,
+          "inflated_price_of_original_price": 150.0
+        },
+        "gtin_code": "",
+        "model_name": "Floral Scent"
+      },
+      {
+        "model_id": 36058779506002,
+        "promotion_id": 0,
+        "model_sku": "FABRIC-SOFTENER-1L-FRESH",
+        "normal_stock": 25,
+        "committed_stock": 2,
+        "tier_index": [1],
+        "price_info": {
+          "current_price": 120.0,
+          "original_price": 150.0,
+          "inflated_price_of_current_price": 120.0,
+          "inflated_price_of_original_price": 150.0
+        },
+        "gtin_code": "",
+        "model_name": "Fresh Scent"
+      }
+    ]
+  },
+  {
+    "item_id": 19652738050,
+    "model_list": [
+      {
+        "model_id": 19652738050001,
+        "promotion_id": 0,
+        "model_sku": "NATURAL-CLEANER-500ML-CITRUS",
+        "normal_stock": 40,
+        "committed_stock": 4,
+        "tier_index": [0],
+        "price_info": {
+          "current_price": 95.0,
+          "original_price": 120.0,
+          "inflated_price_of_current_price": 95.0,
+          "inflated_price_of_original_price": 120.0
+        },
+        "gtin_code": "",
+        "model_name": "Citrus Formula"
+      },
+      {
+        "model_id": 19652738050002,
+        "promotion_id": 0,
+        "model_sku": "NATURAL-CLEANER-500ML-LAVENDER",
+        "normal_stock": 35,
+        "committed_stock": 3,
+        "tier_index": [1],
+        "price_info": {
+          "current_price": 95.0,
+          "original_price": 120.0,
+          "inflated_price_of_current_price": 95.0,
+          "inflated_price_of_original_price": 120.0
+        },
+        "gtin_code": "",
+        "model_name": "Lavender Formula"
+      }
+    ]
+  },
+  {
+    "item_id": 30502157748,
+    "model_list": [
+      {
+        "model_id": 30502157748001,
+        "promotion_id": 0,
+        "model_sku": "TOILET-TISSUE-12ROLL-2PLY",
+        "normal_stock": 80,
+        "committed_stock": 8,
+        "tier_index": [0, 0],
+        "price_info": {
+          "current_price": 140.0,
+          "original_price": 170.0,
+          "inflated_price_of_current_price": 140.0,
+          "inflated_price_of_original_price": 170.0
+        },
+        "gtin_code": "",
+        "model_name": "12 Rolls,2-ply"
+      },
+      {
+        "model_id": 30502157748002,
+        "promotion_id": 0,
+        "model_sku": "TOILET-TISSUE-24ROLL-2PLY",
+        "normal_stock": 60,
+        "committed_stock": 6,
+        "tier_index": [1, 0],
+        "price_info": {
+          "current_price": 260.0,
+          "original_price": 300.0,
+          "inflated_price_of_current_price": 260.0,
+          "inflated_price_of_original_price": 300.0
+        },
+        "gtin_code": "",
+        "model_name": "24 Rolls,2-ply"
+      },
+      {
+        "model_id": 30502157748003,
+        "promotion_id": 0,
+        "model_sku": "TOILET-TISSUE-12ROLL-3PLY",
+        "normal_stock": 50,
+        "committed_stock": 5,
+        "tier_index": [0, 1],
+        "price_info": {
+          "current_price": 180.0,
+          "original_price": 220.0,
+          "inflated_price_of_current_price": 180.0,
+          "inflated_price_of_original_price": 220.0
+        },
+        "gtin_code": "",
+        "model_name": "12 Rolls,3-ply"
+      },
+      {
+        "model_id": 30502157748004,
+        "promotion_id": 0,
+        "model_sku": "TOILET-TISSUE-24ROLL-3PLY",
+        "normal_stock": 40,
+        "committed_stock": 4,
+        "tier_index": [1, 1],
+        "price_info": {
+          "current_price": 340.0,
+          "original_price": 400.0,
+          "inflated_price_of_current_price": 340.0,
+          "inflated_price_of_original_price": 400.0
+        },
+        "gtin_code": "",
+        "model_name": "24 Rolls,3-ply"
+      }
+    ]
+  }
+]

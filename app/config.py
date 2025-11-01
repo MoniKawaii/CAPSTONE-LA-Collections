@@ -150,21 +150,21 @@ DIM_TIME_COLUMNS = [
 
 # Customer Dimension
 DIM_CUSTOMER_COLUMNS = [
-    'customer_key', 'platform_customer_id', 'customer_city', 
+    'customer_key', 'platform_customer_id', 
     'buyer_segment', 'total_orders', 'customer_since', 
     'last_order_date', 'platform_key'
 ]
 
 # Product Dimension
 DIM_PRODUCT_COLUMNS = [
-    'product_key', 'product_item_id', 'product_name', 'product_sku_base',
-    'product_category', 'product_status', 'product_price', 
+    'product_key', 'product_item_id', 'product_name',
+    'product_category', 'product_status', 'current_selling_price', 
     'product_rating', 'platform_key'
 ]
 
 # Product Variant Dimension
 DIM_PRODUCT_VARIANT_COLUMNS = [
-    'product_variant_key', 'product_key', 'platform_sku_id', 'variant_sku',
+    'product_variant_key', 'product_key', 'platform_sku_id', 'canonical_sku',
     'variant_attribute_1', 'variant_attribute_2', 'variant_attribute_3', 'platform_key'
 ]
 
@@ -386,7 +386,6 @@ LAZADA_TO_UNIFIED_MAPPING = {
     # --- Dim_Customer ---
     "customer_key": "customer_key",  # Generated internally incremental
     "platform_customer_id": "platform_customer_id",  # Generated: 'LZ' + first_char + last_char of first_name + first2_phone + last2_phone
-    "address_shipping.city": "customer_city",  # From address_shipping.city
     "address_shipping.phone": "customer_phone",  # From address_shipping.phone (for platform_customer_id generation)
     "buyer_segment": "buyer_segment",  # Calculated: 'New Buyer' or 'Returning Buyer'
     "total_orders": "total_orders",  # Calculated: Count of orders per platform_customer_id
@@ -400,21 +399,38 @@ LAZADA_TO_UNIFIED_MAPPING = {
 # =============================================================================
 
 SHOPEE_TO_UNIFIED_MAPPING = {
-    # --- Dim_Product ---
+    # --- Dim_Product (from shopee_products_raw.json and shopee_productitem_raw.json) ---
     "item_id": "product_item_id",
     "item_name": "product_name",
-    "category_id": "product_category",  # May need category name lookup
+    "category_id": "product_category",  # Will be mapped to category name from shopee_productcategory_raw.json
     "item_status": "product_status",
-    "price_info.current_price": "product_price",  # Base price
+    "price_info.current_price": "product_price",  # Base price from model list
     "rating_star": "product_rating",
     "platform_key": "platform_key",  # Always 2 for Shopee
+    "item_sku": "product_sku_base",  # From shopee_productitem_raw.json
     
-    # --- Dim_Product_Variant (from model list) ---
+    # --- Dim_Product_Variant (from shopee_product_variant_raw.json) ---
     "model_id": "platform_sku_id",  # From model_list[].model_id
     "model_sku": "variant_sku",  # From model_list[].model_sku
+    "model_name": "variant_name",  # From model_list[].model_name
     "tier_index.0": "variant_attribute_1",  # From tier_index[0]
     "tier_index.1": "variant_attribute_2",  # From tier_index[1]
     "tier_index.2": "variant_attribute_3",  # From tier_index[2]
+    "price_info.current_price": "variant_price",  # From model_list[].price_info.current_price
+    "normal_stock": "variant_stock",  # From model_list[].normal_stock
+    
+    # --- Category Mapping (from shopee_productcategory_raw.json) ---
+    "category_name": "category_name",  # Direct mapping from category file
+    "parent_category_id": "parent_category_id",
+    
+    # --- Product Reviews (from shopee_productreview_raw.json) ---
+    "review_id": "review_id",
+    "product_item_id": "product_item_id",
+    "rating": "rating",
+    "comment": "comment",
+    "review_time": "review_time",
+    "reviewer_name": "reviewer_name",
+    "review_type": "review_type",
     
     # --- Dim_Order ---
     "id": "orders_key",  # not pulled from API, generated internally incremental
@@ -430,7 +446,6 @@ SHOPEE_TO_UNIFIED_MAPPING = {
     # --- Dim_Customer ---
     "customer_key": "customer_key",  # Generated internally incremental
     "platform_customer_id": "platform_customer_id",  # Generated: 'SP' + first_char + last_char of buyer_username + first2_phone + last2_phone
-    "recipient_address.city": "customer_city",  # From recipient_address.city
     "recipient_address.phone": "customer_phone",  # From recipient_address.phone (for platform_customer_id generation)
     "buyer_username": "buyer_username",  # For platform_customer_id generation
     "buyer_segment": "buyer_segment",  # Calculated: 'New Buyer' or 'Returning Buyer'
@@ -526,7 +541,6 @@ COLUMN_DATA_TYPES = {
     'dim_customer': {
         'customer_key': 'float64',  # Changed to float64 to handle decimal points (1.1, 1.2, etc.)
         'platform_customer_id': 'str',
-        'customer_city': 'str',
         'buyer_segment': 'str',
         'total_orders': 'int',
         'customer_since': 'datetime64[D]',  # Date only, not datetime
@@ -534,21 +548,20 @@ COLUMN_DATA_TYPES = {
         'platform_key': 'int'
     },
     'dim_product': {
-        'product_key': 'float64',   
+        'product_key': 'float64',   # Changed to float64 for decimal keys (1.1, 2.1, etc.)
         'product_item_id': 'str',
         'product_name': 'str',
-        'product_sku_base': 'str',
         'product_category': 'str',
         'product_status': 'str',
-        'product_price': 'float64',  # Decimal equivalent in pandas
+        'current_selling_price': 'float64',  # Decimal equivalent in pandas
         'product_rating': 'float64',  # Decimal equivalent in pandas
         'platform_key': 'int'
     },
     'dim_product_variant': {
-        'product_variant_key': 'float64',
-        'product_key': 'float64',
+        'product_variant_key': 'float64',  # Changed to float64 for decimal keys (1.1, 2.2, etc.)
+        'product_key': 'float64',  # Changed to float64 to match product table
         'platform_sku_id': 'str',
-        'variant_sku': 'str',
+        'canonical_sku': 'str',
         'variant_attribute_1': 'str',
         'variant_attribute_2': 'str',
         'variant_attribute_3': 'str',
@@ -691,6 +704,10 @@ def get_staging_filename(platform_name, data_type):
     # Map data types to standard filenames
     filename_mapping = {
         'products': f'{platform_prefix}_products_raw.json',
+        'productitem': f'{platform_prefix}_productitem_raw.json',
+        'product_variant': f'{platform_prefix}_product_variant_raw.json',
+        'productcategory': f'{platform_prefix}_productcategory_raw.json',
+        'productreview': f'{platform_prefix}_productreview_raw.json',
         'orders': f'{platform_prefix}_orders_raw.json',
         'order_items': f'{platform_prefix}_multiple_order_items_raw.json',
         'traffic': f'{platform_prefix}_reportoverview_raw.json',

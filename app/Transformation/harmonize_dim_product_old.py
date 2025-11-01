@@ -2,19 +2,12 @@
 Product Dimension Harmonization Script
 Maps Lazada and Shopee product data from raw JSON files to the standardized dimensional model
 
-Key Requirements:
-- EXCLUDE product_sku_base entirely from processing and output
-- Standardize product_status mapping for Shopee items
-- Add canonical_sku to dim_product_variant (unified join key)
-- Implement Lazada special pricing logic (current date: 2025-11-01)
-- Parse variant attributes from model_name/saleProp
-- Ensure all IDs are integers
-
 Data Sources:
 Lazada:
 - lazada_products_raw.json 
 - lazada_productitem_raw.json
 - lazada_productreview_raw.json
+
 Shopee:
 - shopee_products_raw.json
 - shopee_productitem_raw.json  
@@ -29,167 +22,11 @@ import os
 import sys
 import json
 import pandas as pd
-from datetime import datetime, timedelta
-import re
+from datetime import datetime
 
 # Add parent directory to path to import config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import get_empty_dataframe, LAZADA_TO_UNIFIED_MAPPING, SHOPEE_TO_UNIFIED_MAPPING, apply_data_types, get_staging_filename
-
-# Current date for price calculations
-CURRENT_DATE = datetime(2025, 11, 1)
-
-def standardize_product_status(platform, status):
-    """
-    Standardize product status across platforms
-    
-    Args:
-        platform (str): 'lazada' or 'shopee'
-        status (str): Original status from platform
-        
-    Returns:
-        str: Standardized status
-    """
-    if platform == 'shopee':
-        shopee_status_mapping = {
-            'NORMAL': 'Active',
-            'UNLIST': 'Inactive/Removed',
-            'BANNED': 'Inactive/Removed', 
-            'SELLER_DELETE': 'Inactive/Removed',
-            'SHOPEE_DELETE': 'Inactive/Removed',
-            'REVIEWING': 'Pending/Reviewing'
-        }
-        return shopee_status_mapping.get(status, status)
-    elif platform == 'lazada':
-        # Lazada typically uses 'active', 'inactive', etc.
-        lazada_status_mapping = {
-            'active': 'Active',
-            'inactive': 'Inactive/Removed',
-            'pending': 'Pending/Reviewing'
-        }
-        return lazada_status_mapping.get(status.lower(), status)
-    
-    return status
-
-def parse_variant_attributes(platform, variant_data):
-    """
-    Parse variant attributes from platform-specific data
-    
-    Args:
-        platform (str): 'lazada' or 'shopee'
-        variant_data (dict): Variant data from platform
-        
-    Returns:
-        tuple: (attr1, attr2, attr3)
-    """
-    attr1, attr2, attr3 = 'N/A', 'N/A', 'N/A'
-    
-    if platform == 'shopee':
-        # Parse from model_name if available
-        model_name = variant_data.get('model_name', '')
-        if model_name and model_name.strip():
-            # Try to split by common delimiters
-            parts = re.split(r'[,;|\-_]', model_name.strip())
-            parts = [p.strip() for p in parts if p.strip()]
-            if len(parts) >= 1:
-                attr1 = parts[0]
-            if len(parts) >= 2:
-                attr2 = parts[1]
-            if len(parts) >= 3:
-                attr3 = parts[2]
-        
-        # Also check tier_index if available
-        tier_index = variant_data.get('tier_index', [])
-        if tier_index:
-            if len(tier_index) > 0 and attr1 == 'N/A':
-                attr1 = str(tier_index[0])
-            if len(tier_index) > 1 and attr2 == 'N/A':
-                attr2 = str(tier_index[1])
-            if len(tier_index) > 2 and attr3 == 'N/A':
-                attr3 = str(tier_index[2])
-                
-    elif platform == 'lazada':
-        # Parse from saleProp or Variation fields
-        sale_prop = variant_data.get('saleProp', '')
-        if sale_prop:
-            # Parse JSON-like saleProp structure
-            try:
-                if isinstance(sale_prop, str) and sale_prop.strip():
-                    prop_data = json.loads(sale_prop)
-                elif isinstance(sale_prop, (list, dict)):
-                    prop_data = sale_prop
-                else:
-                    prop_data = None
-                    
-                if isinstance(prop_data, list) and len(prop_data) > 0:
-                    for i, prop in enumerate(prop_data[:3]):
-                        if isinstance(prop, dict):
-                            value = prop.get('propValue', prop.get('value', ''))
-                            if i == 0:
-                                attr1 = str(value) if value else 'N/A'
-                            elif i == 1:
-                                attr2 = str(value) if value else 'N/A'
-                            elif i == 2:
-                                attr3 = str(value) if value else 'N/A'
-            except:
-                pass
-        
-        # Fallback to Variation fields
-        if attr1 == 'N/A':
-            attr1 = variant_data.get('Variation1', 'N/A') or 'N/A'
-        if attr2 == 'N/A':
-            attr2 = variant_data.get('Variation2', 'N/A') or 'N/A'
-        if attr3 == 'N/A':
-            attr3 = variant_data.get('Variation3', 'N/A') or 'N/A'
-    
-    return attr1, attr2, attr3
-
-def calculate_lazada_current_price(sku_data, current_date=CURRENT_DATE):
-    """
-    Calculate current selling price for Lazada based on special pricing windows
-    
-    Args:
-        sku_data (dict): SKU data from Lazada
-        current_date (datetime): Current date for calculation
-        
-    Returns:
-        float: Current selling price
-    """
-    try:
-        # Get base price
-        base_price = float(sku_data.get('price', 0))
-        special_price = sku_data.get('special_price')
-        
-        if special_price is not None:
-            special_price = float(special_price)
-            
-            # Check if special pricing is active
-            special_from = sku_data.get('special_from_time')
-            special_to = sku_data.get('special_to_time')
-            
-            if special_from and special_to:
-                try:
-                    # Parse timestamps (assuming Unix timestamps)
-                    if isinstance(special_from, (int, float)):
-                        from_date = datetime.fromtimestamp(special_from)
-                    else:
-                        from_date = datetime.strptime(str(special_from), '%Y-%m-%d %H:%M:%S')
-                    
-                    if isinstance(special_to, (int, float)):
-                        to_date = datetime.fromtimestamp(special_to)
-                    else:
-                        to_date = datetime.strptime(str(special_to), '%Y-%m-%d %H:%M:%S')
-                    
-                    # Check if current date is within special pricing window
-                    if from_date <= current_date <= to_date:
-                        return special_price
-                except:
-                    pass
-        
-        return base_price
-        
-    except (ValueError, TypeError):
-        return 0.0
 
 def load_lazada_data():
     """
@@ -267,49 +104,6 @@ def load_shopee_data():
         loaded_data.get('productreview', [])
     )
 
-def calculate_shopee_average_ratings(review_data):
-    """
-    Calculate average ratings by item_id from Shopee product review data
-    
-    Args:
-        review_data (list): List of review records from shopee_productreview_raw.json
-        
-    Returns:
-        dict: Dictionary mapping item_id to average rating
-    """
-    if not review_data:
-        return {}
-    
-    # Aggregate ratings by item_id
-    item_ratings = {}
-    
-    for review in review_data:
-        if isinstance(review, dict):
-            item_id = review.get('item_id')
-            rating = review.get('rating')
-            
-            if item_id is not None and rating is not None:
-                try:
-                    rating = float(rating)
-                    if item_id not in item_ratings:
-                        item_ratings[item_id] = []
-                    item_ratings[item_id].append(rating)
-                except (ValueError, TypeError):
-                    continue
-    
-    # Calculate averages
-    average_ratings = {}
-    for item_id, ratings in item_ratings.items():
-        if ratings:
-            average_ratings[item_id] = round(sum(ratings) / len(ratings), 2)
-    
-    print(f"📊 Calculated average ratings for {len(average_ratings)} Shopee products")
-    if average_ratings:
-        sample_items = list(average_ratings.items())[:3]
-        print(f"📋 Sample ratings: {sample_items}")
-    
-    return average_ratings
-
 def get_lazada_category_name(primary_category):
     """
     Map Lazada primary category ID to category name
@@ -353,13 +147,84 @@ def get_shopee_category_name(category_id, category_data):
     
     return category_mapping.get(category_id, f"Category_{category_id}")
 
+def extract_lazada_price_from_skus(skus):
+    """
+    Extract price from Lazada SKU data
+    
+    Args:
+        skus (list): List of SKU objects
+        
+    Returns:
+        float: Price value or None
+    """
+    if not skus:
+        return None
+    
+    for sku in skus:
+        if isinstance(sku, dict) and 'price' in sku:
+            try:
+                return float(sku['price'])
+            except (ValueError, TypeError):
+                continue
+    return None
+
+def get_lazada_base_sku_from_variants(skus):
+    """
+    Extract base SKU from Lazada variants
+    
+    Args:
+        skus (list): List of SKU objects
+        
+    Returns:
+        str: Base SKU or empty string
+    """
+    if not skus:
+        return ""
+    
+    # Use the first variant's SellerSku as base
+    first_sku = skus[0]
+    if isinstance(first_sku, dict):
+        seller_sku = first_sku.get('SellerSku', '')
+        if seller_sku:
+            # Remove variant suffixes like -1752677181110-0
+            return seller_sku.split('-')[0] if '-' in seller_sku else seller_sku
+    
+    return str(first_sku.get('SkuId', '')) if isinstance(first_sku, dict) else ""
+
+def get_shopee_base_sku_from_variants(variant_data, item_id):
+    """
+    Extract base SKU from Shopee variants for a specific item
+    
+    Args:
+        variant_data (list): List of variant records
+        item_id: Item ID to find variants for
+        
+    Returns:
+        str: Base SKU or empty string
+    """
+    if not variant_data:
+        return ""
+    
+    for variant_record in variant_data:
+        if isinstance(variant_record, dict) and variant_record.get('item_id') == item_id:
+            model_list = variant_record.get('model_list', [])
+            if model_list and len(model_list) > 0:
+                first_model = model_list[0]
+                if isinstance(first_model, dict):
+                    model_sku = first_model.get('model_sku', '')
+                    if model_sku:
+                        # Remove variant suffixes and return base SKU
+                        return model_sku.split('-')[0] if '-' in model_sku else model_sku
+    
+    return ""
+
 def extract_lazada_product_variants(product_data, product_key, variant_key_counter):
     """
     Extract variant data from Lazada product SKUs array
     
     Args:
         product_data (dict): Raw product data from Lazada API
-        product_key (int): Product key from the main product record
+        product_key (float): Product key from the main product record
         variant_key_counter (dict): Global variant counter with 'current' key
         
     Returns:
@@ -371,24 +236,18 @@ def extract_lazada_product_variants(product_data, product_key, variant_key_count
     
     for idx, sku_data in enumerate(skus):
         if isinstance(sku_data, dict):
-            # Generate Lazada variant key with .1 decimal (e.g., 1.1, 2.1, 3.1)
-            variant_key = float(f"{variant_key_counter['current']}.1")
-            variant_key_counter['current'] += 1
-            
-            # Parse variant attributes
-            attr1, attr2, attr3 = parse_variant_attributes('lazada', sku_data)
-            
-            # Get canonical_sku (unified join key)
-            canonical_sku = sku_data.get('SellerSku', str(sku_data.get('SkuId', '')))
+            # Generate simple variant key: sequential number + platform decimal (.1 for Lazada)
+            variant_key = variant_key_counter['current'] + 0.1
+            variant_key_counter['current'] += 1.0
             
             variant = {
                 'product_variant_key': variant_key,
                 'product_key': product_key,
                 'platform_sku_id': str(sku_data.get('SkuId', '')),
-                'canonical_sku': canonical_sku,
-                'variant_attribute_1': attr1,
-                'variant_attribute_2': attr2,
-                'variant_attribute_3': attr3,
+                'variant_sku': sku_data.get('SellerSku', ''),
+                'variant_attribute_1': sku_data.get('Variation1', ''),
+                'variant_attribute_2': sku_data.get('Variation2', ''),
+                'variant_attribute_3': sku_data.get('Variation3', ''),
                 'platform_key': platform_key
             }
             variants.append(variant)
@@ -401,7 +260,7 @@ def extract_shopee_product_variants(variant_data, product_key, item_id, variant_
     
     Args:
         variant_data (list): All variant data from shopee_product_variant_raw.json
-        product_key (int): Product key from the main product record
+        product_key (float): Product key from the main product record
         item_id: Item ID to find variants for
         variant_key_counter (dict): Global variant counter with 'current' key
         
@@ -417,21 +276,21 @@ def extract_shopee_product_variants(variant_data, product_key, item_id, variant_
             
             for idx, model in enumerate(model_list):
                 if isinstance(model, dict):
-                    # Generate Shopee variant key with .2 decimal (e.g., 1.2, 2.2, 3.2)
-                    variant_key = float(f"{variant_key_counter['current']}.2")
-                    variant_key_counter['current'] += 1
+                    # Generate simple variant key: sequential number + platform decimal (.2 for Shopee)
+                    variant_key = variant_key_counter['current'] + 0.2
+                    variant_key_counter['current'] += 1.0
                     
-                    # Parse variant attributes from model_name
-                    attr1, attr2, attr3 = parse_variant_attributes('shopee', model)
-                    
-                    # Get canonical_sku (unified join key)
-                    canonical_sku = model.get('model_sku', str(model.get('model_id', '')))
+                    # Extract tier_index attributes
+                    tier_index = model.get('tier_index', [])
+                    attr1 = str(tier_index[0]) if len(tier_index) > 0 else ''
+                    attr2 = str(tier_index[1]) if len(tier_index) > 1 else ''
+                    attr3 = str(tier_index[2]) if len(tier_index) > 2 else ''
                     
                     variant = {
                         'product_variant_key': variant_key,
                         'product_key': product_key,
                         'platform_sku_id': str(model.get('model_id', '')),
-                        'canonical_sku': canonical_sku,
+                        'variant_sku': model.get('model_sku', ''),
                         'variant_attribute_1': attr1,
                         'variant_attribute_2': attr2,
                         'variant_attribute_3': attr3,
@@ -448,45 +307,41 @@ def harmonize_lazada_product_record(product_data, product_key):
     
     Args:
         product_data (dict): Raw product data from Lazada API
-        product_key (int): Generated product key
+        product_key (float): Generated product key
         
     Returns:
         dict: Harmonized product record
     """
     attributes = product_data.get('attributes', {})
     
-    # Calculate current selling price with special pricing logic
-    skus = product_data.get('skus', [])
-    current_price = 0.0
-    if skus:
-        # Use first SKU for price calculation
-        current_price = calculate_lazada_current_price(skus[0])
+    # Extract price from SKUs
+    price = extract_lazada_price_from_skus(product_data.get('skus', []))
     
-    # Standardize status
-    status = standardize_product_status('lazada', product_data.get('status', 'Unknown'))
+    # Get base SKU from variants
+    base_sku = get_lazada_base_sku_from_variants(product_data.get('skus', []))
     
     return {
         'product_key': product_key,
         'product_item_id': str(product_data.get('item_id', '')),
         'product_name': attributes.get('name', ''),
+        'product_sku_base': base_sku,
         'product_category': get_lazada_category_name(product_data.get('primary_category')),
-        'product_status': status,
-        'current_selling_price': current_price,
+        'product_status': product_data.get('status', 'Unknown'),
+        'product_price': price,
         'product_rating': None,  # Lazada doesn't provide rating in products endpoint
         'platform_key': 1  # Lazada
     }
 
-def harmonize_shopee_product_record(product_data, product_key, productitem_data, variant_data, category_data, average_ratings):
+def harmonize_shopee_product_record(product_data, product_key, productitem_data, variant_data, category_data):
     """
     Harmonize a single Shopee product record to dimensional model
     
     Args:
         product_data (dict): Raw product data from Shopee API
-        product_key (int): Generated product key
+        product_key (float): Generated product key
         productitem_data (list): Product item data for additional details
-        variant_data (list): Variant data for price extraction
+        variant_data (list): Variant data for SKU extraction
         category_data (list): Category data for name mapping
-        average_ratings (dict): Dictionary mapping item_id to average rating
         
     Returns:
         dict: Harmonized product record
@@ -503,33 +358,33 @@ def harmonize_shopee_product_record(product_data, product_key, productitem_data,
     # Get category name from category mapping
     category_name = get_shopee_category_name(product_data.get('category_id'), category_data)
     
-    # Extract current selling price from price_info
-    current_price = None
+    # Get base SKU from variants or product item
+    base_sku = get_shopee_base_sku_from_variants(variant_data, item_id)
+    if not base_sku and product_item:
+        base_sku = product_item.get('item_sku', '')
+    
+    # Extract price - prioritize from price_info array
+    price = None
     price_info = product_data.get('price_info', [])
     if price_info and len(price_info) > 0 and isinstance(price_info[0], dict):
-        current_price = price_info[0].get('current_price')
+        price = price_info[0].get('current_price')
     
     # Try to convert price to float
-    if current_price is not None:
+    if price is not None:
         try:
-            current_price = float(current_price)
+            price = float(price)
         except (ValueError, TypeError):
-            current_price = None
-    
-    # Get average rating from calculated ratings
-    product_rating = average_ratings.get(item_id)
-    
-    # Standardize status
-    status = standardize_product_status('shopee', product_data.get('item_status', 'Unknown'))
+            price = None
     
     return {
         'product_key': product_key,
         'product_item_id': str(item_id or ''),
         'product_name': product_data.get('item_name', ''),
+        'product_sku_base': base_sku,
         'product_category': category_name,
-        'product_status': status,
-        'current_selling_price': current_price,
-        'product_rating': product_rating,  # Use calculated average rating from reviews
+        'product_status': product_data.get('item_status', 'Unknown'),
+        'product_price': price,
+        'product_rating': product_data.get('rating_star'),
         'platform_key': 2  # Shopee
     }
 
@@ -538,13 +393,6 @@ def harmonize_dim_product():
     Main harmonization function for product and variant dimensions
     """
     print("🔄 Starting Product & Variant Dimension Harmonization (Lazada + Shopee)...")
-    print("🔧 Key Features:")
-    print("   - Excluded product_sku_base from processing")
-    print("   - Standardized product_status mapping")
-    print("   - Added canonical_sku as unified join key")
-    print("   - Implemented Lazada special pricing logic")
-    print("   - Parsed variant attributes from model_name/saleProp")
-    print("   - Using float decimal IDs (x.1 for Lazada, x.2 for Shopee)")
     
     # Initialize empty dataframes
     product_df = get_empty_dataframe('dim_product')
@@ -562,13 +410,13 @@ def harmonize_dim_product():
     
     # Process Lazada products
     print("\n🔄 Processing Lazada products...")
-    product_key_counter = 1  # Base counter for products
-    variant_key_counter = {'current': 1}  # Base counter for variants
+    product_key_counter = 1.0
+    variant_key_counter = {'current': 1.0}  # Global variant counter
     
     for product_data in lazada_products:
         if isinstance(product_data, dict):
-            # Generate Lazada product key with .1 decimal (e.g., 1.1, 2.1, 3.1)
-            lazada_product_key = float(f"{product_key_counter}.1")
+            # Generate Lazada product key (1.1, 2.1, 3.1, etc.)
+            lazada_product_key = product_key_counter + 0.1
             
             # Harmonize product record
             harmonized_product = harmonize_lazada_product_record(product_data, lazada_product_key)
@@ -579,7 +427,7 @@ def harmonize_dim_product():
             if variants:
                 variant_df = pd.concat([variant_df, pd.DataFrame(variants)], ignore_index=True)
             
-            product_key_counter += 1
+            product_key_counter += 1.0
     
     lazada_count = len(lazada_products)
     print(f"✅ Processed {lazada_count} Lazada products")
@@ -587,20 +435,14 @@ def harmonize_dim_product():
     # Process Shopee products
     print("\n🔄 Processing Shopee products...")
     
-    # Calculate average ratings from review data
-    print("\n📊 Calculating Shopee product ratings from reviews...")
-    shopee_average_ratings = calculate_shopee_average_ratings(shopee_reviews)
-    
-    shopee_product_key_counter = 1  # Separate counter for Shopee products
-    
     for product_data in shopee_products:
         if isinstance(product_data, dict):
-            # Generate Shopee product key with .2 decimal (e.g., 1.2, 2.2, 3.2)
-            shopee_product_key = float(f"{shopee_product_key_counter}.2")
+            # Generate Shopee product key (1.2, 2.2, 3.2, etc.)
+            shopee_product_key = product_key_counter + 0.2
             
-            # Harmonize product record with calculated ratings
+            # Harmonize product record
             harmonized_product = harmonize_shopee_product_record(
-                product_data, shopee_product_key, shopee_productitem, shopee_variants, shopee_categories, shopee_average_ratings
+                product_data, shopee_product_key, shopee_productitem, shopee_variants, shopee_categories
             )
             product_df = pd.concat([product_df, pd.DataFrame([harmonized_product])], ignore_index=True)
             
@@ -609,7 +451,7 @@ def harmonize_dim_product():
             if variants:
                 variant_df = pd.concat([variant_df, pd.DataFrame(variants)], ignore_index=True)
             
-            shopee_product_key_counter += 1
+            product_key_counter += 1.0
     
     shopee_count = len(shopee_products)
     print(f"✅ Processed {shopee_count} Shopee products")
@@ -625,38 +467,34 @@ def harmonize_dim_product():
     print(f"   - Total products: {len(product_df)}")
     print(f"   - Lazada products: {lazada_count}")
     print(f"   - Shopee products: {shopee_count}")
-    print(f"   - Products with prices: {product_df['current_selling_price'].notna().sum()}")
-    print(f"   - Products with ratings: {product_df['product_rating'].notna().sum()}")
-    print(f"   - Average rating (Shopee only): {product_df[product_df['platform_key'] == 2]['product_rating'].mean():.2f}" if product_df[product_df['platform_key'] == 2]['product_rating'].notna().sum() > 0 else "   - Average rating (Shopee only): N/A")
+    print(f"   - Products with prices: {product_df['product_price'].notna().sum()}")
     print(f"   - Unique categories: {product_df['product_category'].nunique()}")
-    print(f"   - Status distribution: {product_df['product_status'].value_counts().to_dict()}")
     
     print(f"\n📊 Variant Summary:")
     print(f"   - Total variants: {len(variant_df)}")
     print(f"   - Lazada variants: {len(variant_df[variant_df['platform_key'] == 1])}")
     print(f"   - Shopee variants: {len(variant_df[variant_df['platform_key'] == 2])}")
-    print(f"   - Variants with canonical_sku: {variant_df['canonical_sku'].notna().sum()}")
     
     # Show samples
     print(f"\n📋 Sample of Lazada products:")
     lazada_products_sample = product_df[product_df['platform_key'] == 1].head(3)
     if not lazada_products_sample.empty:
-        print(lazada_products_sample[['product_key', 'product_item_id', 'product_name', 'product_status', 'current_selling_price', 'platform_key']].to_string())
+        print(lazada_products_sample[['product_key', 'product_item_id', 'product_name', 'product_sku_base', 'product_status', 'product_price', 'platform_key']].to_string())
     
     print(f"\n📋 Sample of Shopee products:")
     shopee_products_sample = product_df[product_df['platform_key'] == 2].head(3)
     if not shopee_products_sample.empty:
-        print(shopee_products_sample[['product_key', 'product_item_id', 'product_name', 'product_status', 'current_selling_price', 'product_rating', 'platform_key']].to_string())
+        print(shopee_products_sample[['product_key', 'product_item_id', 'product_name', 'product_sku_base', 'product_status', 'product_price', 'platform_key']].to_string())
     
     print(f"\n📋 Sample of Lazada variants:")
     lazada_variants_sample = variant_df[variant_df['platform_key'] == 1].head(3)
     if not lazada_variants_sample.empty:
-        print(lazada_variants_sample[['product_variant_key', 'product_key', 'canonical_sku', 'variant_attribute_1', 'variant_attribute_2', 'platform_key']].to_string())
+        print(lazada_variants_sample[['product_variant_key', 'product_key', 'platform_sku_id', 'variant_sku', 'variant_attribute_1', 'variant_attribute_2', 'platform_key']].to_string())
     
     print(f"\n📋 Sample of Shopee variants:")
     shopee_variants_sample = variant_df[variant_df['platform_key'] == 2].head(3)
     if not shopee_variants_sample.empty:
-        print(shopee_variants_sample[['product_variant_key', 'product_key', 'canonical_sku', 'variant_attribute_1', 'variant_attribute_2', 'platform_key']].to_string())
+        print(shopee_variants_sample[['product_variant_key', 'product_key', 'platform_sku_id', 'variant_sku', 'variant_attribute_1', 'variant_attribute_2', 'platform_key']].to_string())
     
     return product_df, variant_df
 
@@ -699,15 +537,27 @@ if __name__ == "__main__":
         print(f"📁 Product file: {product_file}")
         print(f"📁 Variant file: {variant_file}")
         
-        # Show key improvements
-        print(f"🔧 Key Improvements Implemented:")
-        print(f"✅ Removed product_sku_base from schema and processing")
-        print(f"✅ Standardized product_status (Shopee: NORMAL→Active, UNLIST→Inactive/Removed, etc.)")
-        print(f"✅ Added canonical_sku as unified join key (model_sku for Shopee, SellerSku for Lazada)")
-        print(f"✅ Implemented Lazada special pricing logic with time windows")
-        print(f"✅ Parsed variant attributes from model_name/saleProp with 'N/A' defaults")
-        print(f"✅ Used float decimal IDs throughout (product_key: x.1/x.2, product_variant_key: x.1/x.2)")
-        print(f"✅ Calculated Shopee product ratings from review data (45 products with ratings, avg: 4.90)")
+        # Show field mappings used
+        print(f"\n🔗 Field mappings used:")
+        print(f"\nLazada Product mappings:")
+        for source, target in LAZADA_TO_UNIFIED_MAPPING.items():
+            if 'product' in target.lower() and 'variant' not in target.lower():
+                print(f"   {source} → {target}")
+        
+        print(f"\nShopee Product mappings:")
+        for source, target in SHOPEE_TO_UNIFIED_MAPPING.items():
+            if 'product' in target.lower() and 'variant' not in target.lower():
+                print(f"   {source} → {target}")
+        
+        print(f"\nLazada Variant mappings:")
+        for source, target in LAZADA_TO_UNIFIED_MAPPING.items():
+            if 'variant' in target.lower() or 'Variation' in source or 'Sku' in source:
+                print(f"   {source} → {target}")
+        
+        print(f"\nShopee Variant mappings:")
+        for source, target in SHOPEE_TO_UNIFIED_MAPPING.items():
+            if 'variant' in target.lower() or 'model' in source.lower() or 'tier_index' in source:
+                print(f"   {source} → {target}")
                 
     except Exception as e:
         print(f"❌ Error during harmonization: {e}")

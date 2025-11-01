@@ -1,0 +1,74 @@
+[
+  {
+    "category_id": 101127,
+    "category_name": "Air Fresheners",
+    "parent_category_id": 101126,
+    "has_children": false
+  },
+  {
+    "category_id": 101128,
+    "category_name": "Essential Oils",
+    "parent_category_id": 101126,
+    "has_children": false
+  },
+  {
+    "category_id": 101129,
+    "category_name": "Humidifiers & Diffusers",
+    "parent_category_id": 101126,
+    "has_children": false
+  },
+  {
+    "category_id": 101211,
+    "category_name": "Wet Wipes",
+    "parent_category_id": 101205,
+    "has_children": false
+  },
+  {
+    "category_id": 101212,
+    "category_name": "Toilet Paper",
+    "parent_category_id": 101205,
+    "has_children": false
+  },
+  {
+    "category_id": 101418,
+    "category_name": "Laundry Detergent",
+    "parent_category_id": 101417,
+    "has_children": false
+  },
+  {
+    "category_id": 101461,
+    "category_name": "Fabric Softener",
+    "parent_category_id": 101417,
+    "has_children": false
+  },
+  {
+    "category_id": 101609,
+    "category_name": "Dish Soap",
+    "parent_category_id": 101608,
+    "has_children": false
+  },
+  {
+    "category_id": 101649,
+    "category_name": "All-Purpose Cleaners",
+    "parent_category_id": 101608,
+    "has_children": false
+  },
+  {
+    "category_id": 101707,
+    "category_name": "Paper Towels",
+    "parent_category_id": 101205,
+    "has_children": false
+  },
+  {
+    "category_id": 101814,
+    "category_name": "Powder Detergent",
+    "parent_category_id": 101417,
+    "has_children": false
+  },
+  {
+    "category_id": 102572,
+    "category_name": "Hotel & Commercial Scents",
+    "parent_category_id": 101126,
+    "has_children": false
+  }
+]

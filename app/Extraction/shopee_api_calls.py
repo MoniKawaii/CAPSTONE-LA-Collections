@@ -1257,6 +1257,123 @@ class ShopeeDataExtractor:
         print(f"🎉 Product details extraction complete! Total: {len(all_details)} items saved to {filename}")
         return all_details
     
+    def extract_product_categories(self, start_fresh=False):
+        """
+        Extract product category information using /api/v2/product/get_category
+        Decrypts category names for product_category mapping
+        Saves to shopee_productcategory_raw.json
+        
+        Args:
+            start_fresh (bool): Whether to start fresh or use existing data
+            
+        Returns:
+            list: List of category data
+        """
+        filename = 'shopee_productcategory_raw.json'
+        
+        if not start_fresh:
+            existing_data = self._load_from_json(filename)
+            if existing_data:
+                print(f"📋 Found {len(existing_data)} existing categories. Use start_fresh=True to re-extract.")
+                return existing_data
+        
+        print("🔍 Starting product category extraction...")
+        
+        # Get all categories
+        path = "/api/v2/product/get_category"
+        language = "en"  # Get English category names
+        
+        query_path = f"{path}?language={language}"
+        
+        data = self._make_api_call(query_path, method="GET", call_type="product-categories")
+        
+        if data and 'response' in data:
+            categories = data['response'].get('category_list', [])
+            print(f"📦 Extracted {len(categories)} product categories")
+            
+            self._save_to_json(categories, filename)
+            print(f"💾 Saved category data to {filename}")
+            return categories
+        else:
+            print("❌ Failed to extract product categories")
+            return []
+    
+    def extract_product_variants(self, start_fresh=False):
+        """
+        Extract product model list using /api/v2/product/get_model_list
+        Gets variation options for products with models
+        Saves to shopee_product_variant_raw.json
+        
+        Args:
+            start_fresh (bool): Whether to start fresh or use existing data
+            
+        Returns:
+            list: List of product model lists
+        """
+        filename = 'shopee_product_variant_raw.json'
+        
+        if not start_fresh:
+            existing_data = self._load_from_json(filename)
+            if existing_data:
+                print(f"📋 Found {len(existing_data)} existing model lists. Use start_fresh=True to re-extract.")
+                return existing_data
+        
+        print("🔍 Starting product model list extraction...")
+        
+        # Load products to get item_ids that have variations
+        products = self._load_from_json('shopee_products_raw.json')
+        if not products:
+            print("❌ No products found. Please extract products first.")
+            return []
+        
+        # Filter products that have variations (has_model = true)
+        variant_item_ids = []
+        for product in products:
+            if product.get('has_model', False):
+                variant_item_ids.append(product.get('item_id'))
+        
+        if not variant_item_ids:
+            print("ℹ️ No products with variations found.")
+            return []
+        
+        print(f"📦 Found {len(variant_item_ids)} products with variations")
+        
+        all_model_lists = []
+        batch_size = 50  # Process in batches to avoid API limits
+        total_batches = math.ceil(len(variant_item_ids) / batch_size)
+        
+        path = "/api/v2/product/get_model_list"
+        
+        for i in range(0, len(variant_item_ids), batch_size):
+            if self.api_calls_made >= self.max_daily_calls:
+                print("⚠️ Daily API limit reached")
+                break
+            
+            batch = variant_item_ids[i:i+batch_size]
+            batch_num = i // batch_size + 1
+            
+            # Create item_id_list parameter
+            item_id_list = ','.join(str(id) for id in batch)
+            query_path = f"{path}?item_id_list={item_id_list}"
+            
+            print(f"🔄 Processing batch {batch_num}/{total_batches} ({len(batch)} products)")
+            
+            data = self._make_api_call(query_path, method="GET", call_type=f"product-models-batch-{batch_num}")
+            
+            if data and 'response' in data:
+                model_lists = data['response'].get('model_list', [])
+                all_model_lists.extend(model_lists)
+                print(f"  └── Batch {batch_num}: +{len(model_lists)} model lists (total: {len(all_model_lists)})")
+            else:
+                print(f"  └── Batch {batch_num}: No data returned or error.")
+            
+            # Rate limiting between batches
+            time.sleep(0.5)
+        
+        self._save_to_json(all_model_lists, filename)
+        print(f"🎉 Product model list extraction complete! Total: {len(all_model_lists)} model lists saved to {filename}")
+        return all_model_lists
+    
     def extract_review_history_list(self, start_fresh=False, limit_products=None):
         """
         Step 1: Extract review IDs using product item_ids from shopee_products_raw.json
@@ -1632,6 +1749,8 @@ class ShopeeDataExtractor:
         
         extraction_plan = [
             ("Products", self.extract_all_products),
+            ("Product Categories", self.extract_product_categories),
+            ("Product Variants", self.extract_product_variants),
             ("Orders", self.extract_all_orders),
             ("Order Items", self.extract_all_order_items),
             ("Traffic Metrics", self.extract_traffic_metrics),
@@ -1734,6 +1853,16 @@ def extract_product_reviews_only(start_fresh=False, limit_products=None):
     extractor = ShopeeDataExtractor()
     return extractor.extract_product_reviews(start_fresh=start_fresh, limit_products=limit_products)
 
+def extract_product_categories_only(start_fresh=False):
+    """Extract only product categories using /api/v2/product/get_category"""
+    extractor = ShopeeDataExtractor()
+    return extractor.extract_product_categories(start_fresh=start_fresh)
+
+def extract_product_variants_only(start_fresh=False):
+    """Extract only product model lists using /api/v2/product/get_model_list"""
+    extractor = ShopeeDataExtractor()
+    return extractor.extract_product_variants(start_fresh=start_fresh)
+
 
 # ============================================================================
 # MAIN EXECUTION
@@ -1765,8 +1894,16 @@ if __name__ == "__main__":
     print("6. 📊 Ads data extraction (Monthly Aggregate)")
     print("   - Extract advertising metrics using v2.ads.get_ad_data")
     print("   - Monthly aggregated data for analysis")
+    print("")
+    print("7. 🏷️ Product categories only")
+    print("   - Extract category data using /api/v2/product/get_category")
+    print("   - Saves to shopee_productcategory_raw.json")
+    print("")
+    print("8. 🔧 Product variants only")
+    print("   - Extract model lists using /api/v2/product/get_model_list")
+    print("   - Saves to shopee_product_variant_raw.json")
     
-    choice = input("\nEnter choice (1-6): ").strip()
+    choice = input("\nEnter choice (1-8): ").strip()
     
     if choice == "1":
         print("\n🔄 Starting incremental extraction...")
@@ -1832,8 +1969,44 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"❌ Error during ads extraction: {e}")
         
+    elif choice == "7":
+        print("\n🏷️ Extracting product categories...")
+        try:
+            categories = extract_product_categories_only(start_fresh=True)
+            print(f"✅ Category extraction completed! Total: {len(categories)} categories")
+            print(f"📁 Data saved to: app/Staging/shopee_productcategory_raw.json")
+            
+            # Show sample categories
+            if categories:
+                print(f"\n📋 Sample categories:")
+                for i, cat in enumerate(categories[:5]):
+                    print(f"   - {cat.get('category_id', 'N/A')}: {cat.get('category_name', 'N/A')}")
+                    if i >= 4:
+                        break
+        except Exception as e:
+            print(f"❌ Error: {e}")
+            
+    elif choice == "8":
+        print("\n🔧 Extracting product model lists...")
+        try:
+            variants = extract_product_variants_only(start_fresh=True)
+            print(f"✅ Model list extraction completed! Total: {len(variants)} model lists")
+            print(f"📁 Data saved to: app/Staging/shopee_product_variant_raw.json")
+            
+            # Show sample variant info
+            if variants:
+                print(f"\n📋 Sample model lists:")
+                for i, variant in enumerate(variants[:3]):
+                    item_id = variant.get('item_id', 'N/A')
+                    model_count = len(variant.get('model_list', []))
+                    print(f"   - Item {item_id}: {model_count} models")
+                    if i >= 2:
+                        break
+        except Exception as e:
+            print(f"❌ Error: {e}")
+        
     else:
-        print("❌ Invalid choice. Please run again and select 1-6.")
+        print("❌ Invalid choice. Please run again and select 1-8.")
     
     print(f"\n🎉 Extraction completed!")
     print(f"📁 Check the app/Staging/ directory for JSON files")

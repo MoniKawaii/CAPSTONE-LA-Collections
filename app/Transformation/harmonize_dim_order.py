@@ -299,6 +299,12 @@ def harmonize_dim_order():
     """
     Main function to harmonize Lazada and Shopee order data into dimensional model
     
+    Process:
+    1. Load all data into DataFrames
+    2. Perform cleansing and standardization
+    3. Sort by order_date ascending
+    4. Generate incremental orders_key with platform-specific decimals
+    
     Returns:
         pd.DataFrame: Harmonized order dimension table
     """
@@ -315,19 +321,35 @@ def harmonize_dim_order():
     print("\n📥 Loading Shopee data...")
     shopee_orders_data = load_shopee_orders()
     
-    # Combine all order data with platform tracking
+    # Process all data into a single DataFrame for unified processing
     all_orders = []
     
     # Process Lazada orders
     print(f"\n🔄 Processing Lazada orders...")
     lazada_orders_dict = {}
     
-    # Process lazada_orders_raw.json
+    # Create a lookup dictionary for buyer_id from order_items
+    buyer_id_lookup = {}
+    for order in order_items_data:
+        order_id = str(order.get('order_id', ''))
+        order_items = order.get('order_items', [])
+        if order_id and order_items and len(order_items) > 0:
+            buyer_id = order_items[0].get('buyer_id')
+            if buyer_id:
+                buyer_id_lookup[order_id] = str(buyer_id)
+    
+    print(f"📝 Created buyer_id lookup for {len(buyer_id_lookup)} Lazada orders")
+    
+    # Process lazada_orders_raw.json (primary data source)
     for order in orders_data:
         order_id = str(order.get('order_id', ''))
         if order_id and order_id not in lazada_orders_dict:
             harmonized = harmonize_order_record(order, 'orders')
+            # Add buyer_id from lookup
+            if order_id in buyer_id_lookup:
+                harmonized['platform_customer_id'] = buyer_id_lookup[order_id]
             harmonized['platform_key'] = 1  # Lazada platform key
+            harmonized['raw_platform_order_id'] = order_id  # Keep original for deduplication
             lazada_orders_dict[order_id] = harmonized
     
     # Process lazada_multiple_order_items_raw.json (supplement missing orders)
@@ -336,8 +358,8 @@ def harmonize_dim_order():
         if order_id and order_id not in lazada_orders_dict:
             harmonized = harmonize_order_record(order, 'order_items')
             harmonized['platform_key'] = 1  # Lazada platform key
+            harmonized['raw_platform_order_id'] = order_id  # Keep original for deduplication
             lazada_orders_dict[order_id] = harmonized
-        # Note: if order exists, we keep the one from orders_raw.json as it's more complete
     
     all_orders.extend(list(lazada_orders_dict.values()))
     print(f"✅ Processed {len(lazada_orders_dict)} Lazada orders")
@@ -351,43 +373,107 @@ def harmonize_dim_order():
         if order_sn and order_sn not in shopee_orders_dict:
             harmonized = harmonize_shopee_order_record(order)
             harmonized['platform_key'] = 2  # Shopee platform key
+            harmonized['raw_platform_order_id'] = order_sn  # Keep original for deduplication
             shopee_orders_dict[order_sn] = harmonized
     
     all_orders.extend(list(shopee_orders_dict.values()))
     print(f"✅ Processed {len(shopee_orders_dict)} Shopee orders")
     
-    # Convert to DataFrame
+    # Convert to DataFrame for unified processing
     if all_orders:
-        dim_order_df = pd.DataFrame(all_orders)
+        print(f"\n🔄 Creating unified DataFrame with {len(all_orders)} orders...")
+        df = pd.DataFrame(all_orders)
         
-        # Generate surrogate keys (orders_key) - unified across both platforms
-        dim_order_df['orders_key'] = range(1, len(dim_order_df) + 1)
+        # Step 1: Data Cleansing and Standardization
+        print("🧹 Performing data cleansing and standardization...")
         
-        # Apply proper data types according to schema
-        dim_order_df = apply_data_types(dim_order_df, 'dim_order')
+        # Handle missing/null order dates - set to minimum date for sorting
+        min_date = pd.to_datetime('1900-01-01').date()
+        df['order_date'] = df['order_date'].fillna(min_date)
+        
+        # Ensure platform_order_id is string and not empty
+        df['platform_order_id'] = df['platform_order_id'].astype(str)
+        df = df[df['platform_order_id'] != '']
+        
+        # Standardize order_status and payment_method to uppercase
+        df['order_status'] = df['order_status'].fillna('').astype(str).str.upper().str.strip()
+        df['payment_method'] = df['payment_method'].fillna('').astype(str).str.upper().str.strip()
+        
+        # Clean shipping_city
+        df['shipping_city'] = df['shipping_city'].fillna('').astype(str).str.strip()
+        
+        # Handle price_total - ensure numeric
+        df['price_total'] = pd.to_numeric(df['price_total'], errors='coerce')
+        
+        # Handle total_item_count - ensure integer
+        df['total_item_count'] = pd.to_numeric(df['total_item_count'], errors='coerce').fillna(0).astype(int)
+        
+        # Remove duplicates based on platform and order ID
+        initial_count = len(df)
+        df = df.drop_duplicates(subset=['platform_key', 'raw_platform_order_id'], keep='first')
+        if len(df) < initial_count:
+            print(f"   🔄 Removed {initial_count - len(df)} duplicate orders")
+        
+        # Step 2: Sort by order_date ascending (earliest first)
+        print("📅 Sorting by order_date ascending...")
+        df = df.sort_values(['order_date', 'platform_key', 'platform_order_id'], ascending=[True, True, True])
+        df = df.reset_index(drop=True)
+        
+        # Step 3: Generate incremental orders_key with platform-specific decimals
+        print("🔢 Generating incremental orders_key with platform decimals...")
+        
+        # Create base incremental key (1, 2, 3, ...)
+        df['base_key'] = range(1, len(df) + 1)
+        
+        # Add platform-specific decimal: +0.1 for Lazada (platform_key=1), +0.2 for Shopee (platform_key=2)
+        df['orders_key'] = df['base_key'] + (df['platform_key'] * 0.1)
+        
+        # Remove helper columns
+        df = df.drop(columns=['raw_platform_order_id', 'base_key'])
+        
+        # Step 4: Apply proper data types according to schema
+        print("🔄 Applying data types...")
+        df = apply_data_types(df, 'dim_order')
+        
+        # Final DataFrame
+        dim_order_df = df
         
         print(f"\n✅ Harmonized {len(dim_order_df)} total orders")
         print(f"📊 Data Summary:")
         print(f"   - Total orders: {len(dim_order_df)}")
-        print(f"   - Lazada orders: {len(dim_order_df[dim_order_df['platform_key'] == 1])}")
-        print(f"   - Shopee orders: {len(dim_order_df[dim_order_df['platform_key'] == 2])}")
-        print(f"   - Orders with dates: {len(dim_order_df[dim_order_df['order_date'].notna()])}")
+        
+        # Count by platform
+        lazada_count = len(dim_order_df[dim_order_df['platform_key'] == 1])
+        shopee_count = len(dim_order_df[dim_order_df['platform_key'] == 2])
+        print(f"   - Lazada orders: {lazada_count} (keys: {lazada_count} with .1 decimals)")
+        print(f"   - Shopee orders: {shopee_count} (keys: {shopee_count} with .2 decimals)")
+        
+        print(f"   - Orders with valid dates: {len(dim_order_df[dim_order_df['order_date'] != min_date])}")
         print(f"   - Orders with prices: {len(dim_order_df[dim_order_df['price_total'].notna()])}")
         print(f"   - Unique order statuses: {dim_order_df['order_status'].nunique()}")
         print(f"   - Unique payment methods: {dim_order_df['payment_method'].nunique()}")
         
-        # Show sample of data from each platform
-        print("\n📋 Sample of Lazada orders:")
+        # Show order_key range by platform
+        print(f"\n🔢 Orders Key Ranges:")
+        if lazada_count > 0:
+            lazada_df = dim_order_df[dim_order_df['platform_key'] == 1]
+            print(f"   - Lazada keys: {lazada_df['orders_key'].min():.1f} to {lazada_df['orders_key'].max():.1f}")
+        if shopee_count > 0:
+            shopee_df = dim_order_df[dim_order_df['platform_key'] == 2]
+            print(f"   - Shopee keys: {shopee_df['orders_key'].min():.1f} to {shopee_df['orders_key'].max():.1f}")
+        
+        # Show sample of data from each platform (sorted by date)
+        print("\n📋 Sample of earliest Lazada orders (by date):")
         lazada_df = dim_order_df[dim_order_df['platform_key'] == 1]
         if not lazada_df.empty:
-            sample_cols = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 'price_total', 'total_item_count', 'platform_key']
+            sample_cols = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 'price_total', 'total_item_count']
             available_cols = [col for col in sample_cols if col in lazada_df.columns]
             print(lazada_df[available_cols].head(3).to_string(index=False))
         
-        print("\n📋 Sample of Shopee orders:")
+        print("\n📋 Sample of earliest Shopee orders (by date):")
         shopee_df = dim_order_df[dim_order_df['platform_key'] == 2]
         if not shopee_df.empty:
-            sample_cols = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 'price_total', 'total_item_count', 'platform_key']
+            sample_cols = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 'price_total', 'total_item_count']
             available_cols = [col for col in sample_cols if col in shopee_df.columns]
             print(shopee_df[available_cols].head(3).to_string(index=False))
         
@@ -400,6 +486,13 @@ def harmonize_dim_order():
                 status_counts = platform_df['order_status'].value_counts()
                 for status, count in status_counts.head(5).items():
                     print(f"   {status}: {count}")
+        
+        # Show date range
+        valid_dates_df = dim_order_df[dim_order_df['order_date'] != min_date]
+        if not valid_dates_df.empty:
+            print(f"\n📅 Date Range:")
+            print(f"   - Earliest order: {valid_dates_df['order_date'].min()}")
+            print(f"   - Latest order: {valid_dates_df['order_date'].max()}")
             
         
     else:

@@ -8,7 +8,6 @@ the Dim_Customer dimension table with proper customer segmentation and analytics
 Key Requirements from Schema:
 - customer_key: Internal surrogate ID (sequential)
 - platform_customer_id: Generated synthetic ID (Lazada doesn't provide this)
-- customer_city: Derived from shipping address city
 - buyer_segment: Calculated as 'New Buyer' or 'Returning Buyer'
 - total_orders: Count of orders per platform_customer_id
 - customer_since: Earliest order_date for each platform_customer_id
@@ -146,14 +145,7 @@ def extract_phone_digits(phone):
 
 def generate_platform_customer_id(first_name, phone):
     """
-    Generate platform_customer_id using Lazada naming convention
-    
-    Args:
-        first_name (str): Customer first name
-        phone (str): Customer phone number
-        
-    Returns:
-        str: Generated platform_customer_id in format LZ{first}{last}{first2}{last2}
+        ACTUALLY just retrieve the buyer_id from the lazada_multiple_order_items_raw.json
     """
     name_chars = clean_name(first_name)
     first_2, last_2 = extract_phone_digits(phone)
@@ -192,6 +184,7 @@ def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, pho
 def extract_customers_from_lazada_orders(orders_data):
     """
     Extract unique customers from Lazada orders and calculate metrics
+    Uses buyer_id directly as platform_customer_id for better accuracy
     
     Args:
         orders_data (list): Raw Lazada orders from API
@@ -199,6 +192,26 @@ def extract_customers_from_lazada_orders(orders_data):
     Returns:
         DataFrame: Harmonized customer dimension records
     """
+    # First, create a lookup of order_id -> buyer_id from order items
+    print("📋 Building buyer_id lookup from lazada_multiple_order_items_raw.json...")
+    staging_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Staging')
+    order_items_file = os.path.join(staging_dir, 'lazada_multiple_order_items_raw.json')
+    
+    buyer_id_lookup = {}
+    if os.path.exists(order_items_file):
+        with open(order_items_file, 'r', encoding='utf-8') as f:
+            order_items_data = json.load(f)
+        
+        for order in order_items_data:
+            order_id = str(order.get('order_id', ''))
+            order_items = order.get('order_items', [])
+            if order_items and len(order_items) > 0:
+                buyer_id = order_items[0].get('buyer_id')
+                if buyer_id:
+                    buyer_id_lookup[order_id] = str(buyer_id)
+        
+        print(f"   ✓ Built lookup for {len(buyer_id_lookup)} orders with buyer_id")
+    
     customer_records = []
     customer_order_tracking = {}  # Track orders per customer for analytics
     
@@ -210,8 +223,15 @@ def extract_customers_from_lazada_orders(orders_data):
             phone = shipping_address.get('phone', '')
             city = shipping_address.get('city', '')
             
-            # Generate platform_customer_id
-            platform_customer_id = generate_platform_customer_id(first_name, phone)
+            # Get buyer_id from lookup, fallback to generated ID
+            order_id = str(order.get('order_id', ''))
+            buyer_id = buyer_id_lookup.get(order_id)
+            
+            # Use buyer_id directly as platform_customer_id if available
+            if buyer_id:
+                platform_customer_id = buyer_id
+            else:
+                platform_customer_id = generate_platform_customer_id(first_name, phone)
             
             # Extract order date for customer analytics
             created_at = order.get('created_at', '')
@@ -241,8 +261,6 @@ def extract_customers_from_lazada_orders(orders_data):
             continue
     
     # Generate customer dimension records
-    customer_key_counter = 1
-    
     for platform_customer_id, customer_info in customer_order_tracking.items():
         try:
             order_dates = customer_info['order_dates']
@@ -256,9 +274,8 @@ def extract_customers_from_lazada_orders(orders_data):
             buyer_segment = "New Buyer" if total_orders == 1 else "Returning Buyer"
             
             customer_record = {
-                'customer_key': float(f"1.1{customer_key_counter:04d}"),  # 1.1 prefix for Lazada (e.g., 1.10001)
+                'customer_key': None,  # Will be generated centrally in main function
                 'platform_customer_id': platform_customer_id,
-                'customer_city': customer_info['city'],
                 'buyer_segment': buyer_segment,
                 'total_orders': total_orders,
                 'customer_since': customer_since,
@@ -267,14 +284,13 @@ def extract_customers_from_lazada_orders(orders_data):
             }
             
             customer_records.append(customer_record)
-            customer_key_counter += 1
             
         except Exception as e:
             print(f"⚠️ Error creating customer record for {platform_customer_id}: {e}")
             continue
     
     # Create DataFrame and apply data types
-    customers_df = pd.DataFrame(customer_records, columns=DIM_CUSTOMER_COLUMNS)
+    customers_df = pd.DataFrame(customer_records)
     
     # Apply data type conversions using the config function
     if len(customers_df) > 0:
@@ -340,8 +356,6 @@ def extract_customers_from_shopee_orders(orders_data):
             continue
     
     # Generate customer dimension records
-    customer_key_counter = 1
-    
     for platform_customer_id, customer_info in customer_order_tracking.items():
         try:
             order_dates = customer_info['order_dates']
@@ -355,9 +369,8 @@ def extract_customers_from_shopee_orders(orders_data):
             buyer_segment = "New Buyer" if total_orders == 1 else "Returning Buyer"
             
             customer_record = {
-                'customer_key': float(f"1.2{customer_key_counter:04d}"),  # 1.2 prefix for Shopee (e.g., 1.20001)
+                'customer_key': None,  # Will be generated centrally in main function
                 'platform_customer_id': platform_customer_id,
-                'customer_city': customer_info['city'],
                 'buyer_segment': buyer_segment,
                 'total_orders': total_orders,
                 'customer_since': customer_since,
@@ -366,35 +379,40 @@ def extract_customers_from_shopee_orders(orders_data):
             }
             
             customer_records.append(customer_record)
-            customer_key_counter += 1
             
         except Exception as e:
             print(f"⚠️ Error creating customer record for {platform_customer_id}: {e}")
             continue
     
-    # Create DataFrame and apply data types
-    customers_df = pd.DataFrame(customer_records, columns=DIM_CUSTOMER_COLUMNS)
-    
-    # Apply data type conversions using the config function
-    if len(customers_df) > 0:
-        customers_df = apply_data_types(customers_df, 'dim_customer')
+    # Create DataFrame
+    customers_df = pd.DataFrame(customer_records)
     
     return customers_df
 
 
 def harmonize_dim_customer():
     """
-    Main function to harmonize Customer Dimension from both Lazada and Shopee
+    Main function to harmonize Lazada and Shopee customer data into dimensional model
+    
+    Process:
+    1. Load all customer data into DataFrames
+    2. Perform cleansing and standardization
+    3. Sort by customer_since ascending
+    4. Generate incremental customer_key with platform-specific decimals
     
     Returns:
-        DataFrame: Combined harmonized customer dimension table from both platforms
+        pd.DataFrame: Harmonized customer dimension table
     """
-    print("🚀 Starting Multi-Platform Customer Dimension harmonization...")
+    print("� Starting Customer Dimension Harmonization (Lazada + Shopee)...")
+    
+    # Get empty DataFrame with proper structure
+    dim_customer_df = get_empty_dataframe('dim_customer')
+    print(f"📋 Target schema: {list(dim_customer_df.columns)}")
     
     all_customers = []
     
-    # Process Lazada
-    print("\n📦 Processing Lazada customers...")
+    # Process Lazada customers
+    print("\n� Processing Lazada customers...")
     lazada_orders = load_lazada_orders_raw()
     if lazada_orders:
         lazada_customers = extract_customers_from_lazada_orders(lazada_orders)
@@ -404,8 +422,8 @@ def harmonize_dim_customer():
     else:
         print("   ⚠️ No Lazada orders available")
     
-    # Process Shopee
-    print("\n🛍️ Processing Shopee customers...")
+    # Process Shopee customers
+    print("\n� Processing Shopee customers...")
     shopee_orders = load_shopee_orders_raw()
     if shopee_orders:
         shopee_customers = extract_customers_from_shopee_orders(shopee_orders)
@@ -415,40 +433,110 @@ def harmonize_dim_customer():
     else:
         print("   ⚠️ No Shopee orders available")
     
-    # Combine
+    # Combine all customer data
     if not all_customers:
         print("❌ No customer data from any platform")
         return get_empty_dataframe('dim_customer')
     
+    print(f"\n🔄 Creating unified DataFrame with {sum(len(df) for df in all_customers)} customers...")
     customers_df = pd.concat(all_customers, ignore_index=True)
     
-    # Re-assign customer_key with platform-specific prefixes
-    # Keep existing customer_key values (already have 1.1 or 1.2 prefix)
-    # No need to reassign - they're already properly formatted
+    # Step 1: Data Cleansing and Standardization
+    print("🧹 Performing data cleansing and standardization...")
     
-    print(f"\n✅ Successfully harmonized {len(customers_df)} customer records from both platforms")
-    print(f"📊 Data shape: {customers_df.shape}")
+    # Handle missing/null customer_since dates - set to minimum date for sorting
+    min_date = pd.to_datetime('1900-01-01').date()
+    customers_df['customer_since'] = customers_df['customer_since'].fillna(min_date)
     
-    if len(customers_df) > 0:
-        print("\n📋 Sample records:")
-        print(customers_df.head(3).to_string(index=False))
+    # Ensure platform_customer_id is string and not empty
+    customers_df['platform_customer_id'] = customers_df['platform_customer_id'].astype(str)
+    customers_df = customers_df[customers_df['platform_customer_id'] != '']
+    
+    # Standardize buyer_segment
+    customers_df['buyer_segment'] = customers_df['buyer_segment'].fillna('').astype(str).str.strip()
+    
+    # Handle total_orders - ensure integer
+    customers_df['total_orders'] = pd.to_numeric(customers_df['total_orders'], errors='coerce').fillna(0).astype(int)
+    
+    # Remove duplicates based on platform and customer ID
+    initial_count = len(customers_df)
+    customers_df = customers_df.drop_duplicates(subset=['platform_key', 'platform_customer_id'], keep='first')
+    final_count = len(customers_df)
+    if initial_count != final_count:
+        print(f"📝 Removed {initial_count - final_count} duplicate customers")
+    
+    # Step 2: Sort by customer_since ascending
+    print("📅 Sorting by customer_since ascending...")
+    customers_df = customers_df.sort_values(['customer_since', 'platform_key', 'platform_customer_id'], ascending=[True, True, True])
+    customers_df = customers_df.reset_index(drop=True)
+    
+    # Step 3: Generate incremental customer_key with platform-specific decimals
+    print("🔢 Generating incremental customer_key with platform decimals...")
+    customer_key_counter = 10001  # Start from 10001
+    
+    # Generate customer_key with platform decimals
+    customer_keys = []
+    for _, row in customers_df.iterrows():
+        platform_key = row['platform_key']
+        if platform_key == 1:  # Lazada
+            customer_key = f"{customer_key_counter}.1"
+        elif platform_key == 2:  # Shopee
+            customer_key = f"{customer_key_counter}.2"
+        else:
+            customer_key = f"{customer_key_counter}.0"  # Fallback
         
-        print(f"\n📈 Customer Analytics:")
-        print(f"   Platform Breakdown:")
-        lazada_count = len(customers_df[customers_df['platform_key'] == 1])
-        shopee_count = len(customers_df[customers_df['platform_key'] == 2])
-        print(f"   • Lazada customers: {lazada_count}")
-        print(f"   • Shopee customers: {shopee_count}")
-        
-        print(f"\n   Buyer Segments:")
-        print(f"   • New Buyers: {len(customers_df[customers_df['buyer_segment'] == 'New Buyer'])}")
-        print(f"   • Returning Buyers: {len(customers_df[customers_df['buyer_segment'] == 'Returning Buyer'])}")
-        print(f"   • Average Orders per Customer: {customers_df['total_orders'].mean():.1f}")
-        print(f"   • Top Cities: {customers_df['customer_city'].value_counts().head(3).to_dict()}")
-        
-        if not customers_df['customer_since'].isna().all():
-            date_range = f"{customers_df['customer_since'].min()} to {customers_df['customer_since'].max()}"
-            print(f"   • Customer Date Range: {date_range}")
+        customer_keys.append(float(customer_key))
+        customer_key_counter += 1
+    
+    customers_df['customer_key'] = customer_keys
+    
+    # Step 4: Apply data types
+    print("🔄 Applying data types...")
+    customers_df = apply_data_types(customers_df, 'dim_customer')
+    
+    # Remove the temporary raw_platform_customer_id column if it exists
+    if 'raw_platform_customer_id' in customers_df.columns:
+        customers_df = customers_df.drop(columns=['raw_platform_customer_id'])
+    
+    print(f"\n✅ Harmonized {len(customers_df)} total customers")
+    print(f"📊 Data Summary:")
+    print(f"   - Total customers: {len(customers_df)}")
+    
+    # Platform breakdown
+    lazada_count = len(customers_df[customers_df['platform_key'] == 1])
+    shopee_count = len(customers_df[customers_df['platform_key'] == 2])
+    print(f"   - Lazada customers: {lazada_count} (keys: {lazada_count} with .1 decimals)")
+    print(f"   - Shopee customers: {shopee_count} (keys: {shopee_count} with .2 decimals)")
+    
+    # Date range
+    if not customers_df['customer_since'].isna().all():
+        valid_dates = customers_df[customers_df['customer_since'] != min_date]['customer_since']
+        if len(valid_dates) > 0:
+            print(f"   - Customers with valid dates: {len(valid_dates)}")
+            print(f"   - Date range: {valid_dates.min()} to {valid_dates.max()}")
+    
+    # Customer key ranges
+    lazada_keys = customers_df[customers_df['platform_key'] == 1]['customer_key']
+    shopee_keys = customers_df[customers_df['platform_key'] == 2]['customer_key']
+    if len(lazada_keys) > 0:
+        print(f"   - Lazada keys: {lazada_keys.min()} to {lazada_keys.max()}")
+    if len(shopee_keys) > 0:
+        print(f"   - Shopee keys: {shopee_keys.min()} to {shopee_keys.max()}")
+    
+    # Sample records
+    print(f"\n📋 Sample of earliest customers (by customer_since):")
+    print(customers_df[['customer_key', 'platform_customer_id', 'buyer_segment', 'customer_since', 'platform_key']].head(3).to_string(index=False))
+    
+    # Buyer segment breakdown
+    print(f"\n📈 Customer Analytics:")
+    print(f"   Buyer Segments:")
+    new_buyers = len(customers_df[customers_df['buyer_segment'] == 'New Buyer'])
+    returning_buyers = len(customers_df[customers_df['buyer_segment'] == 'Returning Buyer'])
+    print(f"   - New Buyers: {new_buyers}")
+    print(f"   - Returning Buyers: {returning_buyers}")
+    print(f"   - Average Orders per Customer: {customers_df['total_orders'].mean():.1f}")
+    
+    return customers_df
     
     return customers_df
 
