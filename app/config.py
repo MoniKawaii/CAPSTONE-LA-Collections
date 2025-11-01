@@ -451,6 +451,54 @@ SHOPEE_TO_UNIFIED_MAPPING = {
 }
 
 # =============================================================================
+# ORDER STATUS STANDARDIZATION MAPPING
+# =============================================================================
+
+ORDER_STATUS_MAPPING = {
+    'CONFIRMED': 'COMPLETED',
+    'CONFIRM': 'COMPLETED',
+    'DELIVERED': 'COMPLETED',
+    'DELIVERY': 'COMPLETED',
+    'SHIPPED': 'SHIPPED',
+    'PENDING': 'PENDING',
+    'CANCELLED': 'CANCELLED',
+    'CANCELED': 'CANCELLED',
+    'RETURNED': 'RETURNED',
+    'RETURN': 'RETURNED',
+    'REFUNDED': 'REFUNDED',
+    'REFUND': 'REFUNDED',
+    'PROCESSING': 'PROCESSING',
+    'READY_TO_SHIP': 'READY_TO_SHIP',
+    'UNPAID': 'UNPAID',
+    'FAILED': 'FAILED'
+}
+
+# =============================================================================
+# PAYMENT METHOD STANDARDIZATION MAPPING
+# =============================================================================
+
+PAYMENT_METHOD_MAPPING = {
+    'CREDIT': 'MIXEDCARD',
+    'DEBIT': 'MIXEDCARD',
+    'CREDIT CARD': 'MIXEDCARD',
+    'DEBIT CARD': 'MIXEDCARD',
+    'CREDIT/DEBIT': 'MIXEDCARD',
+    'CARD': 'MIXEDCARD',
+    'CASH ON DELIVERY': 'COD',
+    'CASH_ON_DELIVERY': 'COD',
+    'COD': 'COD',
+    'GCASH': 'GCASH',
+    'PAYMAYA': 'PAYMAYA',
+    'BANK TRANSFER': 'BANK_TRANSFER',
+    'BANK_TRANSFER': 'BANK_TRANSFER',
+    'ONLINE BANKING': 'ONLINE_BANKING',
+    'ONLINE_BANKING': 'ONLINE_BANKING',
+    'WALLET': 'WALLET',
+    'E-WALLET': 'E_WALLET',
+    'E_WALLET': 'E_WALLET'
+}
+
+# =============================================================================
 # DATA TYPE MAPPINGS
 # =============================================================================
 
