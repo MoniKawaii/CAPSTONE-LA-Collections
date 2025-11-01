@@ -18,7 +18,7 @@ from datetime import datetime
 
 # Add parent directory to path to import config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import get_empty_dataframe, LAZADA_TO_UNIFIED_MAPPING, SHOPEE_TO_UNIFIED_MAPPING, apply_data_types
+from config import get_empty_dataframe, LAZADA_TO_UNIFIED_MAPPING, SHOPEE_TO_UNIFIED_MAPPING, apply_data_types, ORDER_STATUS_MAPPING, PAYMENT_METHOD_MAPPING
 
 def load_lazada_orders():
     """
@@ -74,6 +74,54 @@ def load_shopee_orders():
         print(f"⚠️ File not found: {orders_file}")
     
     return orders_data
+
+def standardize_order_status(status):
+    """
+    Standardize order status to ALL CAPS format
+    Maps common status values to standardized format
+    
+    Args:
+        status (str): Raw order status from API
+        
+    Returns:
+        str: Standardized order status in ALL CAPS
+    """
+    if not status:
+        return ''
+    
+    # Convert to uppercase and strip whitespace
+    standardized = str(status).upper().strip()
+    
+    # Check if the standardized status is in our mapping (from config.py)
+    if standardized in ORDER_STATUS_MAPPING:
+        return ORDER_STATUS_MAPPING[standardized]
+    
+    # Return as-is if not in mapping (already uppercase)
+    return standardized
+
+def standardize_payment_method(payment_method):
+    """
+    Standardize payment method to ALL CAPS format
+    Maps common payment method values to standardized format
+    
+    Args:
+        payment_method (str): Raw payment method from API
+        
+    Returns:
+        str: Standardized payment method in ALL CAPS
+    """
+    if not payment_method:
+        return ''
+    
+    # Convert to uppercase and strip whitespace
+    standardized = str(payment_method).upper().strip()
+    
+    # Check if the standardized payment method is in our mapping (from config.py)
+    if standardized in PAYMENT_METHOD_MAPPING:
+        return PAYMENT_METHOD_MAPPING[standardized]
+    
+    # Return as-is if not in mapping (already uppercase)
+    return standardized
 
 def extract_order_status(statuses_array):
     """
@@ -143,6 +191,7 @@ def harmonize_order_record(order_data, source_file):
     """
     # Extract order status from statuses array (index 0)
     order_status = extract_order_status(order_data.get('statuses', []))
+    order_status = standardize_order_status(order_status)  # Standardize to ALL CAPS
     
     # Convert dates to date only format
     order_date = parse_date_to_date_only(order_data.get('created_at'))
@@ -159,6 +208,10 @@ def harmonize_order_record(order_data, source_file):
         except (ValueError, TypeError):
             price_total = None
     
+    # Standardize payment method
+    payment_method = order_data.get('payment_method', '')
+    payment_method = standardize_payment_method(payment_method)  # Standardize to ALL CAPS
+    
     # Map using LAZADA_TO_UNIFIED_MAPPING structure
     harmonized_record = {
         'orders_key': None,  # Will be generated as surrogate key
@@ -168,7 +221,7 @@ def harmonize_order_record(order_data, source_file):
         'updated_at': updated_at,
         'price_total': price_total,
         'total_item_count': order_data.get('items_count', 0),
-        'payment_method': order_data.get('payment_method', ''),
+        'payment_method': payment_method,
         'shipping_city': shipping_city
     }
     
@@ -186,6 +239,7 @@ def harmonize_shopee_order_record(order_data):
     """
     # Extract order status (Shopee uses order_status directly)
     order_status = order_data.get('order_status', '')
+    order_status = standardize_order_status(order_status)  # Standardize to ALL CAPS
     
     # Convert Unix timestamps to date only format
     order_date = None
@@ -222,6 +276,10 @@ def harmonize_shopee_order_record(order_data):
     if isinstance(item_list, list):
         total_item_count = len(item_list)
     
+    # Standardize payment method
+    payment_method = order_data.get('payment_method', '')
+    payment_method = standardize_payment_method(payment_method)  # Standardize to ALL CAPS
+    
     # Map using SHOPEE_TO_UNIFIED_MAPPING structure
     harmonized_record = {
         'orders_key': None,  # Will be generated as surrogate key
@@ -231,7 +289,7 @@ def harmonize_shopee_order_record(order_data):
         'updated_at': updated_at,
         'price_total': price_total,
         'total_item_count': total_item_count,
-        'payment_method': order_data.get('payment_method', ''),
+        'payment_method': payment_method,
         'shipping_city': shipping_city
     }
     
