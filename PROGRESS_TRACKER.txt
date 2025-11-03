@@ -1,0 +1,207 @@
+================================================================================
+CAPSTONE LA COLLECTIONS - PROGRESS TRACKER
+================================================================================
+Last Updated: November 4, 2025
+Branch: liam5-yza5
+
+================================================================================
+COMPLETED TASKS
+================================================================================
+
+✅ TASK #1: Implement Scent/Volume Columns for Product Variants
+   Status: COMPLETED
+   Date: November 4, 2025
+   
+   What was done:
+   - Replaced generic variant_attribute_1/2/3 columns with domain-specific 
+     'scent' and 'volume' columns
+   - Implemented smart parser with regex pattern to detect ml/mL/L units
+   - Logic: If variant name contains ml pattern → volume field, else → scent
+   - Created base variants for ALL 71 products (even those without variant data)
+   
+   Results:
+   - Shopee variants increased from 15 to 58 (43 base variants added)
+   - Total variants: 162 (104 Lazada + 58 Shopee)
+   - All products now have at least 1 variant for proper joins
+   
+   Files Modified:
+   - app/config.py (DIM_PRODUCT_VARIANT_COLUMNS schema)
+   - app/Transformation/harmonize_dim_product.py (parse_variant_attributes function)
+
+--------------------------------------------------------------------------------
+
+✅ TASK #2: Transfer Prices from Products to Variants + Add Versioning
+   Status: COMPLETED
+   Date: November 4, 2025
+   
+   What was done:
+   - Removed 'current_selling_price' from dim_product table
+   - Added 4 new fields to dim_product_variant:
+     * current_price (variant-level pricing)
+     * original_price (before discounts)
+     * created_at (timestamp)
+     * last_updated (timestamp)
+   - Updated extraction functions to populate prices at variant level
+   - Implemented special pricing calculation for Lazada (time-based discounts)
+   
+   Results:
+   - Price granularity: Product-level → Variant-level
+   - Initial coverage: 119/162 variants with prices (73.5%)
+   - All 162 variants have timestamps
+   - Price range: ₱5 - ₱1,280
+   
+   Files Modified:
+   - app/config.py (removed price from products, added to variants)
+   - app/Transformation/harmonize_dim_product.py (extraction functions)
+
+--------------------------------------------------------------------------------
+
+✅ TASK #3: Impute Missing Prices for Base Variants
+   Status: COMPLETED
+   Date: November 4, 2025
+   
+   What was done:
+   - Identified 43 base variants without prices (26.5% of total)
+   - Implemented Option 1: Use product-level price_info for base variants
+   - Modified extract_shopee_product_variants() to accept product_price_info
+   - Function now uses product-level price when variant-level unavailable
+   
+   Results:
+   - Price coverage improved from 73.5% to 95.1%
+   - 35 base variants gained prices (81.4% of base variants)
+   - 8 remaining products need Shopee variant API data (TODO #9)
+   - Average price: ₱497.97
+   
+   Files Modified:
+   - app/Transformation/harmonize_dim_product.py (extract_shopee_product_variants)
+
+--------------------------------------------------------------------------------
+
+✅ TASK #9: Resolve Shopee Variants API Issue
+   Status: COMPLETED
+   Date: November 4, 2025
+   
+   What was done:
+   - Fixed shopee_api_calls.py to use individual item_id calls (not batch)
+   - Created fetch_missing_variants.py script for targeted variant fetching
+   - Fixed harmonization to handle new API response structure (model vs model_list)
+   - Fixed price_info extraction (list instead of dict)
+   - Fetched variant data for 13 products with has_model=True
+   
+   Results:
+   - API successfully fetched 151 variant models
+   - Shopee variants increased from 48 to 186 (151 real + 35 base)
+   - Total variants increased from 162 to 290
+   - Price coverage: 100% (all 290 variants have prices)
+   - Average price: ₱527.64
+   
+   Files Modified:
+   - app/Extraction/shopee_api_calls.py (extract_product_variants function)
+   - app/Transformation/harmonize_dim_product.py (variant extraction logic)
+   
+   Files Created:
+   - fetch_missing_variants.py (utility script)
+
+--------------------------------------------------------------------------------
+
+✅ TASK #4: Replace Missing SKUs with "not_found"
+   Status: COMPLETED
+   Date: November 4, 2025
+   
+   What was done:
+   - Implemented fallback logic for canonical_sku extraction
+   - Lazada: SellerSku → SkuId → "not_found"
+   - Shopee: model_sku → model_id → "not_found"
+   - Base variants: item_sku → item_id → "not_found"
+   - Added validation to strip whitespace and handle empty strings
+   
+   Results:
+   - SKU coverage improved from 67.6% to 100%
+   - All 290 variants now have valid canonical_sku values
+   - Previously 94 variants had NaN, now all populated
+   - 0 variants marked as "not_found" (all had valid IDs)
+   
+   Files Modified:
+   - app/Transformation/harmonize_dim_product.py (all variant extraction functions)
+
+================================================================================
+PENDING TASKS (In Priority Order)
+================================================================================
+
+================================================================================
+PENDING TASKS (In Priority Order)
+================================================================================
+
+⏳ TASK #5: Derive Fact Table Schemas from Config Mappings
+   Priority: High
+   Estimated Effort: Medium
+   Description: Auto-generate fact table schemas from config.py
+
+⏳ TASK #6: Refactor Fact Tables for Data Consistency
+   Priority: High
+   Estimated Effort: High
+   Description: Ensure fact tables align with dimension tables
+
+⏳ TASK #7: Impute Other Missing Data
+   Priority: Medium
+   Estimated Effort: Medium
+   Description: Handle NULL values in product ratings, categories, etc.
+
+⏳ TASK #8: Update Lazada Product Reviews
+
+⏳ TASK #10: Update Descriptive Computations and Dashboard
+   Priority: Low
+   Estimated Effort: Medium
+   Description: Recalculate metrics based on new schema
+
+================================================================================
+CURRENT DATA QUALITY METRICS
+================================================================================
+
+Dimension: dim_product
+- Total Records: 71 (23 Lazada + 48 Shopee)
+- Columns: 7 (removed current_selling_price)
+- Coverage: 100%
+
+Dimension: dim_product_variant
+- Total Records: 290 (104 Lazada + 186 Shopee)
+- Columns: 11 (added scent, volume, prices, timestamps)
+- Price Coverage: 100% (290/290 variants)
+- Scent/Volume Coverage: 100%
+- Timestamp Coverage: 100%
+
+Shopee Variant Breakdown:
+- Real variants: 151 (fetched from API)
+- Base variants: 35 (products without variant data)
+- Total: 186
+
+Quality Improvements from Task #9:
+- Variants increased: 162 → 290 (+128 variants)
+- Shopee variants: 48 → 186 (+138 variants)
+- Price coverage: 95.1% → 100% (+4.9%)
+
+Identified Issues:
+- ✅ RESOLVED: All products now have complete variant data
+- These 8 products: has_model=True but price_info=None
+
+================================================================================
+TECHNICAL NOTES
+================================================================================
+
+Schema Changes:
+- DIM_PRODUCT: 8 columns → 7 columns (removed price)
+- DIM_PRODUCT_VARIANT: 7 columns → 11 columns (added scent, volume, prices, timestamps)
+
+Key Functions Modified:
+- parse_variant_attributes(): Returns (scent, volume) with ml detection
+- extract_lazada_product_variants(): Adds prices + timestamps + base variants
+- extract_shopee_product_variants(): Adds prices + timestamps + base variants
+
+Patterns Used:
+- Volume Detection: r'\d+\s*(ml|ML|mL|Ml|l|L)\b'
+- Platform Keys: 1=Lazada, 2=Shopee
+- ID Strategy: Float decimals (x.1 for Lazada, x.2 for Shopee)
+
+================================================================================
+END OF PROGRESS TRACKER
+================================================================================

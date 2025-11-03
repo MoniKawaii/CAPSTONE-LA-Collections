@@ -73,40 +73,41 @@ def standardize_product_status(platform, status):
 
 def parse_variant_attributes(platform, variant_data):
     """
-    Parse variant attributes from platform-specific data
+    Parse variant attributes from platform-specific data into scent and volume
+    
+    Smart parsing logic:
+    - Detects volume by looking for "ml", "ML", "mL", "l", "L" patterns
+    - Assigns volume-related attributes to volume column
+    - Assigns all other attributes to scent column
+    - Returns 'N/A' if no attributes found
     
     Args:
         platform (str): 'lazada' or 'shopee'
         variant_data (dict): Variant data from platform
         
     Returns:
-        tuple: (attr1, attr2, attr3)
+        tuple: (scent, volume)
     """
-    attr1, attr2, attr3 = 'N/A', 'N/A', 'N/A'
+    scent = 'N/A'
+    volume = 'N/A'
+    
+    # Collect all raw attributes first
+    raw_attributes = []
     
     if platform == 'shopee':
         # Parse from model_name if available
         model_name = variant_data.get('model_name', '')
         if model_name and model_name.strip():
-            # Try to split by common delimiters
+            # Split by common delimiters
             parts = re.split(r'[,;|\-_]', model_name.strip())
             parts = [p.strip() for p in parts if p.strip()]
-            if len(parts) >= 1:
-                attr1 = parts[0]
-            if len(parts) >= 2:
-                attr2 = parts[1]
-            if len(parts) >= 3:
-                attr3 = parts[2]
+            raw_attributes.extend(parts)
         
-        # Also check tier_index if available
-        tier_index = variant_data.get('tier_index', [])
-        if tier_index:
-            if len(tier_index) > 0 and attr1 == 'N/A':
-                attr1 = str(tier_index[0])
-            if len(tier_index) > 1 and attr2 == 'N/A':
-                attr2 = str(tier_index[1])
-            if len(tier_index) > 2 and attr3 == 'N/A':
-                attr3 = str(tier_index[2])
+        # Also check tier_index if available (fallback)
+        if not raw_attributes:
+            tier_index = variant_data.get('tier_index', [])
+            if tier_index:
+                raw_attributes = [str(idx) for idx in tier_index]
                 
     elif platform == 'lazada':
         # Parse from saleProp or Variation fields
@@ -122,27 +123,40 @@ def parse_variant_attributes(platform, variant_data):
                     prop_data = None
                     
                 if isinstance(prop_data, list) and len(prop_data) > 0:
-                    for i, prop in enumerate(prop_data[:3]):
+                    for prop in prop_data:
                         if isinstance(prop, dict):
                             value = prop.get('propValue', prop.get('value', ''))
-                            if i == 0:
-                                attr1 = str(value) if value else 'N/A'
-                            elif i == 1:
-                                attr2 = str(value) if value else 'N/A'
-                            elif i == 2:
-                                attr3 = str(value) if value else 'N/A'
+                            if value:
+                                raw_attributes.append(str(value))
             except:
                 pass
         
         # Fallback to Variation fields
-        if attr1 == 'N/A':
-            attr1 = variant_data.get('Variation1', 'N/A') or 'N/A'
-        if attr2 == 'N/A':
-            attr2 = variant_data.get('Variation2', 'N/A') or 'N/A'
-        if attr3 == 'N/A':
-            attr3 = variant_data.get('Variation3', 'N/A') or 'N/A'
+        if not raw_attributes:
+            for i in range(1, 4):
+                var_value = variant_data.get(f'Variation{i}', 'N/A')
+                if var_value and var_value != 'N/A':
+                    raw_attributes.append(var_value)
     
-    return attr1, attr2, attr3
+    # Smart assignment: separate volume from scent
+    volume_pattern = re.compile(r'\d+\s*(ml|ML|mL|Ml|l|L)\b', re.IGNORECASE)
+    scent_parts = []
+    volume_parts = []
+    
+    for attr in raw_attributes:
+        attr_str = str(attr).strip()
+        if volume_pattern.search(attr_str):
+            volume_parts.append(attr_str)
+        else:
+            scent_parts.append(attr_str)
+    
+    # Assign to scent and volume columns
+    if scent_parts:
+        scent = ', '.join(scent_parts)
+    if volume_parts:
+        volume = ', '.join(volume_parts)
+    
+    return scent, volume
 
 def calculate_lazada_current_price(sku_data, current_date=CURRENT_DATE):
     """
@@ -356,6 +370,7 @@ def get_shopee_category_name(category_id, category_data):
 def extract_lazada_product_variants(product_data, product_key, variant_key_counter):
     """
     Extract variant data from Lazada product SKUs array
+    If no SKUs exist, creates a base variant record
     
     Args:
         product_data (dict): Raw product data from Lazada API
@@ -363,57 +378,107 @@ def extract_lazada_product_variants(product_data, product_key, variant_key_count
         variant_key_counter (dict): Global variant counter with 'current' key
         
     Returns:
-        list: List of variant records
+        list: List of variant records (always at least 1)
     """
     variants = []
     skus = product_data.get('skus', [])
     platform_key = 1  # Lazada
+    current_timestamp = datetime.now()
     
-    for idx, sku_data in enumerate(skus):
-        if isinstance(sku_data, dict):
-            # Generate Lazada variant key with .1 decimal (e.g., 1.1, 2.1, 3.1)
-            variant_key = float(f"{variant_key_counter['current']}.1")
-            variant_key_counter['current'] += 1
-            
-            # Parse variant attributes
-            attr1, attr2, attr3 = parse_variant_attributes('lazada', sku_data)
-            
-            # Get canonical_sku (unified join key)
-            canonical_sku = sku_data.get('SellerSku', str(sku_data.get('SkuId', '')))
-            
-            variant = {
-                'product_variant_key': variant_key,
-                'product_key': product_key,
-                'platform_sku_id': str(sku_data.get('SkuId', '')),
-                'canonical_sku': canonical_sku,
-                'variant_attribute_1': attr1,
-                'variant_attribute_2': attr2,
-                'variant_attribute_3': attr3,
-                'platform_key': platform_key
-            }
-            variants.append(variant)
+    if skus and len(skus) > 0:
+        # Extract variants from SKU list
+        for idx, sku_data in enumerate(skus):
+            if isinstance(sku_data, dict):
+                # Generate Lazada variant key with .1 decimal (e.g., 1.1, 2.1, 3.1)
+                variant_key = float(f"{variant_key_counter['current']}.1")
+                variant_key_counter['current'] += 1
+                
+                # Parse variant attributes into scent and volume
+                scent, volume = parse_variant_attributes('lazada', sku_data)
+                
+                # Get canonical_sku (unified join key)
+                # Fallback: SellerSku → SkuId → "not_found"
+                seller_sku = sku_data.get('SellerSku')
+                sku_id = sku_data.get('SkuId')
+                
+                if seller_sku and str(seller_sku).strip():
+                    canonical_sku = str(seller_sku).strip()
+                elif sku_id:
+                    canonical_sku = str(sku_id)
+                else:
+                    canonical_sku = 'not_found'
+                
+                # Extract price information
+                current_price = calculate_lazada_current_price(sku_data, CURRENT_DATE)
+                original_price = float(sku_data.get('price', 0)) if sku_data.get('price') is not None else None
+                
+                variant = {
+                    'product_variant_key': variant_key,
+                    'product_key': product_key,
+                    'platform_sku_id': str(sku_data.get('SkuId', '')),
+                    'canonical_sku': canonical_sku,
+                    'scent': scent,
+                    'volume': volume,
+                    'current_price': current_price if current_price > 0 else None,
+                    'original_price': original_price,
+                    'created_at': current_timestamp,
+                    'last_updated': current_timestamp,
+                    'platform_key': platform_key
+                }
+                variants.append(variant)
+    else:
+        # No SKUs found, create a base variant record
+        variant_key = float(f"{variant_key_counter['current']}.1")
+        variant_key_counter['current'] += 1
+        
+        item_id = product_data.get('item_id', '')
+        
+        # Fallback for canonical_sku: item_id or "not_found"
+        canonical_sku = str(item_id) if item_id else 'not_found'
+        
+        base_variant = {
+            'product_variant_key': variant_key,
+            'product_key': product_key,
+            'platform_sku_id': str(item_id) if item_id else 'not_found',
+            'canonical_sku': canonical_sku,
+            'scent': 'Base Product',
+            'volume': 'N/A',
+            'current_price': None,
+            'original_price': None,
+            'created_at': current_timestamp,
+            'last_updated': current_timestamp,
+            'platform_key': platform_key
+        }
+        variants.append(base_variant)
     
     return variants
 
-def extract_shopee_product_variants(variant_data, product_key, item_id, variant_key_counter):
+def extract_shopee_product_variants(variant_data, product_key, item_id, variant_key_counter, product_name=None, item_sku=None, product_price_info=None):
     """
     Extract variant data from Shopee model list for a specific product
+    If no variants exist, creates a base variant record
     
     Args:
         variant_data (list): All variant data from shopee_product_variant_raw.json
         product_key (int): Product key from the main product record
         item_id: Item ID to find variants for
         variant_key_counter (dict): Global variant counter with 'current' key
+        product_name (str): Product name for base variant (optional)
+        item_sku (str): Item SKU for base variant (optional)
+        product_price_info (list): Product-level price info for base variants (optional)
         
     Returns:
-        list: List of variant records
+        list: List of variant records (always at least 1)
     """
     variants = []
     platform_key = 2  # Shopee
+    found_variants = False
+    current_timestamp = datetime.now()
     
     for variant_record in variant_data:
         if isinstance(variant_record, dict) and variant_record.get('item_id') == item_id:
-            model_list = variant_record.get('model_list', [])
+            # API returns 'model' not 'model_list'
+            model_list = variant_record.get('model', variant_record.get('model_list', []))
             
             for idx, model in enumerate(model_list):
                 if isinstance(model, dict):
@@ -421,24 +486,91 @@ def extract_shopee_product_variants(variant_data, product_key, item_id, variant_
                     variant_key = float(f"{variant_key_counter['current']}.2")
                     variant_key_counter['current'] += 1
                     
-                    # Parse variant attributes from model_name
-                    attr1, attr2, attr3 = parse_variant_attributes('shopee', model)
+                    # Parse variant attributes into scent and volume
+                    scent, volume = parse_variant_attributes('shopee', model)
                     
                     # Get canonical_sku (unified join key)
-                    canonical_sku = model.get('model_sku', str(model.get('model_id', '')))
+                    # Fallback: model_sku → model_id → "not_found"
+                    model_sku = model.get('model_sku')
+                    model_id = model.get('model_id')
+                    
+                    if model_sku and str(model_sku).strip():
+                        canonical_sku = str(model_sku).strip()
+                    elif model_id:
+                        canonical_sku = str(model_id)
+                    else:
+                        canonical_sku = 'not_found'
+                    
+                    # Extract price information from price_info (it's a list)
+                    price_info_list = model.get('price_info', [])
+                    price_info = price_info_list[0] if isinstance(price_info_list, list) and len(price_info_list) > 0 else {}
+                    current_price = float(price_info.get('current_price', 0)) if price_info.get('current_price') is not None else None
+                    original_price = float(price_info.get('original_price', 0)) if price_info.get('original_price') is not None else None
+                    
+                    # Set to None if price is 0
+                    if current_price == 0:
+                        current_price = None
+                    if original_price == 0:
+                        original_price = None
                     
                     variant = {
                         'product_variant_key': variant_key,
                         'product_key': product_key,
                         'platform_sku_id': str(model.get('model_id', '')),
                         'canonical_sku': canonical_sku,
-                        'variant_attribute_1': attr1,
-                        'variant_attribute_2': attr2,
-                        'variant_attribute_3': attr3,
+                        'scent': scent,
+                        'volume': volume,
+                        'current_price': current_price,
+                        'original_price': original_price,
+                        'created_at': current_timestamp,
+                        'last_updated': current_timestamp,
                         'platform_key': platform_key
                     }
                     variants.append(variant)
+                    found_variants = True
             break  # Found the item, no need to continue
+    
+    # If no variants found, create a base variant record
+    if not found_variants:
+        variant_key = float(f"{variant_key_counter['current']}.2")
+        variant_key_counter['current'] += 1
+        
+        # Fallback for canonical_sku: item_sku → item_id → "not_found"
+        if item_sku and str(item_sku).strip():
+            canonical_sku = str(item_sku).strip()
+        elif item_id:
+            canonical_sku = str(item_id)
+        else:
+            canonical_sku = 'not_found'
+        
+        # Extract price from product-level price_info for base variants
+        base_current_price = None
+        base_original_price = None
+        if product_price_info and len(product_price_info) > 0:
+            if isinstance(product_price_info[0], dict):
+                base_current_price = product_price_info[0].get('current_price')
+                base_original_price = product_price_info[0].get('original_price')
+                
+                # Convert to float and handle 0 values
+                if base_current_price is not None:
+                    base_current_price = float(base_current_price) if base_current_price != 0 else None
+                if base_original_price is not None:
+                    base_original_price = float(base_original_price) if base_original_price != 0 else None
+        
+        base_variant = {
+            'product_variant_key': variant_key,
+            'product_key': product_key,
+            'platform_sku_id': str(item_id) if item_id else 'not_found',
+            'canonical_sku': canonical_sku,
+            'scent': 'Base Product',
+            'volume': 'N/A',
+            'current_price': base_current_price,
+            'original_price': base_original_price,
+            'created_at': current_timestamp,
+            'last_updated': current_timestamp,
+            'platform_key': platform_key
+        }
+        variants.append(base_variant)
     
     return variants
 
@@ -455,13 +587,6 @@ def harmonize_lazada_product_record(product_data, product_key):
     """
     attributes = product_data.get('attributes', {})
     
-    # Calculate current selling price with special pricing logic
-    skus = product_data.get('skus', [])
-    current_price = 0.0
-    if skus:
-        # Use first SKU for price calculation
-        current_price = calculate_lazada_current_price(skus[0])
-    
     # Standardize status
     status = standardize_product_status('lazada', product_data.get('status', 'Unknown'))
     
@@ -471,7 +596,6 @@ def harmonize_lazada_product_record(product_data, product_key):
         'product_name': attributes.get('name', ''),
         'product_category': get_lazada_category_name(product_data.get('primary_category')),
         'product_status': status,
-        'current_selling_price': current_price,
         'product_rating': None,  # Lazada doesn't provide rating in products endpoint
         'platform_key': 1  # Lazada
     }
@@ -503,33 +627,6 @@ def harmonize_shopee_product_record(product_data, product_key, productitem_data,
     # Get category name from category mapping
     category_name = get_shopee_category_name(product_data.get('category_id'), category_data)
     
-    # Extract current selling price from price_info
-    current_price = None
-    price_info = product_data.get('price_info', [])
-    if price_info and len(price_info) > 0 and isinstance(price_info[0], dict):
-        current_price = price_info[0].get('current_price')
-    
-    # If no price in main product data, check variant data for products with models
-    if current_price is None and product_data.get('has_model'):
-        # Look for price in variant data
-        for variant_record in variant_data:
-            if isinstance(variant_record, dict) and variant_record.get('item_id') == item_id:
-                model_list = variant_record.get('model_list', [])
-                if model_list and len(model_list) > 0:
-                    first_model = model_list[0]
-                    if isinstance(first_model, dict):
-                        model_price_info = first_model.get('price_info', {})
-                        if isinstance(model_price_info, dict):
-                            current_price = model_price_info.get('current_price')
-                            break
-    
-    # Try to convert price to float
-    if current_price is not None:
-        try:
-            current_price = float(current_price)
-        except (ValueError, TypeError):
-            current_price = None
-    
     # Get average rating from calculated ratings
     product_rating = average_ratings.get(item_id)
     
@@ -542,7 +639,6 @@ def harmonize_shopee_product_record(product_data, product_key, productitem_data,
         'product_name': product_data.get('item_name', ''),
         'product_category': category_name,
         'product_status': status,
-        'current_selling_price': current_price,
         'product_rating': product_rating,  # Use calculated average rating from reviews
         'platform_key': 2  # Shopee
     }
@@ -588,10 +684,10 @@ def harmonize_dim_product():
             harmonized_product = harmonize_lazada_product_record(product_data, lazada_product_key)
             product_df = pd.concat([product_df, pd.DataFrame([harmonized_product])], ignore_index=True)
             
-            # Extract variants with global counter
+            # Extract variants with global counter (guaranteed to have at least 1)
             variants = extract_lazada_product_variants(product_data, lazada_product_key, variant_key_counter)
-            if variants:
-                variant_df = pd.concat([variant_df, pd.DataFrame(variants)], ignore_index=True)
+            # Always add variants (now guaranteed to have at least 1)
+            variant_df = pd.concat([variant_df, pd.DataFrame(variants)], ignore_index=True)
             
             product_key_counter += 1
     
@@ -618,10 +714,18 @@ def harmonize_dim_product():
             )
             product_df = pd.concat([product_df, pd.DataFrame([harmonized_product])], ignore_index=True)
             
-            # Extract variants with global counter
-            variants = extract_shopee_product_variants(shopee_variants, shopee_product_key, product_data.get('item_id'), variant_key_counter)
-            if variants:
-                variant_df = pd.concat([variant_df, pd.DataFrame(variants)], ignore_index=True)
+            # Extract variants with global counter, pass product info for base variants
+            variants = extract_shopee_product_variants(
+                shopee_variants, 
+                shopee_product_key, 
+                product_data.get('item_id'), 
+                variant_key_counter,
+                product_name=product_data.get('item_name'),
+                item_sku=product_data.get('item_sku'),
+                product_price_info=product_data.get('price_info')
+            )
+            # Always add variants (now guaranteed to have at least 1)
+            variant_df = pd.concat([variant_df, pd.DataFrame(variants)], ignore_index=True)
             
             shopee_product_key_counter += 1
     
@@ -639,7 +743,6 @@ def harmonize_dim_product():
     print(f"   - Total products: {len(product_df)}")
     print(f"   - Lazada products: {lazada_count}")
     print(f"   - Shopee products: {shopee_count}")
-    print(f"   - Products with prices: {product_df['current_selling_price'].notna().sum()}")
     print(f"   - Products with ratings: {product_df['product_rating'].notna().sum()}")
     print(f"   - Average rating (Shopee only): {product_df[product_df['platform_key'] == 2]['product_rating'].mean():.2f}" if product_df[product_df['platform_key'] == 2]['product_rating'].notna().sum() > 0 else "   - Average rating (Shopee only): N/A")
     print(f"   - Unique categories: {product_df['product_category'].nunique()}")
@@ -650,27 +753,29 @@ def harmonize_dim_product():
     print(f"   - Lazada variants: {len(variant_df[variant_df['platform_key'] == 1])}")
     print(f"   - Shopee variants: {len(variant_df[variant_df['platform_key'] == 2])}")
     print(f"   - Variants with canonical_sku: {variant_df['canonical_sku'].notna().sum()}")
+    print(f"   - Variants with prices: {variant_df['current_price'].notna().sum()}")
+    print(f"   - Average current price: ₱{variant_df['current_price'].mean():.2f}" if variant_df['current_price'].notna().sum() > 0 else "   - Average current price: N/A")
     
     # Show samples
     print(f"\n📋 Sample of Lazada products:")
     lazada_products_sample = product_df[product_df['platform_key'] == 1].head(3)
     if not lazada_products_sample.empty:
-        print(lazada_products_sample[['product_key', 'product_item_id', 'product_name', 'product_status', 'current_selling_price', 'platform_key']].to_string())
+        print(lazada_products_sample[['product_key', 'product_item_id', 'product_name', 'product_status', 'platform_key']].to_string())
     
     print(f"\n📋 Sample of Shopee products:")
     shopee_products_sample = product_df[product_df['platform_key'] == 2].head(3)
     if not shopee_products_sample.empty:
-        print(shopee_products_sample[['product_key', 'product_item_id', 'product_name', 'product_status', 'current_selling_price', 'product_rating', 'platform_key']].to_string())
+        print(shopee_products_sample[['product_key', 'product_item_id', 'product_name', 'product_status', 'product_rating', 'platform_key']].to_string())
     
     print(f"\n📋 Sample of Lazada variants:")
     lazada_variants_sample = variant_df[variant_df['platform_key'] == 1].head(3)
     if not lazada_variants_sample.empty:
-        print(lazada_variants_sample[['product_variant_key', 'product_key', 'canonical_sku', 'variant_attribute_1', 'variant_attribute_2', 'platform_key']].to_string())
+        print(lazada_variants_sample[['product_variant_key', 'product_key', 'canonical_sku', 'scent', 'volume', 'current_price', 'platform_key']].to_string())
     
     print(f"\n📋 Sample of Shopee variants:")
     shopee_variants_sample = variant_df[variant_df['platform_key'] == 2].head(3)
     if not shopee_variants_sample.empty:
-        print(shopee_variants_sample[['product_variant_key', 'product_key', 'canonical_sku', 'variant_attribute_1', 'variant_attribute_2', 'platform_key']].to_string())
+        print(shopee_variants_sample[['product_variant_key', 'product_key', 'canonical_sku', 'scent', 'volume', 'current_price', 'platform_key']].to_string())
     
     return product_df, variant_df
 

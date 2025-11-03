@@ -1339,35 +1339,36 @@ class ShopeeDataExtractor:
         print(f"📦 Found {len(variant_item_ids)} products with variations")
         
         all_model_lists = []
-        batch_size = 50  # Process in batches to avoid API limits
-        total_batches = math.ceil(len(variant_item_ids) / batch_size)
-        
         path = "/api/v2/product/get_model_list"
+        total_products = len(variant_item_ids)
         
-        for i in range(0, len(variant_item_ids), batch_size):
+        # Shopee API requires individual item_id calls, not batch item_id_list
+        for i, item_id in enumerate(variant_item_ids, 1):
             if self.api_calls_made >= self.max_daily_calls:
                 print("⚠️ Daily API limit reached")
                 break
             
-            batch = variant_item_ids[i:i+batch_size]
-            batch_num = i // batch_size + 1
+            print(f"🔄 Processing product {i}/{total_products} (item_id: {item_id})")
             
-            # Create item_id_list parameter
-            item_id_list = ','.join(str(id) for id in batch)
-            query_path = f"{path}?item_id_list={item_id_list}"
+            # Use single item_id parameter (not item_id_list)
+            query_path = f"{path}?item_id={item_id}"
             
-            print(f"🔄 Processing batch {batch_num}/{total_batches} ({len(batch)} products)")
-            
-            data = self._make_api_call(query_path, method="GET", call_type=f"product-models-batch-{batch_num}")
+            data = self._make_api_call(query_path, method="GET", call_type=f"product-model-{item_id}")
             
             if data and 'response' in data:
-                model_lists = data['response'].get('model_list', [])
-                all_model_lists.extend(model_lists)
-                print(f"  └── Batch {batch_num}: +{len(model_lists)} model lists (total: {len(all_model_lists)})")
+                # Response contains model data for this item_id
+                model_data = data['response']
+                
+                # Add item_id to the response for tracking
+                model_data['item_id'] = item_id
+                all_model_lists.append(model_data)
+                
+                model_count = len(model_data.get('model', []))
+                print(f"  └── Product {i}: {model_count} models found (total: {len(all_model_lists)} products)")
             else:
-                print(f"  └── Batch {batch_num}: No data returned or error.")
+                print(f"  └── Product {i}: No data returned or error.")
             
-            # Rate limiting between batches
+            # Rate limiting between calls
             time.sleep(0.5)
         
         self._save_to_json(all_model_lists, filename)

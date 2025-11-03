@@ -158,14 +158,15 @@ DIM_CUSTOMER_COLUMNS = [
 # Product Dimension
 DIM_PRODUCT_COLUMNS = [
     'product_key', 'product_item_id', 'product_name',
-    'product_category', 'product_status', 'current_selling_price', 
+    'product_category', 'product_status', 
     'product_rating', 'platform_key'
 ]
 
 # Product Variant Dimension
 DIM_PRODUCT_VARIANT_COLUMNS = [
     'product_variant_key', 'product_key', 'platform_sku_id', 'canonical_sku',
-    'variant_attribute_1', 'variant_attribute_2', 'variant_attribute_3', 'platform_key'
+    'scent', 'volume', 'current_price', 'original_price',
+    'created_at', 'last_updated', 'platform_key'
 ]
 
 # Order Dimension
@@ -553,7 +554,6 @@ COLUMN_DATA_TYPES = {
         'product_name': 'str',
         'product_category': 'str',
         'product_status': 'str',
-        'current_selling_price': 'float64',  # Decimal equivalent in pandas
         'product_rating': 'float64',  # Decimal equivalent in pandas
         'platform_key': 'int'
     },
@@ -562,9 +562,12 @@ COLUMN_DATA_TYPES = {
         'product_key': 'float64',  # Changed to float64 to match product table
         'platform_sku_id': 'str',
         'canonical_sku': 'str',
-        'variant_attribute_1': 'str',
-        'variant_attribute_2': 'str',
-        'variant_attribute_3': 'str',
+        'scent': 'str',
+        'volume': 'str',
+        'current_price': 'float64',  # Variant-level current selling price
+        'original_price': 'float64',  # Variant-level original/list price
+        'created_at': 'datetime64[ns]',  # Timestamp when record was created
+        'last_updated': 'datetime64[ns]',  # Timestamp when record was last modified
         'platform_key': 'int'
     },
     'dim_order': {
