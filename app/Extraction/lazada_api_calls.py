@@ -1107,7 +1107,14 @@ class LazadaDataExtractor:
         return all_review_ids
     
     def _extract_detailed_reviews_by_id_list(self, review_ids_dict, start_fresh=False):
-        """Extract detailed reviews using /review/seller/list/v2 with id_list (max 10 at a time)"""
+        """
+        Extract detailed reviews using /review/seller/list/v2 with id_list (max 10 at a time)
+        Following exact code pattern: 
+        client = lazop.LazopClient(url, appkey, appSecret)
+        request = lazop.LazopRequest('/review/seller/list/v2','GET')
+        request.add_api_param('id_list', '[111111111111,11111111112]')
+        response = client.execute(request, access_token)
+        """
         reviews_file = os.path.join(self.staging_dir, 'lazada_productreview_raw.json')
         
         if not start_fresh and os.path.exists(reviews_file):
@@ -1146,75 +1153,124 @@ class LazadaDataExtractor:
                 time.sleep(3)
             
             try:
-                # API call: /review/seller/list/v2
+                # Following exact pattern from code sample:
+                # request = lazop.LazopRequest('/review/seller/list/v2','GET')
+                # request.add_api_param('id_list', '[111111111111,11111111112]')
                 request = lazop.LazopRequest('/review/seller/list/v2', 'GET')
                 
-                # Try different parameter formats - API might expect JSON array format
-                id_list_array = [str(id) for id in batch_ids]
-                id_list_json = json.dumps(id_list_array)
-                
-                request.add_api_param('id_list', id_list_json)
+                # Format id_list as comma-separated string in brackets (as shown in sample)
+                id_list_str = '[' + ','.join(str(id) for id in batch_ids) + ']'
+                request.add_api_param('id_list', id_list_str)
                 
                 print(f"   📡 API Call: /review/seller/list/v2 with {len(batch_ids)} IDs")
-                print(f"   📋 ID List (JSON): {id_list_json}")
+                print(f"   📋 ID List: {id_list_str}")
                 
-                batch_data = self._make_api_call(request, f"review-details-batch-{batch_index}")
+                # Use client.execute directly (following sample pattern)
+                response = self.client.execute(request, self.access_token)
                 
-                # Debug: Print the full response to understand structure
-                print(f"   🔍 Debug - Full API response: {batch_data}")
+                print(f"   🔍 Response type: {response.type}")
+                print(f"   🔍 Response body: {response.body}")
                 
-                if batch_data and batch_data.get('data'):
-                    data = batch_data['data']
-                    print(f"   🔍 Data keys available: {list(data.keys()) if data else 'None'}")
-                    
-                    # Check different possible response structures
-                    reviews = []
-                    if data.get('reviews'):
-                        reviews = data['reviews']
-                        print(f"   ✅ Found 'reviews' key with {len(reviews)} reviews")
-                    elif data.get('review_list'):
-                        reviews = data['review_list']
-                        print(f"   ✅ Found 'review_list' key with {len(reviews)} reviews")
-                    elif data.get('list'):
-                        reviews = data['list']
-                        print(f"   ✅ Found 'list' key with {len(reviews)} reviews")
-                    else:
-                        print(f"   ⚠️ No recognizable review data structure found")
-                        print(f"   📋 Available data: {data}")
-                    
-                    if reviews:
-                        print(f"   ✅ Retrieved {len(reviews)} detailed reviews")
+                # Parse response body
+                if response.body:
+                    try:
+                        # Check if response.body is already a dict or needs JSON parsing
+                        if isinstance(response.body, dict):
+                            batch_data = response.body
+                        else:
+                            import json
+                            batch_data = json.loads(response.body)
                         
-                        # Process each detailed review
-                        for review in reviews:
-                            # Get metadata from original review_ids_dict
-                            review_id = str(review.get('id', ''))
-                            metadata = review_ids_dict.get(review_id, {})
+                        print(f"   🔍 Parsed response data keys: {list(batch_data.keys()) if batch_data else 'None'}")
+                        
+                        # Check for successful response
+                        if batch_data.get('code') == '0' and batch_data.get('data'):
+                            data = batch_data['data']
+                            print(f"   🔍 Data keys available: {list(data.keys()) if data else 'None'}")
                             
-                            detailed_review = {
-                                'id': review.get('id'),
-                                'item_id': metadata.get('item_id', review.get('item_id')),
-                                'product_title': metadata.get('product_title', ''),
-                                'buyer_name': review.get('buyer_name', ''),
-                                'rating': review.get('rating'),
-                                'review_comment': review.get('review_comment', ''),
-                                'review_time': review.get('review_time'),
-                                'reply_comment': review.get('reply_comment', ''),
-                                'reply_time': review.get('reply_time'),
-                                'status': review.get('status'),
-                                'extraction_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                                'batch_number': batch_index,
-                                'metadata': metadata
-                            }
-                            all_detailed_reviews.append(detailed_review)
+                            # Check different possible response structures
+                            reviews = []
+                            if data.get('reviews'):
+                                reviews = data['reviews']
+                                print(f"   ✅ Found 'reviews' key with {len(reviews)} reviews")
+                            elif data.get('review_list'):
+                                reviews = data['review_list']
+                                print(f"   ✅ Found 'review_list' key with {len(reviews)} reviews")
+                            elif data.get('list'):
+                                reviews = data['list']
+                                print(f"   ✅ Found 'list' key with {len(reviews)} reviews")
+                            elif isinstance(data, list):
+                                reviews = data
+                                print(f"   ✅ Data is a list with {len(reviews)} reviews")
+                            else:
+                                print(f"   ⚠️ No recognizable review data structure found")
+                                print(f"   📋 Available data: {data}")
+                            
+                            if reviews:
+                                print(f"   ✅ Retrieved {len(reviews)} detailed reviews")
+                                
+                                # Process each detailed review
+                                for review in reviews:
+                                    # Get metadata from original review_ids_dict
+                                    review_id = str(review.get('id', ''))
+                                    metadata = review_ids_dict.get(review_id, {})
+                                    
+                                    # Extract rating from ratings object (overall_rating)
+                                    ratings = review.get('ratings', {})
+                                    overall_rating = ratings.get('overall_rating') if ratings else None
+                                    
+                                    # Convert timestamps to readable dates
+                                    create_time = review.get('create_time')
+                                    submit_time = review.get('submit_time')
+                                    
+                                    review_time = None
+                                    if create_time:
+                                        try:
+                                            from datetime import datetime
+                                            review_time = datetime.fromtimestamp(create_time / 1000).strftime('%Y-%m-%d %H:%M:%S')
+                                        except:
+                                            review_time = str(create_time)
+                                    
+                                    detailed_review = {
+                                        'id': review.get('id'),
+                                        'item_id': str(review.get('product_id', metadata.get('item_id', ''))),
+                                        'product_title': metadata.get('product_title', ''),
+                                        'buyer_name': review.get('buyer_name', ''),
+                                        'rating': overall_rating,
+                                        'review_comment': review.get('review_content', ''),  # Correct field name
+                                        'review_time': review_time,
+                                        'reply_comment': review.get('reply_comment', ''),
+                                        'reply_time': review.get('reply_time'),
+                                        'status': review.get('review_type', ''),
+                                        'can_reply': review.get('can_reply', False),
+                                        'order_id': review.get('order_id'),
+                                        'ratings_detail': ratings,
+                                        'review_images': review.get('review_images', []),
+                                        'review_videos': review.get('review_videos', []),
+                                        'extraction_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                        'batch_number': batch_index,
+                                        'metadata': metadata
+                                    }
+                                    all_detailed_reviews.append(detailed_review)
+                            else:
+                                print(f"   ⚠️ No reviews found in response data")
+                        else:
+                            print(f"   ❌ API Error: {batch_data.get('message', 'Unknown error')}")
+                            print(f"   📋 Full response: {batch_data}")
+                    except json.JSONDecodeError as e:
+                        print(f"   ❌ Failed to parse JSON response: {e}")
+                        print(f"   📋 Raw response: {response.body}")
                 else:
-                    print(f"   ⚠️ No detailed reviews found for this batch")
+                    print(f"   ⚠️ Empty response body")
                     
             except Exception as e:
                 print(f"   ❌ Error processing batch {batch_index}: {e}")
+                import traceback
+                traceback.print_exc()
         
         # Save detailed reviews to lazada_productreview_raw.json
         print(f"\n💾 Saving {len(all_detailed_reviews)} detailed reviews to lazada_productreview_raw.json")
+        import json
         with open(reviews_file, 'w', encoding='utf-8') as f:
             json.dump(all_detailed_reviews, f, indent=2, ensure_ascii=False)
         

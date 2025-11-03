@@ -210,16 +210,18 @@ def load_lazada_data():
     Load all Lazada product data from raw JSON files
     
     Returns:
-        tuple: (products_data, productitem_data) as lists of dictionaries
+        tuple: (products_data, productitem_data, review_data) as lists of dictionaries
     """
     staging_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Staging')
     
     # Load products raw data
     products_file = os.path.join(staging_dir, get_staging_filename('lazada', 'products'))
     productitem_file = os.path.join(staging_dir, get_staging_filename('lazada', 'productitem'))
+    productreview_file = os.path.join(staging_dir, get_staging_filename('lazada', 'productreview'))
     
     products_data = []
     productitem_data = []
+    review_data = []
     
     if os.path.exists(products_file):
         with open(products_file, 'r', encoding='utf-8') as f:
@@ -235,7 +237,14 @@ def load_lazada_data():
     else:
         print(f"⚠️ File not found: {productitem_file}")
     
-    return products_data, productitem_data
+    if os.path.exists(productreview_file):
+        with open(productreview_file, 'r', encoding='utf-8') as f:
+            review_data = json.load(f)
+            print(f"✅ Loaded {len(review_data)} product reviews from {os.path.basename(productreview_file)}")
+    else:
+        print(f"⚠️ File not found: {productreview_file}")
+    
+    return products_data, productitem_data, review_data
 
 def load_shopee_data():
     """
@@ -280,6 +289,49 @@ def load_shopee_data():
         loaded_data.get('productcategory', []),
         loaded_data.get('productreview', [])
     )
+
+def calculate_lazada_average_ratings(review_data):
+    """
+    Calculate average ratings by item_id from Lazada product review data
+    
+    Args:
+        review_data (list): List of review records from lazada_productreview_raw.json
+        
+    Returns:
+        dict: Dictionary mapping item_id to average rating
+    """
+    if not review_data:
+        return {}
+    
+    # Aggregate ratings by item_id
+    item_ratings = {}
+    
+    for review in review_data:
+        if isinstance(review, dict):
+            item_id = review.get('item_id')
+            rating = review.get('rating')
+            
+            if item_id is not None and rating is not None:
+                try:
+                    rating = float(rating)
+                    if item_id not in item_ratings:
+                        item_ratings[item_id] = []
+                    item_ratings[item_id].append(rating)
+                except (ValueError, TypeError):
+                    continue
+    
+    # Calculate averages
+    average_ratings = {}
+    for item_id, ratings in item_ratings.items():
+        if ratings:
+            average_ratings[item_id] = round(sum(ratings) / len(ratings), 2)
+    
+    print(f"📊 Calculated average ratings for {len(average_ratings)} Lazada products")
+    if average_ratings:
+        sample_items = list(average_ratings.items())[:3]
+        print(f"📋 Sample ratings: {sample_items}")
+    
+    return average_ratings
 
 def calculate_shopee_average_ratings(review_data):
     """
@@ -574,29 +626,39 @@ def extract_shopee_product_variants(variant_data, product_key, item_id, variant_
     
     return variants
 
-def harmonize_lazada_product_record(product_data, product_key):
+def harmonize_lazada_product_record(product_data, product_key, average_ratings=None, overall_average_rating=None):
     """
     Harmonize a single Lazada product record to dimensional model
     
     Args:
         product_data (dict): Raw product data from Lazada API
         product_key (int): Generated product key
+        average_ratings (dict): Dictionary mapping item_id to average rating
+        overall_average_rating (float): Overall average rating for imputation
         
     Returns:
         dict: Harmonized product record
     """
     attributes = product_data.get('attributes', {})
+    item_id = str(product_data.get('item_id', ''))
     
     # Standardize status
     status = standardize_product_status('lazada', product_data.get('status', 'Unknown'))
     
+    # Get rating from average_ratings or use overall average for imputation
+    product_rating = None
+    if average_ratings and item_id in average_ratings:
+        product_rating = average_ratings[item_id]
+    elif overall_average_rating is not None:
+        product_rating = overall_average_rating
+    
     return {
         'product_key': product_key,
-        'product_item_id': str(product_data.get('item_id', '')),
+        'product_item_id': item_id,
         'product_name': attributes.get('name', ''),
         'product_category': get_lazada_category_name(product_data.get('primary_category')),
         'product_status': status,
-        'product_rating': None,  # Lazada doesn't provide rating in products endpoint
+        'product_rating': product_rating,
         'platform_key': 1  # Lazada
     }
 
@@ -665,10 +727,29 @@ def harmonize_dim_product():
     
     # Load data
     print("\n📥 Loading Lazada data...")
-    lazada_products, lazada_productitem = load_lazada_data()
+    lazada_products, lazada_productitem, lazada_reviews = load_lazada_data()
     
     print("\n📥 Loading Shopee data...")
     shopee_products, shopee_productitem, shopee_variants, shopee_categories, shopee_reviews = load_shopee_data()
+    
+    # Calculate average ratings
+    print("\n📊 Calculating average ratings...")
+    lazada_average_ratings = calculate_lazada_average_ratings(lazada_reviews)
+    shopee_average_ratings = calculate_shopee_average_ratings(shopee_reviews)
+    
+    # Calculate overall average rating for imputation (combine both platforms)
+    all_ratings = []
+    if lazada_average_ratings:
+        all_ratings.extend(lazada_average_ratings.values())
+    if shopee_average_ratings:
+        all_ratings.extend(shopee_average_ratings.values())
+    
+    overall_average_rating = None
+    if all_ratings:
+        overall_average_rating = round(sum(all_ratings) / len(all_ratings), 2)
+        print(f"📈 Overall average rating across platforms: {overall_average_rating}")
+    else:
+        print("⚠️ No ratings available for imputation")
     
     # Process Lazada products
     print("\n🔄 Processing Lazada products...")
@@ -680,8 +761,13 @@ def harmonize_dim_product():
             # Generate Lazada product key with .1 decimal (e.g., 1.1, 2.1, 3.1)
             lazada_product_key = float(f"{product_key_counter}.1")
             
-            # Harmonize product record
-            harmonized_product = harmonize_lazada_product_record(product_data, lazada_product_key)
+            # Harmonize product record with ratings
+            harmonized_product = harmonize_lazada_product_record(
+                product_data, 
+                lazada_product_key, 
+                lazada_average_ratings, 
+                overall_average_rating
+            )
             product_df = pd.concat([product_df, pd.DataFrame([harmonized_product])], ignore_index=True)
             
             # Extract variants with global counter (guaranteed to have at least 1)
@@ -696,10 +782,6 @@ def harmonize_dim_product():
     
     # Process Shopee products
     print("\n🔄 Processing Shopee products...")
-    
-    # Calculate average ratings from review data
-    print("\n📊 Calculating Shopee product ratings from reviews...")
-    shopee_average_ratings = calculate_shopee_average_ratings(shopee_reviews)
     
     shopee_product_key_counter = 1  # Separate counter for Shopee products
     
@@ -777,6 +859,13 @@ def harmonize_dim_product():
     if not shopee_variants_sample.empty:
         print(shopee_variants_sample[['product_variant_key', 'product_key', 'canonical_sku', 'scent', 'volume', 'current_price', 'platform_key']].to_string())
     
+    # Apply data types before saving
+    product_df = apply_data_types(product_df, 'dim_product')
+    variant_df = apply_data_types(variant_df, 'dim_product_variant')
+    
+    # Save the data
+    save_harmonized_data(product_df, variant_df)
+    
     return product_df, variant_df
 
 def save_harmonized_data(product_df, variant_df, output_dir=None):
@@ -808,15 +897,10 @@ def save_harmonized_data(product_df, variant_df, output_dir=None):
 
 if __name__ == "__main__":
     try:
-        # Run harmonization
+        # Run harmonization (includes saving)
         product_df, variant_df = harmonize_dim_product()
         
-        # Save results
-        product_file, variant_file = save_harmonized_data(product_df, variant_df)
-        
         print(f"\n🎉 Product & Variant dimension harmonization completed successfully!")
-        print(f"📁 Product file: {product_file}")
-        print(f"📁 Variant file: {variant_file}")
         
         # Show key improvements
         print(f"🔧 Key Improvements Implemented:")
@@ -826,7 +910,7 @@ if __name__ == "__main__":
         print(f"✅ Implemented Lazada special pricing logic with time windows")
         print(f"✅ Parsed variant attributes from model_name/saleProp with 'N/A' defaults")
         print(f"✅ Used float decimal IDs throughout (product_key: x.1/x.2, product_variant_key: x.1/x.2)")
-        print(f"✅ Calculated Shopee product ratings from review data (45 products with ratings, avg: 4.90)")
+        print(f"✅ Calculated Lazada and Shopee product ratings from review data")
         print(f"✅ Enhanced Shopee price extraction (fallback to variant data for multi-model products)")
                 
     except Exception as e:

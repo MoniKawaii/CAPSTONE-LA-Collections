@@ -368,6 +368,15 @@ LAZADA_TO_UNIFIED_MAPPING = {
     "product_rating": "product_rating",
     "platform_key": "platform_key",  # Always 1 for Lazada
     
+    # --- Product Reviews (from lazada_productreview_raw.json) ---
+    "review.item_id": "product_item_id",  # Match reviews to products by item_id
+    "review.rating": "rating",  # Individual review rating
+    "review.review_comment": "review_comment",  # Review content
+    "review.review_time": "review_time",  # Review timestamp
+    "review.buyer_name": "buyer_name",  # Reviewer name
+    "review.product_title": "product_title",  # Product name from review
+    "review.id": "review_id",  # Unique review identifier
+    
     # --- Dim_Product_Variant (from skus array) ---
     "SkuId": "platform_sku_id",  # From skus[].SkuId
     "SellerSku": "variant_sku",  # From skus[].SellerSku
