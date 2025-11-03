@@ -74,6 +74,29 @@ def load_shopee_products():
     
     return products_data
 
+def load_shopee_orders():
+    """
+    Load Shopee order data to extract variant information
+    
+    Returns:
+        list: orders_data as list of dictionaries
+    """
+    staging_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Staging')
+    
+    # Load orders raw data
+    orders_file = os.path.join(staging_dir, 'shopee_orders_raw.json')
+    
+    orders_data = []
+    
+    if os.path.exists(orders_file):
+        with open(orders_file, 'r', encoding='utf-8') as f:
+            orders_data = json.load(f)
+        print(f"✅ Loaded {len(orders_data)} orders from shopee_orders_raw.json for variant extraction")
+    else:
+        print(f"⚠️ File not found: {orders_file}")
+    
+    return orders_data
+
 def get_category_name(primary_category):
     """
     Map primary category ID to category name
@@ -267,6 +290,65 @@ def extract_shopee_product_variants(product_data, product_key):
     
     return variants
 
+def extract_shopee_variants_from_orders(orders_data, product_key_map):
+    """
+    Extract Shopee variants from order data
+    Since Shopee API doesn't provide model_list in basic product info,
+    we extract unique variants from actual orders
+    
+    Args:
+        orders_data (list): List of order dictionaries
+        product_key_map (dict): Mapping of item_id to product_key
+        
+    Returns:
+        list: List of variant records
+    """
+    # Dictionary to store unique variants (key: model_id, value: variant data)
+    variants_dict = {}
+    
+    for order in orders_data:
+        item_list = order.get('item_list', [])
+        
+        for item in item_list:
+            item_id = item.get('item_id')
+            model_id = item.get('model_id')
+            model_sku = item.get('model_sku', '')
+            model_name = item.get('model_name', '')
+            
+            # Skip if no model_id or if product not in our product list
+            if not model_id or item_id not in product_key_map:
+                continue
+            
+            # Use model_id as unique identifier
+            model_key = f"{item_id}_{model_id}"
+            
+            if model_key not in variants_dict:
+                product_key = product_key_map[item_id]
+                
+                # Parse model_name to extract variant attributes
+                # Format is usually like "Variant1,Variant2" or single variant
+                variant_attrs = model_name.split(',') if model_name else []
+                variant_attr_1 = variant_attrs[0].strip() if len(variant_attrs) > 0 else ''
+                variant_attr_2 = variant_attrs[1].strip() if len(variant_attrs) > 1 else ''
+                variant_attr_3 = variant_attrs[2].strip() if len(variant_attrs) > 2 else ''
+                
+                variant_record = {
+                    'variant_key': None,  # Will be generated as surrogate key
+                    'product_key': product_key,
+                    'platform_sku_id': str(model_id),
+                    'variant_sku': str(model_sku),
+                    'variant_attribute_1': variant_attr_1,
+                    'variant_attribute_2': variant_attr_2,
+                    'variant_attribute_3': variant_attr_3,
+                    'variant_price': item.get('model_original_price', None),
+                    'variant_stock': None,  # Not available in order data
+                    'platform_key': 2  # Shopee = 2
+                }
+                
+                variants_dict[model_key] = variant_record
+    
+    return list(variants_dict.values())
+
 def get_shopee_base_sku_from_variants(model_list):
     """
     Extract base SKU from the first available Shopee variant
@@ -406,12 +488,20 @@ def harmonize_dim_product():
     # Process Shopee products
     print(f"\n🔄 Processing Shopee products...")
     
+    # Create mapping of item_id to product_key for Shopee variant extraction
+    shopee_product_key_map = {}
+    
     for product in shopee_products_data:
         harmonized = harmonize_shopee_product_record(product)
         harmonized['product_key'] = product_key_counter
         all_products.append(harmonized)
         
-        # Extract variants for this product
+        # Store mapping for variant extraction from orders
+        item_id = product.get('item_id')
+        if item_id:
+            shopee_product_key_map[item_id] = product_key_counter
+        
+        # Extract variants for this product (from model_list if available)
         variants = extract_shopee_product_variants(product, product_key_counter)
         for variant in variants:
             variant['variant_key'] = variant_key_counter
@@ -422,6 +512,25 @@ def harmonize_dim_product():
     
     shopee_product_count = len(all_products) - lazada_product_count
     print(f"✅ Processed {shopee_product_count} Shopee products")
+    
+    # Extract Shopee variants from order data
+    print(f"\n🔄 Extracting Shopee variants from order data...")
+    shopee_orders_data = load_shopee_orders()
+    shopee_variants_from_orders = extract_shopee_variants_from_orders(shopee_orders_data, shopee_product_key_map)
+    
+    # Add unique variants from orders
+    existing_shopee_variant_ids = {v['platform_sku_id'] for v in all_variants if v['platform_key'] == 2}
+    new_variants_count = 0
+    
+    for variant in shopee_variants_from_orders:
+        if variant['platform_sku_id'] not in existing_shopee_variant_ids:
+            variant['variant_key'] = variant_key_counter
+            variant_key_counter += 1
+            all_variants.append(variant)
+            existing_shopee_variant_ids.add(variant['platform_sku_id'])
+            new_variants_count += 1
+    
+    print(f"✅ Extracted {new_variants_count} additional Shopee variants from {len(shopee_orders_data)} orders")
     
     # Convert products to DataFrame
     if all_products:
