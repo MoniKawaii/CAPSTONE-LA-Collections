@@ -166,21 +166,27 @@ def parse_date_to_date_only(date_string):
 def extract_shipping_city(address_shipping):
     """
     Extract shipping city from address_shipping object
+    Replace asterisked cities with "N/A"
     
     Args:
         address_shipping (dict): Shipping address object
         
     Returns:
-        str: City name or empty string
+        str: City name or "N/A" for asterisked values
     """
     if not address_shipping or not isinstance(address_shipping, dict):
         return ''
     
-    return address_shipping.get('city', '')
+    city = address_shipping.get('city', '')
+    # Replace asterisked cities with "N/A"
+    if city and '*' in city:
+        return 'N/A'
+    return city
 
 def harmonize_order_record(order_data, source_file):
     """
     Harmonize a single order record from Lazada format to dimensional model
+    Uses LAZADA_TO_UNIFIED_MAPPING from config.py
     
     Args:
         order_data (dict): Raw order data from Lazada API
@@ -189,47 +195,85 @@ def harmonize_order_record(order_data, source_file):
     Returns:
         dict: Harmonized order record
     """
-    # Extract order status from statuses array (index 0)
-    order_status = extract_order_status(order_data.get('statuses', []))
-    order_status = standardize_order_status(order_status)  # Standardize to ALL CAPS
+    # Initialize harmonized record with None values
+    harmonized_record = {}
     
-    # Convert dates to date only format
-    order_date = parse_date_to_date_only(order_data.get('created_at'))
-    updated_at = parse_date_to_date_only(order_data.get('updated_at'))
+    # Apply field mappings from config.py
+    for lazada_field, unified_field in LAZADA_TO_UNIFIED_MAPPING.items():
+        if unified_field in ['orders_key', 'platform_order_id', 'order_status', 'order_date', 
+                            'updated_at', 'price_total', 'total_item_count', 'payment_method', 
+                            'shipping_city', 'platform_key']:
+            
+            if lazada_field == 'order_id':
+                harmonized_record['platform_order_id'] = str(order_data.get('order_id', ''))
+            
+            elif lazada_field == 'statuses':
+                # Extract order status from statuses array (index 0)
+                order_status = extract_order_status(order_data.get('statuses', []))
+                harmonized_record['order_status'] = standardize_order_status(order_status)
+            
+            elif lazada_field == 'created_at':
+                harmonized_record['order_date'] = parse_date_to_date_only(order_data.get('created_at'))
+            
+            elif lazada_field == 'updated_at':
+                harmonized_record['updated_at'] = parse_date_to_date_only(order_data.get('updated_at'))
+            
+            elif lazada_field == 'price':
+                # Convert price to float
+                price_total = None
+                if 'price' in order_data:
+                    try:
+                        price_total = float(order_data['price'])
+                    except (ValueError, TypeError):
+                        price_total = None
+                harmonized_record['price_total'] = price_total
+            
+            elif lazada_field == 'items_count':
+                harmonized_record['total_item_count'] = order_data.get('items_count', 0)
+            
+            elif lazada_field == 'payment_method':
+                payment_method = order_data.get('payment_method', '')
+                harmonized_record['payment_method'] = standardize_payment_method(payment_method)
+            
+            elif lazada_field == 'shipping_address.city':
+                # Extract shipping city from shipping_address and handle asterisks
+                shipping_address = order_data.get('shipping_address', order_data.get('address_shipping', {}))
+                shipping_city = ''
+                if isinstance(shipping_address, dict):
+                    shipping_city = shipping_address.get('city', '')
+                    # Replace asterisked cities with "N/A"
+                    if shipping_city and '*' in shipping_city:
+                        shipping_city = 'N/A'
+                harmonized_record['shipping_city'] = shipping_city
     
-    # Extract shipping city
-    shipping_city = extract_shipping_city(order_data.get('address_shipping', {}))
+    # Set fields that are not in mapping but required
+    harmonized_record['orders_key'] = None  # Will be generated as surrogate key
+    harmonized_record['platform_key'] = 1  # Lazada platform key
     
-    # Convert price to float
-    price_total = None
-    if 'price' in order_data:
-        try:
-            price_total = float(order_data['price'])
-        except (ValueError, TypeError):
-            price_total = None
+    # Ensure all required columns exist with default values if missing
+    required_columns = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 
+                       'updated_at', 'price_total', 'total_item_count', 'payment_method', 
+                       'shipping_city', 'platform_key']
     
-    # Standardize payment method
-    payment_method = order_data.get('payment_method', '')
-    payment_method = standardize_payment_method(payment_method)  # Standardize to ALL CAPS
-    
-    # Map using LAZADA_TO_UNIFIED_MAPPING structure
-    harmonized_record = {
-        'orders_key': None,  # Will be generated as surrogate key
-        'platform_order_id': str(order_data.get('order_id', '')),
-        'order_status': order_status,
-        'order_date': order_date,
-        'updated_at': updated_at,
-        'price_total': price_total,
-        'total_item_count': order_data.get('items_count', 0),
-        'payment_method': payment_method,
-        'shipping_city': shipping_city
-    }
+    for col in required_columns:
+        if col not in harmonized_record:
+            if col in ['orders_key']:
+                harmonized_record[col] = None
+            elif col in ['platform_order_id', 'order_status', 'payment_method', 'shipping_city']:
+                harmonized_record[col] = ''
+            elif col in ['price_total']:
+                harmonized_record[col] = None
+            elif col in ['total_item_count', 'platform_key']:
+                harmonized_record[col] = 0
+            elif col in ['order_date', 'updated_at']:
+                harmonized_record[col] = None
     
     return harmonized_record
 
 def harmonize_shopee_order_record(order_data):
     """
     Harmonize a single order record from Shopee format to dimensional model
+    Uses SHOPEE_TO_UNIFIED_MAPPING from config.py
     
     Args:
         order_data (dict): Raw order data from Shopee API
@@ -237,61 +281,95 @@ def harmonize_shopee_order_record(order_data):
     Returns:
         dict: Harmonized order record
     """
-    # Extract order status (Shopee uses order_status directly)
-    order_status = order_data.get('order_status', '')
-    order_status = standardize_order_status(order_status)  # Standardize to ALL CAPS
+    # Initialize harmonized record with None values
+    harmonized_record = {}
     
-    # Convert Unix timestamps to date only format
-    order_date = None
-    if 'create_time' in order_data:
-        try:
-            order_date = datetime.fromtimestamp(order_data['create_time']).date()
-        except (ValueError, TypeError, OSError):
-            order_date = None
+    # Apply field mappings from config.py
+    for shopee_field, unified_field in SHOPEE_TO_UNIFIED_MAPPING.items():
+        if unified_field in ['orders_key', 'platform_order_id', 'order_status', 'order_date', 
+                            'updated_at', 'price_total', 'total_item_count', 'payment_method', 
+                            'shipping_city', 'platform_key']:
+            
+            if shopee_field == 'order_sn':
+                harmonized_record['platform_order_id'] = str(order_data.get('order_sn', ''))
+            
+            elif shopee_field == 'order_status':
+                order_status = order_data.get('order_status', '')
+                harmonized_record['order_status'] = standardize_order_status(order_status)
+            
+            elif shopee_field == 'create_time':
+                # Convert Unix timestamps to date only format
+                order_date = None
+                if 'create_time' in order_data:
+                    try:
+                        order_date = datetime.fromtimestamp(order_data['create_time']).date()
+                    except (ValueError, TypeError, OSError):
+                        order_date = None
+                harmonized_record['order_date'] = order_date
+            
+            elif shopee_field == 'update_time':
+                updated_at = None
+                if 'update_time' in order_data:
+                    try:
+                        updated_at = datetime.fromtimestamp(order_data['update_time']).date()
+                    except (ValueError, TypeError, OSError):
+                        updated_at = None
+                harmonized_record['updated_at'] = updated_at
+            
+            elif shopee_field == 'total_amount':
+                # Convert total_amount to float
+                price_total = None
+                if 'total_amount' in order_data:
+                    try:
+                        price_total = float(order_data['total_amount'])
+                    except (ValueError, TypeError):
+                        price_total = None
+                harmonized_record['price_total'] = price_total
+            
+            elif shopee_field == 'item_list':
+                # Count items in item_list
+                total_item_count = 0
+                item_list = order_data.get('item_list', [])
+                if isinstance(item_list, list):
+                    total_item_count = len(item_list)
+                harmonized_record['total_item_count'] = total_item_count
+            
+            elif shopee_field == 'payment_method':
+                payment_method = order_data.get('payment_method', '')
+                harmonized_record['payment_method'] = standardize_payment_method(payment_method)
+            
+            elif shopee_field == 'recipient_address.city':
+                # Extract shipping city from recipient_address and handle asterisks
+                shipping_city = ''
+                recipient_address = order_data.get('recipient_address', {})
+                if isinstance(recipient_address, dict):
+                    shipping_city = recipient_address.get('city', '')
+                    # Replace asterisked cities with "N/A"
+                    if shipping_city and '*' in shipping_city:
+                        shipping_city = 'N/A'
+                harmonized_record['shipping_city'] = shipping_city
     
-    updated_at = None
-    if 'update_time' in order_data:
-        try:
-            updated_at = datetime.fromtimestamp(order_data['update_time']).date()
-        except (ValueError, TypeError, OSError):
-            updated_at = None
+    # Set fields that are not in mapping but required
+    harmonized_record['orders_key'] = None  # Will be generated as surrogate key
+    harmonized_record['platform_key'] = 2  # Shopee platform key
     
-    # Extract shipping city from recipient_address
-    shipping_city = ''
-    recipient_address = order_data.get('recipient_address', {})
-    if isinstance(recipient_address, dict):
-        shipping_city = recipient_address.get('city', '')
+    # Ensure all required columns exist with default values if missing
+    required_columns = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 
+                       'updated_at', 'price_total', 'total_item_count', 'payment_method', 
+                       'shipping_city', 'platform_key']
     
-    # Convert total_amount to float
-    price_total = None
-    if 'total_amount' in order_data:
-        try:
-            price_total = float(order_data['total_amount'])
-        except (ValueError, TypeError):
-            price_total = None
-    
-    # Count items in item_list
-    total_item_count = 0
-    item_list = order_data.get('item_list', [])
-    if isinstance(item_list, list):
-        total_item_count = len(item_list)
-    
-    # Standardize payment method
-    payment_method = order_data.get('payment_method', '')
-    payment_method = standardize_payment_method(payment_method)  # Standardize to ALL CAPS
-    
-    # Map using SHOPEE_TO_UNIFIED_MAPPING structure
-    harmonized_record = {
-        'orders_key': None,  # Will be generated as surrogate key
-        'platform_order_id': str(order_data.get('order_sn', '')),
-        'order_status': order_status,
-        'order_date': order_date,
-        'updated_at': updated_at,
-        'price_total': price_total,
-        'total_item_count': total_item_count,
-        'payment_method': payment_method,
-        'shipping_city': shipping_city
-    }
+    for col in required_columns:
+        if col not in harmonized_record:
+            if col in ['orders_key']:
+                harmonized_record[col] = None
+            elif col in ['platform_order_id', 'order_status', 'payment_method', 'shipping_city']:
+                harmonized_record[col] = ''
+            elif col in ['price_total']:
+                harmonized_record[col] = None
+            elif col in ['total_item_count', 'platform_key']:
+                harmonized_record[col] = 0
+            elif col in ['order_date', 'updated_at']:
+                harmonized_record[col] = None
     
     return harmonized_record
 
@@ -328,27 +406,11 @@ def harmonize_dim_order():
     print(f"\n🔄 Processing Lazada orders...")
     lazada_orders_dict = {}
     
-    # Create a lookup dictionary for buyer_id from order_items
-    buyer_id_lookup = {}
-    for order in order_items_data:
-        order_id = str(order.get('order_id', ''))
-        order_items = order.get('order_items', [])
-        if order_id and order_items and len(order_items) > 0:
-            buyer_id = order_items[0].get('buyer_id')
-            if buyer_id:
-                buyer_id_lookup[order_id] = str(buyer_id)
-    
-    print(f"📝 Created buyer_id lookup for {len(buyer_id_lookup)} Lazada orders")
-    
     # Process lazada_orders_raw.json (primary data source)
     for order in orders_data:
         order_id = str(order.get('order_id', ''))
         if order_id and order_id not in lazada_orders_dict:
             harmonized = harmonize_order_record(order, 'orders')
-            # Add buyer_id from lookup
-            if order_id in buyer_id_lookup:
-                harmonized['platform_customer_id'] = buyer_id_lookup[order_id]
-            harmonized['platform_key'] = 1  # Lazada platform key
             harmonized['raw_platform_order_id'] = order_id  # Keep original for deduplication
             lazada_orders_dict[order_id] = harmonized
     
@@ -357,7 +419,6 @@ def harmonize_dim_order():
         order_id = str(order.get('order_id', ''))
         if order_id and order_id not in lazada_orders_dict:
             harmonized = harmonize_order_record(order, 'order_items')
-            harmonized['platform_key'] = 1  # Lazada platform key
             harmonized['raw_platform_order_id'] = order_id  # Keep original for deduplication
             lazada_orders_dict[order_id] = harmonized
     
@@ -372,7 +433,6 @@ def harmonize_dim_order():
         order_sn = str(order.get('order_sn', ''))
         if order_sn and order_sn not in shopee_orders_dict:
             harmonized = harmonize_shopee_order_record(order)
-            harmonized['platform_key'] = 2  # Shopee platform key
             harmonized['raw_platform_order_id'] = order_sn  # Keep original for deduplication
             shopee_orders_dict[order_sn] = harmonized
     
@@ -399,8 +459,9 @@ def harmonize_dim_order():
         df['order_status'] = df['order_status'].fillna('').astype(str).str.upper().str.strip()
         df['payment_method'] = df['payment_method'].fillna('').astype(str).str.upper().str.strip()
         
-        # Clean shipping_city
+        # Clean shipping_city - replace asterisked values with "N/A"
         df['shipping_city'] = df['shipping_city'].fillna('').astype(str).str.strip()
+        df.loc[df['shipping_city'].str.contains(r'\*', na=False), 'shipping_city'] = 'N/A'
         
         # Handle price_total - ensure numeric
         df['price_total'] = pd.to_numeric(df['price_total'], errors='coerce')
@@ -434,6 +495,15 @@ def harmonize_dim_order():
         # Step 4: Apply proper data types according to schema
         print("🔄 Applying data types...")
         df = apply_data_types(df, 'dim_order')
+        
+        # Step 5: Ensure correct column order according to DIM_ORDER_COLUMNS
+        print("🔄 Ensuring correct column order...")
+        target_columns = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 
+                         'updated_at', 'price_total', 'total_item_count', 'payment_method', 
+                         'shipping_city', 'platform_key']
+        
+        # Reorder columns to match schema
+        df = df[target_columns]
         
         # Final DataFrame
         dim_order_df = df

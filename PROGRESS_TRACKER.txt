@@ -174,7 +174,39 @@ PENDING TASKS (In Priority Order)
 
 --------------------------------------------------------------------------------
 
-⏳ TASK #10: Update Descriptive Computations and Dashboard
+✅ TASK #10: Fix Order Dimension Harmonization
+   Status: COMPLETED
+   Date: November 4, 2025
+   
+   What was done:
+   - Fixed harmonize_dim_order.py to properly follow config.py field mappings
+   - Updated harmonization functions to use LAZADA_TO_UNIFIED_MAPPING and SHOPEE_TO_UNIFIED_MAPPING
+   - Implemented payment method standardization using PAYMENT_METHOD_MAPPING from config
+   - Added asterisk replacement logic for shipping_city (replaced with "N/A")
+   - Removed platform_customer_id column as per DIM_ORDER_COLUMNS schema
+   - Fixed column ordering to match exact DIM_ORDER_COLUMNS sequence
+   - Added proper field initialization and default value handling
+   
+   Results:
+   - Successfully harmonized 33,928 total orders (9,038 Lazada + 24,890 Shopee)
+   - Correct column order: orders_key, platform_order_id, order_status, order_date, updated_at, price_total, total_item_count, payment_method, shipping_city, platform_key
+   - Orders_key properly generated with platform decimals (.1 for Lazada, .2 for Shopee)
+   - All shipping_city asterisked values replaced with "N/A"
+   - Payment methods standardized using config mappings (13 unique methods)
+   - 100% data coverage: all orders have valid dates and prices
+   - Date range: 2020-09-19 to 2025-10-31
+   - Schema compliance: Exact match to DIM_ORDER_COLUMNS structure
+   
+   Files Modified:
+   - app/Transformation/harmonize_dim_order.py (complete refactor for config compliance)
+   
+   Field Mappings Applied:
+   - Lazada: order_id → platform_order_id, statuses[0] → order_status, shipping_address.city → shipping_city
+   - Shopee: order_sn → platform_order_id, order_status → order_status, recipient_address.city → shipping_city
+
+--------------------------------------------------------------------------------
+
+⏳ TASK #11: Update Descriptive Computations and Dashboard
    Priority: Low
    Estimated Effort: Medium
    Description: Recalculate metrics based on new schema
@@ -187,7 +219,7 @@ Dimension: dim_product
 - Total Records: 71 (23 Lazada + 48 Shopee)
 - Columns: 7 (removed current_selling_price)
 - Coverage: 100%
-- NEW: Product ratings coverage: 100% (68 from reviews + 3 imputed)
+- Product ratings coverage: 100% (68 from reviews + 3 imputed)
 
 Dimension: dim_product_variant
 - Total Records: 290 (104 Lazada + 186 Shopee)
@@ -195,6 +227,16 @@ Dimension: dim_product_variant
 - Price Coverage: 100% (290/290 variants)
 - Scent/Volume Coverage: 100%
 - Timestamp Coverage: 100%
+
+Dimension: dim_order
+- Total Records: 33,928 (9,038 Lazada + 24,890 Shopee)
+- Columns: 10 (orders_key, platform_order_id, order_status, order_date, updated_at, price_total, total_item_count, payment_method, shipping_city, platform_key)
+- Coverage: 100% data quality - all orders have valid dates and prices
+- Date Range: 2020-09-19 to 2025-10-31 (5+ years of order history)
+- Order Status Distribution: 6 unique statuses (COMPLETED, CANCELLED, SHIPPED, etc.)
+- Payment Methods: 13 standardized methods (COD, PLATFORM WALLET BALANCE, MIXEDCARD, etc.)
+- Geographic Coverage: shipping_city data with asterisked values replaced by "N/A"
+- Key Generation: Platform-specific decimals (.1 for Lazada, .2 for Shopee)
 
 Shopee Variant Breakdown:
 - Real variants: 151 (fetched from API)
@@ -208,9 +250,18 @@ Quality Improvements from Task #8 (Lazada Product Ratings):
 - Review data integration: Successfully matched 59 reviews across 14 products
 - Data consistency: Resolved item_id type mismatch between products and reviews
 
+Quality Improvements from Task #11 (Order Dimension):
+- Order harmonization: 33,928 orders successfully processed
+- Schema compliance: 100% adherence to DIM_ORDER_COLUMNS structure
+- Field mapping accuracy: All config.py mappings properly applied
+- Data standardization: Payment methods and order statuses normalized
+- Geographic data cleaning: Asterisked shipping cities replaced with "N/A"
+- Temporal coverage: 5+ years of comprehensive order history
+
 Identified Issues:
 - ✅ RESOLVED: All products now have complete variant data
 - ✅ RESOLVED: All Lazada products now have ratings (review-based or imputed)
+- ✅ RESOLVED: Order dimension schema and field mapping issues
 
 ================================================================================
 TECHNICAL NOTES
@@ -219,16 +270,21 @@ TECHNICAL NOTES
 Schema Changes:
 - DIM_PRODUCT: 8 columns → 7 columns (removed price)
 - DIM_PRODUCT_VARIANT: 7 columns → 11 columns (added scent, volume, prices, timestamps)
+- DIM_ORDER: 10 columns (orders_key through platform_key in correct sequence)
 
 Key Functions Modified:
 - parse_variant_attributes(): Returns (scent, volume) with ml detection
 - extract_lazada_product_variants(): Adds prices + timestamps + base variants
 - extract_shopee_product_variants(): Adds prices + timestamps + base variants
+- harmonize_order_record(): Uses LAZADA_TO_UNIFIED_MAPPING for field extraction
+- harmonize_shopee_order_record(): Uses SHOPEE_TO_UNIFIED_MAPPING for field extraction
 
 Patterns Used:
 - Volume Detection: r'\d+\s*(ml|ML|mL|Ml|l|L)\b'
 - Platform Keys: 1=Lazada, 2=Shopee
 - ID Strategy: Float decimals (x.1 for Lazada, x.2 for Shopee)
+- Payment Standardization: PAYMENT_METHOD_MAPPING for consistency
+- Asterisk Replacement: shipping_city with '*' → "N/A"
 
 Understanding SKU Fields:
 ================================================================================

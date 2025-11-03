@@ -392,6 +392,9 @@ LAZADA_TO_UNIFIED_MAPPING = {
     "updated_at": "updated_at",  # Convert to date only (YYYY-MM-DD)  
     "price": "price_total",
     "items_count": "total_item_count",
+    "payment_method": "payment_method",
+    "shipping_address.city": "shipping_city",
+    
     
     # --- Dim_Customer ---
     "customer_key": "customer_key",  # Generated internally incremental
@@ -482,6 +485,7 @@ SHOPEE_TO_UNIFIED_MAPPING = {
 ORDER_STATUS_MAPPING = {
     'CONFIRMED': 'COMPLETED',
     'CONFIRM': 'COMPLETED',
+    'TO_CONFIRM_RECEIVE': 'COMPLETED',
     'DELIVERED': 'COMPLETED',
     'DELIVERY': 'COMPLETED',
     'SHIPPED': 'SHIPPED',
@@ -512,15 +516,26 @@ PAYMENT_METHOD_MAPPING = {
     'CASH ON DELIVERY': 'COD',
     'CASH_ON_DELIVERY': 'COD',
     'COD': 'COD',
-    'GCASH': 'GCASH',
-    'PAYMAYA': 'PAYMAYA',
-    'BANK TRANSFER': 'BANK_TRANSFER',
-    'BANK_TRANSFER': 'BANK_TRANSFER',
-    'ONLINE BANKING': 'ONLINE_BANKING',
-    'ONLINE_BANKING': 'ONLINE_BANKING',
+    'GCASH_PP': 'GCASH',
+    'PAYMAYA_PP': 'PAYMAYA',
+    'WALLET_PAYMAYA2C2P': 'PAYMAYA',
+    'BANK_TRANSFER': 'BANK TRANSFER',
+    'BPI FOR PAYMENT': 'BANK TRANSFER',
+    'BDO_IPP': 'BANK TRANSFER',
+    'MARIBANK': 'BANK TRANSFER',
+    'LAZSAVE_WALLET': 'PLATFORM WALLET BALANCE',
+    'ONLINE BANKING': 'ONLINE BANKING',
+    'ONLINE_BANKING': 'ONLINE BANKING',
     'WALLET': 'WALLET',
-    'E-WALLET': 'E_WALLET',
-    'E_WALLET': 'E_WALLET'
+    'SPAYLATER':'PAYLATER',
+    'PAYLATER':'PAYLATER',
+    'PAY_LATER':'PAYLATER',
+    'SHOPEEPAY BALANCE': 'PLATFORM WALLET BALANCE',
+    'PAYMENT_ACCOUNT': 'PLATFORM WALLET BALANCE',
+    'QRPH': 'QRPH',
+    'GOOGLE PAY': 'GOOGLE PAY',
+    'PURE_ZERO_PRICE': 'PURE ZERO PRICE',
+    'ONLINE / OFFLINE PAYMENT': 'ONLINE / OFFLINE PAYMENT',
 }
 
 # =============================================================================
