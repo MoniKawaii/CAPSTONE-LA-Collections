@@ -202,6 +202,44 @@ Patterns Used:
 - Platform Keys: 1=Lazada, 2=Shopee
 - ID Strategy: Float decimals (x.1 for Lazada, x.2 for Shopee)
 
+Understanding SKU Fields:
+================================================================================
+
+PLATFORM_SKU_ID (Platform's Internal ID)
+- Purpose: Platform's system-generated unique identifier for each variant
+- Source: 
+  * Lazada: SkuId (e.g., 30683243468)
+  * Shopee: model_id (e.g., 257229121669)
+- Characteristics:
+  * Always exists (never null)
+  * Always unique per variant
+  * Not human-readable
+  * No business meaning
+  * Used for platform-specific operations and API calls
+
+CANONICAL_SKU (Unified Business Join Key)
+- Purpose: Standardized SKU for data warehouse joins and business operations
+- Source with Fallback Logic:
+  * Lazada: SellerSku (your custom SKU) → SkuId (if no custom SKU)
+  * Shopee: model_sku (your custom SKU) → model_id (if no custom SKU)
+  * Base variants: item_sku → item_id → "not_found" (never reached)
+- Characteristics:
+  * Always populated (100% coverage)
+  * Preferred: Your business SKU when available (human-readable like "LAV", "w180")
+  * Fallback: Platform ID when no custom SKU exists
+  * Used as primary join key across all fact tables
+  * Standardized field name regardless of platform
+
+Current Distribution:
+- 142 variants (49.0%): Have custom business SKUs (canonical_sku ≠ platform_sku_id)
+- 148 variants (51.0%): Use platform ID as canonical_sku (canonical_sku = platform_sku_id)
+- 0 variants: Needed "not_found" fallback
+
+Why Both Fields Matter:
+- platform_sku_id: Traceability to platform's system, debugging, reconciliation
+- canonical_sku: Business operations, data warehouse joins, analytics
+- Together they provide both platform-specific tracking AND unified business logic
+
 ================================================================================
 END OF PROGRESS TRACKER
 ================================================================================
