@@ -405,6 +405,16 @@ LAZADA_TO_UNIFIED_MAPPING = {
     "customer_since": "customer_since",  # Calculated: Earliest order_date for platform_customer_id
     "last_order_date": "last_order_date",  # Calculated: Latest order_date for platform_customer_id
     "platform_key": "platform_key",  # Always 1 for Lazada
+    
+    # --- Fact_Orders (from order_items and orders) ---
+    "item_id": "product_item_id",
+    "sku_id": "product_variant_id",
+    "quantity": "item_quantity",
+    "price": "original_unit_price",  # The line total price before seller discounts or platform vouchers
+    "final_price": "paid_price",  # The line total price after seller discounts/bundle deals
+    "voucher_absorbed_by_seller": "voucher_seller_amount",  # The total seller voucher value attributed to this line
+    "voucher_absorbed_by_shopee": "voucher_platform_amount",  # The total Shopee voucher value attributed to this line
+    "actual_shipping_fee": "shipping_fee_paid_by_buyer"
 }
 
 # =============================================================================
@@ -467,15 +477,39 @@ SHOPEE_TO_UNIFIED_MAPPING = {
     "last_order_date": "last_order_date",  # Calculated: Latest order_date for platform_customer_id
     "platform_key": "platform_key",  # Always 2 for Shopee
     
-    # --- Fact_Orders (from item_list) ---
+    # --- Fact_Orders (from item_list and payment_details) ---
     "item_id": "product_item_id",
     "model_id": "product_variant_id",
     "model_quantity_purchased": "item_quantity",
-    "model_original_price": "original_unit_price",
-    "model_discounted_price": "paid_price",
-    "voucher_absorbed_by_seller": "voucher_seller_amount",
-    "voucher_absorbed_by_shopee": "voucher_platform_amount",
-    "actual_shipping_fee": "shipping_fee_paid_by_buyer",
+    # From payment details - per item mapping
+    "selling_price": "original_unit_price",  # The line total price before seller discounts or platform vouchers
+    "discounted_price": "paid_price",  # The line total price after seller discounts/bundle deals, but before order-level Shopee Voucher/Shipping Fee adjustments
+    "discount_from_voucher_shopee": "voucher_platform_amount",  # The total Shopee voucher value attributed to this line
+    "discount_from_voucher_seller": "voucher_seller_amount",  # The total seller voucher value attributed to this line
+    "actual_shipping_fee": "shipping_fee_paid_by_buyer",  # From order_income level
+    # --- Key Identifiers (Product/Variant) ---
+    "item_id": "product_item_id",
+    "model_id": "product_variant_id",
+    "quantity_purchased": "item_quantity",
+
+    # --- Price and Discount Mappings (Reflects Line Totals: Price * Quantity) ---
+    "selling_price": "original_unit_price", 
+    # The Line Total Price before seller discounts or platform vouchers
+    
+    "discounted_price": "paid_price", 
+    # The Line Total Price after seller discounts/bundle deals, but before the Order-level Shopee Voucher deduction or Shipping Fee addition
+    
+    "discount_from_voucher_shopee": "voucher_platform_amount", 
+    # The total Shopee voucher value attributed to this line
+    
+    "discount_from_voucher_seller": "voucher_seller_amount", 
+    # The total seller voucher value attributed to this line
+    
+    # --- Calculated Field Mappings (Requires Proration) ---
+    "prorated_shipping_fee_paid_by_buyer": "shipping_fee_paid_by_buyer"
+    # This value is calculated using the formula: 
+    #   (JSON 'buyer_paid_shipping_fee' / SUM of all JSON 'discounted_price') * JSON 'discounted_price' for the current item line
+    #   i.e., (122 / 2850) * discounted_price_current_item
 }
 
 # =============================================================================

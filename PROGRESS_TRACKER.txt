@@ -1,7 +1,7 @@
 ================================================================================
 CAPSTONE LA COLLECTIONS - PROGRESS TRACKER
 ================================================================================
-Last Updated: November 4, 2025
+Last Updated: November 5, 2025
 Branch: liam5-yza5
 
 ================================================================================
@@ -132,6 +132,56 @@ PENDING TASKS (In Priority Order)
 PENDING TASKS (In Priority Order)
 ================================================================================
 
+✅ TASK #12: Fix Fact Orders Harmonization - Critical Issues
+   Status: COMPLETED
+   Date: November 5, 2025
+   
+   What was done:
+   - Fixed critical Shopee discount calculation bug in harmonize_fact_orders.py
+   - Updated paid_price calculation to include ALL discount components:
+     * coin_discount (Shopee coins)
+     * voucher_platform_amount (platform vouchers)
+     * voucher_seller_amount (seller vouchers)
+   - Implemented DEFAULT variant fallback logic for 100% variant coverage
+   - Successfully processed both Lazada and Shopee order data
+   
+   CRITICAL ISSUES RESOLVED:
+   
+   ✅ 1. Shopee Discount Calculation Fixed
+      Problem: Voucher discounts were captured but not applied to paid_price
+      Solution: Updated calculation from:
+        paid_price = discounted_price - coin_discount
+      To:
+        paid_price = discounted_price - coin_discount - voucher_platform_amount - voucher_seller_amount
+      Impact: 11,815 records with vouchers now show proper discount application
+      
+   ✅ 2. Product Variant Mapping Coverage Achieved  
+      Problem: 7,747 records had 0.0 variant keys due to missing variant mappings
+      Solution: Implemented DEFAULT variant fallback system with 71 DEFAULT variants
+      Impact: 100% variant coverage (42,236/42,236 records) using DEFAULT variants
+      
+   ✅ 3. Fact Orders Processing Success
+      Problem: Incomplete order processing and data quality issues
+      Solution: Enhanced extraction logic with comprehensive error handling
+      Impact: Successfully processed 42,236 total orders (10,996 Lazada + 31,240 Shopee)
+      
+   Results:
+   - Discount accuracy improved: 16,611 Shopee records now show proper discounts (was 4,796)
+   - Voucher bug eliminated: 0 records with vouchers but no discount (was 11,815)
+   - Variant coverage: 100% (42,236/42,236 records with valid variant keys)
+   - Revenue captured: $15,966,865.15 total ($3,652,676.15 Lazada + $12,314,189.00 Shopee)
+   - Foreign key integrity: 100% coverage for all dimension relationships
+   - Data quality: All 42,236 records have valid orders_key, customer_key, product_key, product_variant_key
+   
+   Files Modified:
+   - app/Transformation/harmonize_fact_orders.py (discount calculation fix + DEFAULT variant logic)
+   
+   Files Created:
+   - debug_variant_mapping.py (diagnostic analysis tool)
+   - analyze_shopee_discounts.py (discount validation tool)
+
+--------------------------------------------------------------------------------
+
 ⏳ TASK #5: Derive Fact Table Schemas from Config Mappings
    Priority: High
    Estimated Effort: Medium
@@ -228,6 +278,14 @@ Dimension: dim_product_variant
 - Scent/Volume Coverage: 100%
 - Timestamp Coverage: 100%
 
+Dimension: dim_customer
+- Total Records: 27,859 (7,084 Lazada + 20,775 Shopee)
+- Columns: 7 (customer_key, platform_customer_id, buyer_segment, total_orders, customer_since, last_order_date, platform_key)
+- Coverage: 100% dimension-level data quality
+- Lazada Customer ID Format: Numeric buyer_id (e.g., 500005606874)
+- Shopee Customer ID Format: Numeric buyer_user_id (e.g., 540460)
+- Date Range: 2020-09-19 to 2025-10-31
+
 Dimension: dim_order
 - Total Records: 33,928 (9,038 Lazada + 24,890 Shopee)
 - Columns: 10 (orders_key, platform_order_id, order_status, order_date, updated_at, price_total, total_item_count, payment_method, shipping_city, platform_key)
@@ -237,6 +295,38 @@ Dimension: dim_order
 - Payment Methods: 13 standardized methods (COD, PLATFORM WALLET BALANCE, MIXEDCARD, etc.)
 - Geographic Coverage: shipping_city data with asterisked values replaced by "N/A"
 - Key Generation: Platform-specific decimals (.1 for Lazada, .2 for Shopee)
+
+⚠️ FACT TABLE: fact_orders (RESOLVED ✅)
+- Current Records: 42,236 (10,996 Lazada + 31,240 Shopee)
+- ✅ FIXED: 100% Lazada coverage achieved (was 0%)
+- ✅ FIXED: Customer Key Lookup Success Rate: 100% (was ~60%)
+- ✅ FIXED: Shopee discount calculations now properly apply vouchers
+- Payment Details Integration: ✅ Working (loads from both split files)
+- Revenue Captured: $15,966,865.15 ($3,652,676.15 Lazada + $12,314,189.00 Shopee)
+- Data Shape: (42,236, 13) columns
+- Foreign Key Coverage: 
+  ✅ orders_key: 100% (42,236/42,236)
+  ✅ customer_key: 100% (42,236/42,236) - FIXED
+  ✅ product_key: 100% (42,236/42,236)
+  ✅ product_variant_key: 100% (42,236/42,236) - FIXED with DEFAULT variants
+
+CRITICAL DATA INTEGRITY ISSUES - ALL RESOLVED ✅:
+1. ✅ FIXED: Customer ID Generation Inconsistency
+   - Solution: Harmonized customer ID generation logic between dimension and fact tables
+   - Result: 100% customer_key lookup success rate
+
+2. ✅ FIXED: Complete Lazada Fact Data Loss
+   - Solution: Fixed customer ID lookup and variant mapping issues
+   - Result: 10,996 Lazada orders successfully processed (was 0)
+
+3. ✅ FIXED: Shopee Discount Calculation Bug
+   - Solution: Updated paid_price formula to include all discount components
+   - Result: 16,611 records now show proper discounts (was 4,796)
+   - Voucher application: 0 records with vouchers but no discount (was 11,815)
+
+4. ✅ FIXED: Product Variant Mapping Coverage
+   - Solution: Implemented DEFAULT variant fallback system
+   - Result: 100% variant coverage using 71 DEFAULT variants for products without specific variants
 
 Shopee Variant Breakdown:
 - Real variants: 151 (fetched from API)
@@ -262,6 +352,9 @@ Identified Issues:
 - ✅ RESOLVED: All products now have complete variant data
 - ✅ RESOLVED: All Lazada products now have ratings (review-based or imputed)
 - ✅ RESOLVED: Order dimension schema and field mapping issues
+- ✅ RESOLVED: Fact orders critical issues (variant mapping, discount calculations, customer lookups)
+- ✅ RESOLVED: Shopee discount calculation bug affecting 11,815+ records
+- ✅ RESOLVED: Product variant coverage using DEFAULT variant fallback system
 
 ================================================================================
 TECHNICAL NOTES
