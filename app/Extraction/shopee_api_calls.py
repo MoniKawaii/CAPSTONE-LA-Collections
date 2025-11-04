@@ -70,7 +70,13 @@ class ShopeeDataExtractor:
         
         # For POST requests, the body is part of the signature
         if body:
-            base_string += json.dumps(body, separators=(',', ':'), sort_keys=True)
+            body_string = json.dumps(body, separators=(',', ':'), sort_keys=True)
+            base_string += body_string
+            
+            # Debug: Show signature components for payment API
+            if path == "/api/v2/payment/get_escrow_detail_batch":
+                print(f"🔍 Debug Signature - Base string: {base_string[:200]}...")
+                print(f"🔍 Debug Signature - Body string: {body_string}")
         
         signature = hmac.new(
             self.partner_key.encode('utf-8'),
@@ -160,6 +166,60 @@ class ShopeeDataExtractor:
             
         except Exception as e:
             print(f"❌ API call failed: {e}")
+
+    def _make_api_call_with_form_data(self, path, form_data, call_type="form-data"):
+        """Make API call with form data for batch endpoints that require string[] format"""
+        if self.api_calls_made >= self.max_daily_calls:
+            print(f"⚠️ Daily API limit ({self.max_daily_calls}) reached!")
+            return None
+        
+        try:
+            timestamp = int(time.time())
+            
+            # Extract base path (without query params) for signature
+            base_path = path.split('?')[0]
+            
+            # For form data, we don't include the body in signature
+            sign = self._generate_signature(base_path, timestamp, self.access_token, self.shop_id)
+            
+            # Build URL with auth parameters
+            separator = '&' if '?' in path else '?'
+            url = (
+                f"{self.base_url}{path}{separator}"
+                f"partner_id={self.partner_id}&"
+                f"timestamp={timestamp}&"
+                f"access_token={self.access_token}&"
+                f"shop_id={self.shop_id}&"
+                f"sign={sign}"
+            )
+            
+            self.api_calls_made += 1
+            
+            # Make POST request with form data
+            response = requests.post(url, data=form_data, timeout=30)
+            
+            print(f"🔄 API Call #{self.api_calls_made} ({call_type}) - Status: {response.status_code}")
+            
+            if response.status_code != 200:
+                print(f"❌ API Error - Status: {response.status_code}, Response: {response.text}")
+                return None
+            
+            data = response.json()
+            
+            # Check for Shopee API errors
+            if 'error' in data and data['error']:
+                error_msg = data.get('message', 'Unknown error')
+                print(f"❌ Shopee API Error - Message: {error_msg}")
+                return None
+            
+            # Rate limiting to prevent API frequency issues
+            time.sleep(1.5)
+            
+            return data
+            
+        except Exception as e:
+            print(f"❌ API call failed: {e}")
+            return None
             return None
     
     def _save_to_json(self, data, filename):
@@ -1576,6 +1636,152 @@ class ShopeeDataExtractor:
         
         return reviews
     
+    def extract_payment_details(self, start_fresh=False, order_sns_list=None, batch_size=20):
+        """
+        Extract payment details using /api/v2/payment/get_escrow_detail_batch
+        Gets payment escrow details for orders using order_sn_list parameter
+        Saves to shopee_paymentdetail_raw.json
+        
+        Args:
+            start_fresh (bool): Whether to start fresh or append to existing data
+            order_sns_list (list): List of order_sn values (auto-loaded if None)
+            batch_size (int): Number of orders to process per API call (recommended 1-20, max 50)
+            
+        Returns:
+            list: List of payment detail records
+        """
+        filename = 'shopee_paymentdetail_raw.json'
+        temp_filename = 'temp_shopee_order_sns.json'
+        
+        if not start_fresh:
+            existing_data = self._load_from_json(filename)
+            if existing_data:
+                print(f"✓ Found {len(existing_data)} existing payment records in {filename}")
+                return existing_data
+        
+        print("🔍 Starting payment details extraction using batch API...")
+        
+        # Load order_sn values if not provided
+        if order_sns_list is None:
+            order_sns_list = self._load_order_sns_from_existing_data()
+        
+        if not order_sns_list:
+            print("❌ No order_sn values found in existing data files")
+            print("Make sure shopee_orders_raw.json or shopee_multiple_order_items_raw.json exist")
+            return []
+        
+        # Save order_sn list to temp file for reference
+        self._save_to_json(order_sns_list, temp_filename)
+        print(f"� Saved {len(order_sns_list)} order_sn values to temp file: {temp_filename}")
+        
+        print(f"�📊 Processing payment details for {len(order_sns_list)} unique orders...")
+        print(f"🔧 Using batch size: {batch_size} (recommended 1-20, max 50)")
+        
+        all_payment_details = []
+        total_batches = math.ceil(len(order_sns_list) / batch_size)
+        
+        for i in range(0, len(order_sns_list), batch_size):
+            batch_num = (i // batch_size) + 1
+            batch = order_sns_list[i:i + batch_size]
+            
+            print(f"📦 Processing batch {batch_num}/{total_batches}: {len(batch)} orders")
+            print(f"   Orders in batch: {batch[:3]}..." if len(batch) > 3 else f"   Orders in batch: {batch}")
+            
+            # Use the batch API endpoint with POST request and JSON body
+            path = "/api/v2/payment/get_escrow_detail_batch"
+            
+            # Create JSON body with order_sn_list array (exactly as you specified)
+            request_body = {
+                "order_sn_list": batch
+            }
+            
+            # Make API call with POST method and JSON body (batch API signature excludes body)
+            try:
+                # Generate signature WITHOUT body for batch API (different from individual APIs)
+                timestamp = int(time.time())
+                base_path = "/api/v2/payment/get_escrow_detail_batch"
+                sign = self._generate_signature(base_path, timestamp, self.access_token, self.shop_id, body=None)
+                
+                # Build URL
+                url = (
+                    f"{self.base_url}{base_path}?"
+                    f"partner_id={self.partner_id}&"
+                    f"timestamp={timestamp}&"
+                    f"access_token={self.access_token}&"
+                    f"shop_id={self.shop_id}&"
+                    f"sign={sign}"
+                )
+                
+                # Make POST request with JSON body
+                import requests
+                headers = {'Content-Type': 'application/json'}
+                response = requests.post(url, json=request_body, headers=headers, timeout=30)
+                
+                print(f"🔄 Batch API Call - Status: {response.status_code}")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if 'response' in data and isinstance(data['response'], list):
+                        # Batch API returns response as array with escrow_detail structure
+                        batch_records = []
+                        for item in data['response']:
+                            if 'escrow_detail' in item:
+                                escrow_detail = item['escrow_detail']
+                                batch_records.append(escrow_detail)
+                        
+                        if batch_records:
+                            all_payment_details.extend(batch_records)
+                            print(f"  ✓ Retrieved {len(batch_records)} payment records from batch {batch_num}")
+                        else:
+                            print(f"  ⚠️ No payment details in batch response {batch_num}")
+                    else:
+                        print(f"  ❌ Unexpected response format for batch {batch_num}")
+                else:
+                    print(f"  ❌ API Error - Status: {response.status_code}, Response: {response.text[:200]}...")
+                
+            except Exception as e:
+                print(f"  ❌ Exception in batch {batch_num}: {str(e)}")
+                
+            # Add delay between batches to respect rate limits
+            if batch_num < total_batches:
+                time.sleep(1.5)  # 1.5 second delay between batches
+        
+        # Save payment details
+        self._save_to_json(all_payment_details, filename)
+        
+        print(f"🎉 Payment details extraction complete!")
+        print(f"   Total payment records: {len(all_payment_details)}")
+        print(f"   Input orders: {len(order_sns_list)}")
+        print(f"   Batches processed: {total_batches}")
+        print(f"   Success rate: {len(all_payment_details)/len(order_sns_list)*100:.1f}%" if order_sns_list else "0%")
+        print(f"📄 Temp file created: {temp_filename}")
+        
+        return all_payment_details
+    
+    def _load_order_sns_from_existing_data(self):
+        """Load unique order_sn values from existing raw data files"""
+        order_sns = set()
+        
+        # Load from shopee_orders_raw.json
+        orders_data = self._load_from_json('shopee_orders_raw.json')
+        if orders_data:
+            for order in orders_data:
+                if 'order_sn' in order:
+                    order_sns.add(order['order_sn'])
+            print(f"✓ Loaded {len([o for o in orders_data if 'order_sn' in o])} order_sn values from shopee_orders_raw.json")
+        
+        # Load from shopee_multiple_order_items_raw.json
+        items_data = self._load_from_json('shopee_multiple_order_items_raw.json')
+        if items_data:
+            for item in items_data:
+                if 'order_sn' in item:
+                    order_sns.add(item['order_sn'])
+            print(f"✓ Loaded additional order_sn values from shopee_multiple_order_items_raw.json")
+        
+        order_sns_list = sorted(list(order_sns))
+        print(f"📊 Total unique order_sn values: {len(order_sns_list)}")
+        return order_sns_list
+    
     def run_incremental_extraction(self, end_date='2025-10-31'):
         """
         Run intelligent incremental extraction that automatically detects last extraction dates
@@ -1864,6 +2070,11 @@ def extract_product_variants_only(start_fresh=False):
     extractor = ShopeeDataExtractor()
     return extractor.extract_product_variants(start_fresh=start_fresh)
 
+def extract_payment_details_only(start_fresh=False, order_sns_list=None):
+    """Extract only payment details using /api/v2/payment/get_escrow_detail"""
+    extractor = ShopeeDataExtractor()
+    return extractor.extract_payment_details(start_fresh=start_fresh, order_sns_list=order_sns_list)
+
 
 # ============================================================================
 # MAIN EXECUTION
@@ -1903,8 +2114,12 @@ if __name__ == "__main__":
     print("8. 🔧 Product variants only")
     print("   - Extract model lists using /api/v2/product/get_model_list")
     print("   - Saves to shopee_product_variant_raw.json")
+    print("")
+    print("9. 💳 Payment details only")
+    print("   - Extract payment escrow details using /api/v2/payment/get_escrow_detail")
+    print("   - Saves to shopee_paymentdetail_raw.json")
     
-    choice = input("\nEnter choice (1-8): ").strip()
+    choice = input("\nEnter choice (1-9): ").strip()
     
     if choice == "1":
         print("\n🔄 Starting incremental extraction...")
@@ -2006,8 +2221,28 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"❌ Error: {e}")
         
+    elif choice == "9":
+        print("\n💳 Extracting payment details...")
+        try:
+            payment_details = extract_payment_details_only(start_fresh=True)
+            print(f"✅ Payment details extraction completed! Total: {len(payment_details)} records")
+            print(f"📁 Data saved to: app/Staging/shopee_paymentdetail_raw.json")
+            
+            # Show sample payment info
+            if payment_details:
+                print(f"\n📋 Sample payment details:")
+                for i, payment in enumerate(payment_details[:3]):
+                    order_sn = payment.get('order_sn', 'N/A')
+                    escrow_amount = payment.get('escrow_amount', 'N/A')
+                    payment_status = payment.get('payment_status', 'N/A')
+                    print(f"   - Order {order_sn}: {escrow_amount} (Status: {payment_status})")
+                    if i >= 2:
+                        break
+        except Exception as e:
+            print(f"❌ Error: {e}")
+        
     else:
-        print("❌ Invalid choice. Please run again and select 1-8.")
+        print("❌ Invalid choice. Please run again and select 1-9.")
     
     print(f"\n🎉 Extraction completed!")
     print(f"📁 Check the app/Staging/ directory for JSON files")
