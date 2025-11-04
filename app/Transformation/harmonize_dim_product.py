@@ -814,6 +814,45 @@ def harmonize_dim_product():
     shopee_count = len(shopee_products)
     print(f"✅ Processed {shopee_count} Shopee products")
     
+    # Create default variants for all products (to use when SKU/model_id lookup fails)
+    print("\n🔄 Creating default variants for all products...")
+    default_variants_created = 0
+    current_timestamp = datetime.now()
+    
+    for _, product_row in product_df.iterrows():
+        product_key = product_row['product_key']
+        platform_key = product_row['platform_key']
+        product_item_id = product_row['product_item_id']
+        
+        # Generate platform-appropriate variant key
+        if platform_key == 1:  # Lazada
+            default_variant_key = float(f"{variant_key_counter['current']}.1")
+        else:  # Shopee
+            default_variant_key = float(f"{variant_key_counter['current']}.2")
+        
+        variant_key_counter['current'] += 1
+        
+        # Create default variant record (looks like a regular variant)
+        default_variant = {
+            'product_variant_key': default_variant_key,
+            'product_key': product_key,
+            'platform_sku_id': f"DEFAULT_{product_item_id}",
+            'canonical_sku': f"DEFAULT_{product_item_id}",
+            'scent': 'Not Specified',
+            'volume': 'Not Specified',
+            'current_price': None,
+            'original_price': None,
+            'created_at': current_timestamp,
+            'last_updated': current_timestamp,
+            'platform_key': platform_key
+        }
+        
+        variant_df = pd.concat([variant_df, pd.DataFrame([default_variant])], ignore_index=True)
+        default_variants_created += 1
+    
+    print(f"✅ Created {default_variants_created} default variants (one per product)")
+    print(f"   - These will be used as fallback when SKU/model_id lookup fails in fact_orders")
+    
     # Apply data types
     product_df = apply_data_types(product_df, 'dim_product')
     variant_df = apply_data_types(variant_df, 'dim_product_variant')
@@ -834,6 +873,8 @@ def harmonize_dim_product():
     print(f"   - Total variants: {len(variant_df)}")
     print(f"   - Lazada variants: {len(variant_df[variant_df['platform_key'] == 1])}")
     print(f"   - Shopee variants: {len(variant_df[variant_df['platform_key'] == 2])}")
+    print(f"   - Default variants (fallback): {len(variant_df[variant_df['platform_sku_id'].str.startswith('DEFAULT_', na=False)])}")
+    print(f"   - Specific variants: {len(variant_df[~variant_df['platform_sku_id'].str.startswith('DEFAULT_', na=False)])}")
     print(f"   - Variants with canonical_sku: {variant_df['canonical_sku'].notna().sum()}")
     print(f"   - Variants with prices: {variant_df['current_price'].notna().sum()}")
     print(f"   - Average current price: ₱{variant_df['current_price'].mean():.2f}" if variant_df['current_price'].notna().sum() > 0 else "   - Average current price: N/A")
@@ -912,6 +953,7 @@ if __name__ == "__main__":
         print(f"✅ Used float decimal IDs throughout (product_key: x.1/x.2, product_variant_key: x.1/x.2)")
         print(f"✅ Calculated Lazada and Shopee product ratings from review data")
         print(f"✅ Enhanced Shopee price extraction (fallback to variant data for multi-model products)")
+        print(f"✅ Created default variants for all products (fallback for missing SKU/model_id lookups)")
                 
     except Exception as e:
         print(f"❌ Error during harmonization: {e}")

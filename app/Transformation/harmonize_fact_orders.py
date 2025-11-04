@@ -221,7 +221,8 @@ def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, pho
     import re
     
     # Use buyer_user_id if available (preferred method - raw value)
-    if buyer_user_id:
+    # Check explicitly for None since buyer_user_id can be 0
+    if buyer_user_id is not None:
         return str(buyer_user_id)
     
     # Fallback helper functions
@@ -315,6 +316,16 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_order_df,
         dim_variant_df['product_variant_key']
     )) if not dim_variant_df.empty else {}
     
+    # Create DEFAULT variant lookup by product_key (for fallback when SKU/model_id not found)
+    # Filter for DEFAULT variants only
+    default_variants = dim_variant_df[dim_variant_df['platform_sku_id'].astype(str).str.startswith('DEFAULT_')] if not dim_variant_df.empty else pd.DataFrame()
+    default_variant_lookup = dict(zip(
+        default_variants['product_key'],
+        default_variants['product_variant_key']
+    )) if not default_variants.empty else {}
+    
+    print(f"📊 Created variant lookup: {len(variant_key_lookup)} specific variants + {len(default_variant_lookup)} default variants")
+    
     # Create orders lookup for customer info (order_id -> customer info)
     orders_customer_lookup = {}
     for order in orders_data:
@@ -337,31 +348,21 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_order_df,
             # Get orders_key from dimension table
             orders_key = order_key_lookup.get(platform_order_id)
             if orders_key is None:
-                print(f"⚠️ Warning: Could not find orders_key for order_id {platform_order_id}")
                 continue
             
-            # Get customer info from orders lookup
-            customer_info = orders_customer_lookup.get(platform_order_id, {})
-            first_name = customer_info.get('first_name', '')
-            phone = customer_info.get('phone', '')
-            platform_customer_id = generate_platform_customer_id(first_name, phone)
-            customer_key = customer_key_lookup.get(platform_customer_id)
+            # Get buyer_id from order_items (same logic as dim_customer harmonization)
+            # Lazada uses buyer_id directly as platform_customer_id
+            buyer_id = None
+            if order_items:
+                buyer_id = order_items[0].get('buyer_id')  # Get from first item
             
-            # Debug customer key lookup for the first few records
-            if order_item_key_counter <= 3:
-                print(f"🔍 Debug order {platform_order_id}:")
-                print(f"   - first_name: '{first_name}'")
-                print(f"   - phone: '{phone}'")
-                print(f"   - generated platform_customer_id: '{platform_customer_id}'")
-                print(f"   - found customer_key: {customer_key}")
-                if customer_key is None:
-                    # Show some sample customer IDs to help debug
-                    sample_customers = list(customer_key_lookup.keys())[:5]
-                    print(f"   - Sample customer IDs in lookup: {sample_customers}")
+            platform_customer_id = str(buyer_id) if buyer_id else None
+            customer_key = customer_key_lookup.get(platform_customer_id) if platform_customer_id else None
             
+            # Allow NULL customer_key for orders without customer in dim_customer
+            # This preserves order data even if customer wasn't extracted
             if customer_key is None:
-                print(f"⚠️ Warning: Could not find customer_key for platform_customer_id '{platform_customer_id}' in order {platform_order_id}")
-                continue  # Skip records where we can't find the customer
+                customer_key = None  # Explicitly allow NULL
             
             # Create one fact record per individual order item (no grouping/aggregation)
             for item in order_items:
@@ -386,15 +387,18 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_order_df,
                         if not name_match.empty:
                             product_key = name_match.iloc[0]['product_key']
                     
-                    # Skip records without valid product_key
+                    # Allow NULL product_key for products not in catalog (e.g., delisted products)
+                    # Track but don't skip - preserves order data integrity
                     if product_key is None:
-                        if order_item_key_counter <= 3:
-                            print(f"⚠️ Warning: Could not find product_key for item '{item_name}' (item_id: {item_id})")
-                        continue
+                        product_key = None  # Explicitly allow NULL
                     
                     # Get product_variant_key from sku_id
                     sku_id = str(item.get('sku_id', ''))
                     product_variant_key = variant_key_lookup.get(sku_id)
+                    
+                    # If variant not found by SKU, try to use DEFAULT variant for this product
+                    if product_variant_key is None and product_key is not None:
+                        product_variant_key = default_variant_lookup.get(product_key)
                     
                     # Create individual fact record for this order item
                     fact_record = {
@@ -486,6 +490,16 @@ def extract_order_items_from_shopee(orders_data, dim_order_df, dim_customer_df, 
         dim_variant_df['product_variant_key']
     )) if not dim_variant_df.empty else {}
     
+    # Create DEFAULT variant lookup by product_key (for fallback when model_id not found)
+    # Filter for DEFAULT variants only
+    default_variants = dim_variant_df[dim_variant_df['platform_sku_id'].astype(str).str.startswith('DEFAULT_')] if not dim_variant_df.empty else pd.DataFrame()
+    default_variant_lookup = dict(zip(
+        default_variants['product_key'],
+        default_variants['product_variant_key']
+    )) if not default_variants.empty else {}
+    
+    print(f"📊 Created variant lookup: {len(variant_key_lookup)} specific variants + {len(default_variant_lookup)} default variants")
+    
     print(f"📊 Processing Shopee orders with item lists...")
     
     order_item_key_counter = order_item_key_counter_start
@@ -514,21 +528,10 @@ def extract_order_items_from_shopee(orders_data, dim_order_df, dim_customer_df, 
             )
             customer_key = customer_key_lookup.get(platform_customer_id)
             
-            # Debug customer key lookup for the first few records
-            if order_item_key_counter <= order_item_key_counter_start + 2:
-                print(f"🔍 Debug Shopee order {platform_order_id}:")
-                print(f"   - buyer_username: '{buyer_username}'")
-                print(f"   - phone: '{phone}'")
-                print(f"   - generated platform_customer_id: '{platform_customer_id}'")
-                print(f"   - found customer_key: {customer_key}")
-                if customer_key is None:
-                    # Show some sample customer IDs to help debug
-                    sample_customers = list(customer_key_lookup.keys())[:5]
-                    print(f"   - Sample customer IDs in lookup: {sample_customers}")
-            
+            # Allow NULL customer_key for orders without customer in dim_customer
+            # This preserves order data even if customer wasn't extracted
             if customer_key is None:
-                print(f"⚠️ Warning: Could not find customer_key for platform_customer_id '{platform_customer_id}' in order {platform_order_id}")
-                continue  # Skip records where we can't find the customer
+                customer_key = None  # Explicitly allow NULL
             
             # Get order creation time for time_key
             create_time = order.get('create_time')
@@ -541,23 +544,18 @@ def extract_order_items_from_shopee(orders_data, dim_order_df, dim_customer_df, 
                     item_id = str(item.get('item_id', ''))
                     product_key = product_key_lookup.get(item_id)
                     
-                    # Debug: Show what's available in first few iterations
-                    if product_key is None and order_item_key_counter <= order_item_key_counter_start + 5:
-                        print(f"⚠️ Warning: Could not find product_key for item_id {item_id}")
-                        # Show sample of available product IDs (Shopee only)
-                        shopee_products = [pid for pid in product_key_lookup.keys() if pid not in ['', 'nan']]
-                        if shopee_products:
-                            print(f"   Available Shopee product_item_ids (sample): {shopee_products[:5]}")
-                        else:
-                            print(f"   No Shopee products found in dim_product. Please run harmonize_dim_product.py first.")
-                    
-                    # Skip records without valid product_key
+                    # Allow NULL product_key for products not in catalog (e.g., delisted products)
+                    # Track but don't skip - preserves order data integrity
                     if product_key is None:
-                        continue
+                        product_key = None  # Explicitly allow NULL
                     
                     # Get product_variant_key from model_id
                     model_id = str(item.get('model_id', ''))
                     product_variant_key = variant_key_lookup.get(model_id)
+                    
+                    # If variant not found by model_id, try to use DEFAULT variant for this product
+                    if product_variant_key is None and product_key is not None:
+                        product_variant_key = default_variant_lookup.get(product_key)
                     
                     # Get item quantity
                     item_quantity = item.get('model_quantity_purchased', 1)

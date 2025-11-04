@@ -168,7 +168,8 @@ def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, pho
         str: platform_customer_id - raw buyer_user_id or fallback format
     """
     # Use buyer_user_id if available (preferred method - raw value)
-    if buyer_user_id:
+    # Check explicitly for None since buyer_user_id can be 0
+    if buyer_user_id is not None:
         return str(buyer_user_id)
     
     # Fallback to old method if buyer_user_id not available
