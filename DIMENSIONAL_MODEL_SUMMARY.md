@@ -1,201 +1,196 @@
-# Enhanced Lazada Sales Analytics - Dimensional Model Implementation
-# HELLO
-## 🎯 **Project Overview**
+// ===================================
+// DIMENSION TABLES (The Context)
+// ===================================
+Project LA_Collections {
 
-This project implements a comprehensive dimensional data warehouse model for Lazada sales analytics, featuring proper price calculations, voucher tracking, and time-based analysis capabilities.
+database_type: 'PostgreSQL'
+}
 
-## 📊 **Dimensional Model Architecture**
+Table Dim_Platform {
+platform_key int [pk, not null, note: 'Surrogate key for the marketplace (1=Lazada, 2=Shopee)']
+platform_name varchar [not null, unique]
+platform_region varchar
+}
 
-### **Fact Tables (Measures & Transactions)**
+Table Dim_Time {
+time_key int [pk, not null, note: 'Surrogate key, format YYYYMMDD']
+date date [not null, unique]
+year int
+quarter varchar
+month int
+month_name varchar
+week int
+day int [note: '28, 29, 30, 31 depending o n the month']
+day_of_week int
+day_of_the_year int
+is_weekend boolean [note: 'TRUE for saturday and sunday']
+is_payday boolean [note: 'TRUE for 15th day and 30th or 31st day, or 13th month pay']
+is_mega_sale_day boolean [note: 'TRUE for 11.11, 12.12, etc. black friday, christmas']
+}
 
-1. **`Fact_Sales`** - Central analytical table
+Table Dim_Customer {
+customer_key int [pk, not null, note: 'Internal surrogate ID']
+platform_customer_id varchar [not null, unique, note: 'buyer_user_id for shopee // none for lazada so just generate']
+buyer_segment varchar [note: 'Calculated: New Buyer or Returning Buyer']
+total_orders int [note: 'Calculated: Count how many times platform_customer_id appears in orders']
+customer_since date
+last_order_date date [note: 'For Recency (RFM) analysis']
+platform_key int [not null]
+}
 
-   - Additive measures: quantity_sold, gross_sales_amount, net_sales_amount
-   - Semi-additive: unit_price, unit_cost
-   - Flags: is_cancelled, is_returned, is_voucher_used
+Table Dim_Product {
 
-2. **`Orders`** - Order transactions with proper price calculations
-3. **`Order_Items`** - Individual item sales details
-4. **`Sales_Summary`** - Pre-aggregated daily metrics for performance
+product_key int [pk, not null, note: 'internal surrogate ID']
+product_item_id varchar [not null, note: 'lazada item_id, shopee item_id (This is the natural key)']
+product_name varchar
+product_category varchar [note: 'Specific product category']
+product_status varchar [note: 'for lazada status: Active,InActive,Pending QC,Suspended,Deleted // for shopee item_status: NORMAL, BANNED, UNLIST, SELLER_DELETE, SHOPEE_DELETE, REVIEWING.']
+product_rating decimal [note: 'product_rating for lazada // rating_star for shopee'] 
+platform_key int [not null]
 
-### **Dimension Tables (Master Data)**
+note: '''
+This table contains 71 products (parent-level products).
+Pricing and SKU information is stored at the variant level in Dim_Product_Variant.
+Each product can have multiple variants with different prices and SKU identifiers.
+'''
+}
 
-1. **`Dim_Time`** - Complete time hierarchy for OLAP cubes
+Table Dim_Product_Variant {
+product_variant_key float [pk, not null, note: 'Surrogate key for product variants (e.g., 1.1, 100.1, 290.2). Format: X.1 for Lazada, X.2 for Shopee']
+product_key float [not null, note: 'FK to Dim_Product - links variant to parent product']
+platform_sku_id varchar [not null, note: 'SKU identifier from platform (Lazada: SkuId, Shopee: model_id)']
+canonical_sku varchar [not null, note: 'Unified SKU for joining across platforms (SellerSku for Lazada, model_sku for Shopee)']
+scent varchar [note: 'Variant scent attribute (e.g., Lavender, Ocean Breeze, Rose). NULL if not applicable']
+volume varchar [note: 'Variant volume/size (e.g., 100ml, 50ml). NULL if not applicable']
+current_price decimal [note: 'Current selling price for this variant. NULL for DEFAULT variants']
+original_price decimal [note: 'Original price before discounts. NULL for DEFAULT variants']
+created_at timestamp [note: 'Timestamp when variant record was created']
+last_updated timestamp [note: 'Timestamp of last update']
+platform_key int [not null, note: 'FK to Dim_Platform (1=Lazada, 2=Shopee)']
 
-   - Daily granularity from 2024-2025 (731 records)
-   - Includes: year, quarter, month, week, day attributes
-   - Season, weekend, holiday flags
-   - Fiscal year support
+note: '''
+This table contains 361 variants across 71 products:
+- 104 Lazada variants (keys: 1.1 to 104.1)
+- 186 Shopee specific variants (keys: 105.2 to 290.2) 
+- 71 DEFAULT variants (created for products with no specific variants, platform_sku_id starts with "DEFAULT_")
 
-2. **`Dim_Customers`** - Customer master with segmentation
+Each product can have multiple variants (e.g., different scents, sizes).
+DEFAULT variants are automatically created as fallback when SKU/model_id lookups fail.
+'''
+}
 
-   - Customer lifecycle metrics
-   - Segmentation: New, Regular, VIP, Inactive
-   - Lifetime value calculations
+Table Dim_Order {
 
-3. **`Dim_Products`** - Product catalog with performance metrics
+orders_key int [pk, not null, note: 'Surrogate Primary Key']
+// Natural Keys
+platform_order_id varchar [not null, note: 'Lazada: order_id; Shopee: order_sn']
 
-   - SKU management with variations (color, size)
-   - Inventory status tracking
-   - Performance metrics integration
+// Attributes
+order_status varchar [not null, note: 'Lazada: status; Shopee: order_status']
+order_date timestamp [not null, note: 'Lazada: created_at; Shopee: create_time']
+updated_at timestamp [note: 'Lazada: updated_at; Shopee: update_time']
 
-4. **`Dim_Vouchers`** - Promotion management
-   - Voucher types and discount structures
-   - Date ranges and usage limits
-   - Target audience tracking
+// High-Level Measures (Non-Additive)
+price_total decimal [note: 'note: LAZADA Total Paid = price + shipping_fee - voucher // shopee total_amount']
+total_item_count int [note: 'Lazada: Total Number of Items = Count of objects in the order_items array; Shopee: item_count (total line items)']
 
-### **Voucher Management Tables**
+// Operational Details
+payment_method varchar 
+shipping_city varchar
 
-1. **`Voucher_Products`** - Product-specific voucher mappings
-2. **`Voucher_Usage`** - Effectiveness tracking and analysis
+// Foreign Key
+platform_key int [not null, note: 'FK to Dim_Platform (1=Lazada, 2=Shopee)']
+}
 
-## 💰 **Price Calculation Implementation**
+// ===================================
+// FACT TABLES (The Events and Metrics)
+// ===================================
 
-### **Lazada Price Formula**
+Table Fact_Orders {
+order_item_key varchar [pk, not null, note: 'Primary Key. Your unique Line Item ID (Lazada/Shopee order_item_id or aggregated ID).']
 
-```sql
--- Buyer Paid Price = price - voucher + shipping_fee
-buyer_paid_price = order_total_price - voucher_total + shipping_fee
+// Foreign Keys (FKs)
+orders_key int [not null, note: 'FK to Dim_Order (Order Header).']
+product_key int [not null, note: 'FK to Dim_Product (SKU/Model ID). *TYPE FIXED: MUST BE INT*']
+time_key int [not null, note: 'FK to Dim_Time. Date of order creation.']
+customer_key int [not null, note: 'FK to Dim_Customer.']
+platform_key int [not null, note: 'FK to Dim_Platform.']
+ // Measures (Measures are always NOT NULL if data is successfully loaded/aggregated)
+item_quantity int [not null, note: 'UNIFIED QUANTITY. Shopee: model_quantity. Lazada: COUNT of unit-level records grouped by Order ID and SKU ID.']
+paid_price decimal [not null, note: 'Total Revenue for this LINE ITEM. Shopee: model_discounted_price * model_quantity_purchased. Lazada: SUM of paid_price from all aggregated unit records.']
 
--- Net Revenue Calculation
-net_revenue = SUM(buyer_paid_price)
+// Discounts & Pricing (NULLable if the API doesn't provide them, e.g., Shopee vouchers)
+original_unit_price decimal [note: 'The non-discounted price per unit (Lazada: item_price; Shopee: original_price).']
+voucher_platform_amount decimal [note: 'Voucher amount subsidized by the Platform. Shopee: NULL.']
+voucher_seller_amount decimal [note: 'Voucher amount subsidized by the Seller. Shopee: NULL.']
 
--- Voucher Effectiveness
-effectiveness = (Total_Order_Value_Generated - Total_Discount_Given) / Total_Discount_Given
-```
+// Revenue-Side Shipping Fee
+shipping_fee_paid_by_buyer decimal [note: 'Shipping fee amount paid by the buyer for this item. Lazada: shipping_amount. Shopee: actual_shipping_fee portioned to this item.']
+}
 
-### **Price Fields in Schema**
+Table Fact_Traffic {
+traffic_event_key bigint [pk, not null]
+time_key int [not null]
+platform_key int [not null]
 
-- `order_total_price` - Original price (excluding discounts)
-- `voucher_seller` - Seller voucher discount
-- `voucher_platform` - Platform voucher discount
-- `voucher_total` - Combined voucher discounts
-- `shipping_fee` - Shipping charges
-- `buyer_paid_price` - **Final amount paid by customer**
+// Measures (Aggregated Daily) - Keeping only additive measures
+clicks int [note: 'Additive measure, total clicks (same for both platforms)']
+impressions int [not null, note: 'Additive measure, total impressions (Lazada: impressions, Shopee: impression)']
+}
 
-## 🎫 **Voucher Analytics Capabilities**
+///
+Table Fact_Sales_Aggregate {
+  // -- Dimensions (Composite Grain: daily per platform per customer per product)
+  time_key int [not null, note: 'FK to Dim_Time. The aggregation day.']
+  platform_key int [not null, note: 'FK to Dim_Platform.']
+  customer_key float [not null, note: 'FK to Dim_Customer.']
+  product_key float [not null, note: 'FK to Dim_Product.']
+  
+  // -- SALES METRICS (Additives)
+  total_orders int [not null, note: 'Count of distinct orders for this grain.']
+  total_items_sold int [not null, note: 'Sum of Fact_Orders.item_quantity.']
+  gross_revenue float [not null, note: 'Sum of Fact_Orders.paid_price (Item revenue only).']
+  total_discounts float [not null, note: 'Sum of all vouchers/discounts.']
+  net_sales float [not null, note: 'Calculated: gross_revenue - total_discounts']
+  
+  note: '''
+  This aggregate fact table summarizes sales at the daily + platform + customer + product grain.
+  No primary key defined - grain is the combination of time_key, platform_key, customer_key, product_key.
+  Contains 39,868 aggregated records.
+  Shipping revenue is tracked separately in Fact_Orders, not aggregated here.
+  '''
+}
+}
 
-### **Voucher Tracking Features**
+// ===================================
+// RELATIONSHIPS (The Top-Level Refs)
+// ===================================
 
-- **Time-based Analysis**: Track voucher usage patterns over time
-- **Effectiveness Metrics**: ROI calculation for each voucher campaign
-- **Customer Acquisition**: New customer acquisition through vouchers
-- **Product Mapping**: Which products are included in voucher campaigns
-- **Usage Patterns**: Peak usage times and customer segments
+// Fact Orders Relationships
+Ref: Fact_Orders.orders_key > Dim_Order.orders_key
+Ref: Fact_Orders.product_key > Dim_Product.product_key // -- This join is now consistent (INT to INT)
+Ref: Fact_Orders.product_variant_key > Dim_Product_Variant.product_variant_key // -- Links orders to specific product variants
+Ref: Fact_Orders.time_key > Dim_Time.time_key
+Ref: Fact_Orders.customer_key > Dim_Customer.customer_key
+Ref: Fact_Orders.platform_key > Dim_Platform.platform_key
 
-### **Voucher APIs Integration**
+// Fact Sales Aggregate Relationships
+Ref: Fact_Sales_Aggregate.time_key > Dim_Time.time_key
+Ref: Fact_Sales_Aggregate.platform_key > Dim_Platform.platform_key
+Ref: Fact_Sales_Aggregate.customer_key > Dim_Customer.customer_key
+Ref: Fact_Sales_Aggregate.product_key > Dim_Product.product_key
 
-- `/promotion/vouchers/get` - Master voucher data
-- `/promotion/voucher/products/get` - Product-specific voucher rules
+// Product Variant Relationships
+Ref: Dim_Product_Variant.product_key > Dim_Product.product_key // -- Links variants to parent products
 
-## 📈 **Analytical Views & Reports**
+// Dimension to Platform Relationships
+Ref: Dim_Order.platform_key > Dim_Platform.platform_key
+Ref: Dim_Product.platform_key > Dim_Platform.platform_key
+Ref: Dim_Customer.platform_key > Dim_Platform.platform_key
 
-### **Pre-built Analytical Views**
+// Fact Traffic Relationships (Note: fact_traffic.csv not generated yet)
+Ref: Fact_Traffic.time_key > Dim_Time.time_key
+Ref: Fact_Traffic.platform_key > Dim_Platform.platform_key
 
-1. **`v_product_performance`** - Product sales analysis
-2. **`v_voucher_effectiveness`** - Voucher ROI and effectiveness
-3. **`v_customer_segments`** - Customer behavior analysis
-4. **`v_sales_trends`** - Time-based sales patterns
 
-### **Key Performance Metrics**
-
-- **Sales Metrics**: Gross revenue, net revenue, discount rates
-- **Customer Metrics**: AOV, CLV, segmentation, retention
-- **Product Metrics**: Best sellers, margin analysis, inventory turnover
-- **Voucher Metrics**: Usage rates, effectiveness, customer acquisition cost
-
-## 🔍 **Current Data Sample**
-
-### **Extracted Data Summary**
-
-- **📅 Time Dimension**: 731 records (2024-2025)
-- **👥 Customers**: 2 active customers
-- **🛍️ Products**: 12 unique products
-- **📈 Sales Facts**: 32 transaction records
-- **💰 Total Revenue**: ₱63,175.00
-
-### **Customer Insights**
-
-- **Segment Distribution**: Regular customers with high AOV
-- **Average Order Value**: ₱2,537.00
-- **Customer Lifetime Value**: ₱12,685.00 per customer
-
-### **Product Portfolio**
-
-- Women's Long Pants (various colors/sizes)
-- Fluffy Comfortable Slippers
-- Sweet Night Perfume Body Mist
-- Born Pretty Gel Nail Polish
-- Test items for validation
-
-## 🚀 **Implementation Benefits**
-
-### **Business Intelligence Capabilities**
-
-1. **OLAP Cube Analysis** - Multi-dimensional data slicing
-2. **Time Series Analysis** - Trend identification and forecasting
-3. **Customer Segmentation** - Targeted marketing campaigns
-4. **Voucher Optimization** - ROI-driven promotion strategies
-5. **Inventory Management** - Performance-based stock decisions
-
-### **Scalability Features**
-
-- **Dimensional Modeling** - Efficient query performance
-- **Star Schema Design** - Optimized for analytics
-- **Indexing Strategy** - Fast query execution
-- **Aggregation Tables** - Dashboard performance optimization
-
-## 📋 **Next Steps & Recommendations**
-
-### **Phase 1: Enhanced Data Collection**
-
-1. Implement voucher APIs integration
-2. Add product category enrichment
-3. Collect cost data for margin analysis
-4. Integrate customer demographics
-
-### **Phase 2: Advanced Analytics**
-
-1. Build OLAP cubes for multi-dimensional analysis
-2. Implement predictive analytics for demand forecasting
-3. Create customer lifetime value models
-4. Develop voucher optimization algorithms
-
-### **Phase 3: Automation & Monitoring**
-
-1. Automated ETL pipelines
-2. Real-time dashboard updates
-3. Alert systems for key metrics
-4. Performance monitoring and optimization
-
-## 🛠 **Technical Implementation**
-
-### **Files Created**
-
-1. `Enhanced_Lazada_Sales_Schema_Dimensional.sql` - Complete database schema
-2. `lazada_dimensional_etl.py` - ETL extraction and transformation
-3. `lazada_dimensional_data.json` - Sample extracted data
-
-### **Key Features**
-
-- **Proper Price Calculations** - Implements Lazada's buyer_paid_price formula
-- **Voucher Integration** - Tracks promotion effectiveness over time
-- **Time Dimension** - Enables time-based OLAP analysis
-- **Customer Segmentation** - Automated customer lifecycle management
-- **Product Performance** - Sales analytics with inventory insights
-
-## 📊 **Schema Diagram Overview**
-
-```
-Dim_Time ────┐
-             │
-Dim_Customers ─── Fact_Sales ─── Dim_Products
-             │         │
-Dim_Vouchers ─────────┘
-             │
-        Voucher_Usage
-             │
-     Voucher_Products
-```
-
-This dimensional model provides a robust foundation for comprehensive sales analytics, enabling data-driven decision making for LA Collections' Lazada operations.
+Ref: "Dim_Time"."day_of_the_year" < "Dim_Time"."is_weekend"

@@ -48,15 +48,14 @@ def generate_sales_aggregate(dim_time, dim_customer, dim_product, fact_orders):
         'item_quantity': 'sum',
         'paid_price': 'sum',
         'voucher_platform_amount': 'sum',
-        'voucher_seller_amount': 'sum',
-        'shipping_fee_paid_by_buyer': 'sum'
+        'voucher_seller_amount': 'sum'
     }).reset_index()
     
     # Rename columns to match schema
     sales_agg.columns = [
         'time_key', 'platform_key', 'customer_key', 'product_key',
         'total_orders', 'total_items_sold', 'gross_revenue', 
-        'platform_discounts', 'seller_discounts', 'shipping_revenue'
+        'platform_discounts', 'seller_discounts'
     ]
     
     # Calculate derived metrics
@@ -66,11 +65,11 @@ def generate_sales_aggregate(dim_time, dim_customer, dim_product, fact_orders):
     # Drop intermediate columns
     sales_agg = sales_agg.drop(['platform_discounts', 'seller_discounts'], axis=1)
     
-    # Define the columns we actually have (simplified schema)
+    # Define the columns we actually have (simplified schema - no shipping_revenue)
     final_columns = [
         'time_key', 'platform_key', 'customer_key', 'product_key',
         'total_orders', 'total_items_sold', 'gross_revenue',
-        'total_discounts', 'shipping_revenue', 'net_sales'
+        'total_discounts', 'net_sales'
     ]
     
     # Reorder columns
@@ -153,7 +152,6 @@ def main():
         print(f"   💸 Total discounts: ${sales_agg['total_discounts'].sum():,.2f}")
         print(f"   💵 Total net sales: ${sales_agg['net_sales'].sum():,.2f}")
         print(f"   📦 Total items sold: {sales_agg['total_items_sold'].sum():,}")
-        print(f"   🚚 Total shipping revenue: ${sales_agg['shipping_revenue'].sum():,.2f}")
         
         print(f"\n✅ Sales aggregate harmonization completed successfully!")
         print(f"📅 Finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
