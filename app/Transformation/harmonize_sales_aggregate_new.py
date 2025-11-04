@@ -24,6 +24,7 @@ def load_dimension_tables():
     dim_time = pd.read_csv(os.path.join(base_path, 'dim_time.csv'))
     dim_customer = pd.read_csv(os.path.join(base_path, 'dim_customer.csv'))
     dim_product = pd.read_csv(os.path.join(base_path, 'dim_product.csv'))
+    dim_order = pd.read_csv(os.path.join(base_path, 'dim_order.csv'))
     
     # Load fact orders
     fact_orders = pd.read_csv(os.path.join(base_path, 'fact_orders.csv'))
@@ -32,13 +33,34 @@ def load_dimension_tables():
     print(f"   📅 Dim Time: {len(dim_time):,} records")
     print(f"   👥 Dim Customer: {len(dim_customer):,} records") 
     print(f"   📦 Dim Product: {len(dim_product):,} records")
+    print(f"   📋 Dim Order: {len(dim_order):,} records")
     print(f"   📋 Fact Orders: {len(fact_orders):,} records")
     
-    return dim_time, dim_customer, dim_product, fact_orders
+    # Filter for COMPLETED orders only
+    completed_orders = dim_order[dim_order['order_status'] == 'COMPLETED']
+    completed_orders_keys = set(completed_orders['orders_key'])
+    
+    print(f"\n🔍 Filtering for COMPLETED orders only:")
+    print(f"   📊 Total orders: {len(dim_order):,}")
+    print(f"   ✅ COMPLETED orders: {len(completed_orders):,}")
+    print(f"   📈 Order statuses breakdown:")
+    for status, count in dim_order['order_status'].value_counts().items():
+        print(f"      - {status}: {count:,}")
+    
+    # Filter fact_orders to only include COMPLETED orders
+    fact_orders_completed = fact_orders[fact_orders['orders_key'].isin(completed_orders_keys)]
+    
+    print(f"\n📋 Fact Orders filtering:")
+    print(f"   📊 Original fact_orders: {len(fact_orders):,} records")
+    print(f"   ✅ COMPLETED fact_orders: {len(fact_orders_completed):,} records")
+    print(f"   📉 Filtered out: {len(fact_orders) - len(fact_orders_completed):,} records")
+    
+    return dim_time, dim_customer, dim_product, dim_order, fact_orders_completed
 
-def generate_sales_aggregate(dim_time, dim_customer, dim_product, fact_orders):
+def generate_sales_aggregate(dim_time, dim_customer, dim_product, dim_order, fact_orders):
     """Generate sales aggregate with proper grain: Time x Platform x Customer x Product"""
     print(f"\n🔄 Generating Sales Aggregate with granularity: Time x Platform x Customer x Product")
+    print(f"🎯 Filtering scope: COMPLETED orders only")
     
     # Group fact_orders by the grain dimensions and aggregate metrics
     sales_agg = fact_orders.groupby([
@@ -75,7 +97,7 @@ def generate_sales_aggregate(dim_time, dim_customer, dim_product, fact_orders):
     # Reorder columns
     sales_agg = sales_agg[final_columns]
     
-    print(f"✅ Generated {len(sales_agg):,} sales aggregate records")
+    print(f"✅ Generated {len(sales_agg):,} sales aggregate records (COMPLETED orders only)")
     print(f"   📊 Covering {sales_agg['time_key'].nunique():,} unique dates")
     print(f"   👥 Covering {sales_agg['customer_key'].nunique():,} unique customers")  
     print(f"   📦 Covering {sales_agg['product_key'].nunique():,} unique products")
@@ -120,16 +142,17 @@ def main():
     print("🚀 FACT SALES AGGREGATE HARMONIZATION")
     print("=" * 60)
     print(f"📅 Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"🎯 Grain: Time x Platform x Customer x Product")
+    print("🎯 Grain: Time x Platform x Customer x Product")
+    print("🔍 Filter: COMPLETED orders only")
     
     try:
         # Step 1: Load source data
         print(f"\n📂 Step 1: Loading source tables...")
-        dim_time, dim_customer, dim_product, fact_orders = load_dimension_tables()
+        dim_time, dim_customer, dim_product, dim_order, fact_orders = load_dimension_tables()
         
         # Step 2: Generate sales aggregate
         print(f"\n🔄 Step 2: Generating sales aggregate...")
-        sales_agg = generate_sales_aggregate(dim_time, dim_customer, dim_product, fact_orders)
+        sales_agg = generate_sales_aggregate(dim_time, dim_customer, dim_product, dim_order, fact_orders)
         
         # Step 3: Validate results
         print(f"\n� Step 3: Validating results...")
