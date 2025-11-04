@@ -2,7 +2,7 @@
 Harmonize Customer Dimension from Lazada API Response to Unified Schema
 ======================================================================
 
-This module processes Lazada orders and extracts customer information to create
+This module processes Lazada and Shopee orders and extracts customer information to create
 the Dim_Customer dimension table with proper customer segmentation and analytics.
 
 Key Requirements from Schema:
@@ -17,7 +17,13 @@ Key Requirements from Schema:
 Platform Customer ID Generation Logic:
 Since Lazada doesn't provide platform_customer_id, we generate it using:
 'LZ' + first_char(first_name) + last_char(first_name) + first2_digits(phone) + last2_digits(phone)
-For Shopee, it is directly taken from the buyer_user_id provided in the API.
+
+For Shopee:
+- Uses buyer_user_id directly from API when available and not 0
+- When buyer_user_id = 0 (missing/anonymous): Generates unique synthetic ID
+  Format: "SP0_{order_suffix}_{timestamp}" to prevent aggregating different customers
+- Falls back to username+phone format if buyer_user_id is None
+
 Example: 
 - first_name: "Antonio", phone: "639123456789"
 - platform_customer_id: "LZAO1289" must be toUppercase match the example above.
@@ -154,23 +160,36 @@ def generate_platform_customer_id(first_name, phone):
     return platform_customer_id
 
 
-def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, phone=None):
+def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, phone=None, order_sn=None, create_time=None):
     """
     Generate platform_customer_id using Shopee buyer_user_id from API
+    For buyer_user_id=0, generates unique synthetic ID based on order_sn + timestamp
     Falls back to username+phone format if buyer_user_id is not available
     
     Args:
         buyer_user_id (int/str): Shopee buyer_user_id from API (preferred)
         buyer_username (str): Shopee buyer username (fallback)
         phone (str): Customer phone number (fallback)
+        order_sn (str): Order number for generating unique ID when buyer_user_id=0
+        create_time (int): Unix timestamp for generating unique ID when buyer_user_id=0
         
     Returns:
-        str: platform_customer_id - raw buyer_user_id or fallback format
+        str: platform_customer_id - raw buyer_user_id or synthetic format
     """
-    # Use buyer_user_id if available (preferred method - raw value)
-    # Check explicitly for None since buyer_user_id can be 0
-    if buyer_user_id is not None:
+    # Use buyer_user_id if available AND not 0 (preferred method - raw value)
+    # buyer_user_id=0 indicates missing/anonymous customer data
+    if buyer_user_id is not None and buyer_user_id != 0:
         return str(buyer_user_id)
+    
+    # Special handling for buyer_user_id=0: Generate unique synthetic ID
+    # This prevents aggregating all anonymous orders into a single customer
+    if buyer_user_id == 0 and order_sn and create_time:
+        # Create unique ID using: last 6 digits of order_sn + last 6 digits of timestamp
+        # Extract only numeric characters to avoid letters
+        order_digits = ''.join(filter(str.isdigit, str(order_sn)))
+        order_suffix = order_digits[-6:] if len(order_digits) >= 6 else order_digits.zfill(6)
+        time_suffix = str(create_time)[-6:] if create_time else "000000"
+        return f"{order_suffix}{time_suffix}"
     
     # Fallback to old method if buyer_user_id not available
     if buyer_username and phone:
@@ -179,7 +198,7 @@ def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, pho
         return f"SP{name_chars}{first_2}{last_2}"
     
     # Last resort fallback
-    return f"SP_UNKNOWN_{hash(str(buyer_username or '') + str(phone or ''))}"
+    return f"SP_UNKNOWN_{hash(str(buyer_username or '') + str(phone or '') + str(order_sn or ''))}"
 
 
 def extract_customers_from_lazada_orders(orders_data):
@@ -321,12 +340,17 @@ def extract_customers_from_shopee_orders(orders_data):
             buyer_username = order.get('buyer_username', '')
             phone = recipient_address.get('phone', '')
             city = recipient_address.get('city', '')
+            order_sn = order.get('order_sn', '')  # For unique ID generation when buyer_user_id=0
+            create_time = order.get('create_time')  # For unique ID generation when buyer_user_id=0
             
             # Generate platform_customer_id using buyer_user_id (preferred)
+            # If buyer_user_id=0, generates unique synthetic ID to avoid aggregation
             platform_customer_id = generate_shopee_platform_customer_id(
                 buyer_user_id=buyer_user_id,
                 buyer_username=buyer_username,
-                phone=phone
+                phone=phone,
+                order_sn=order_sn,
+                create_time=create_time
             )
             
             # Extract order date for customer analytics (Shopee uses Unix timestamp)
