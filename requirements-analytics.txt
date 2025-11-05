@@ -1,1 +1,2 @@
 pip install prophet
+pip install xgboost

@@ -1,8 +1,18 @@
 # Analytics/Predictive_Modeling/data_loader.py
+import sys
+import os
 import pandas as pd
 import psycopg2
-# Assuming config.py is accessible via relative import
-from config import DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT 
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, '..', '..')) 
+
+# Add the project root to the system path
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
+# Now, the normal import should work
+from config import DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT
 
 def get_db_connection():
     """Establishes and returns a database connection to Supabase (PostgreSQL)."""
