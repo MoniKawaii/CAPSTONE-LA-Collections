@@ -1,74 +1,131 @@
-# Analytics/Predictive_Modeling/model_utils.py
+# Analytics/Predictive_Modeling/sales_forecaster.py
 import pandas as pd
-import joblib
-from prophet import Prophet
-from sklearn.metrics import mean_absolute_percentage_error
+import xgboost as xgb
+from data_loader import load_base_sales_data
+from feature_builder import prepare_data_for_xgb, create_time_features
+from model_utils import evaluate_model, train_prophet_model, generate_prophet_forecast
 
-# --- PERSISTENCE UTILITIES ---
+def forecast_sales_iterative(model, last_date, platform_map, historical_data, horizon=90):
+    """
+    XGBoost Forecast: Iteratively predicts future values, generating new lag features in each step.
+    """
+    forecast_df = []
+    future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=horizon)
 
-def save_model(model, filepath):
-    """Saves the trained model to disk."""
-    joblib.dump(model, filepath)
-    print(f"Model successfully saved to {filepath}")
+    for platform_name, platform_id in platform_map.items():
+        
+        # Use a copy of the historical data for lag calculations
+        platform_rev_history = historical_data[historical_data['platform_encoded'] == platform_id].copy()
+        
+        for current_date in future_dates:
+            
+            # --- A. Generate features for the CURRENT date ---
+            current_day_data = pd.DataFrame(index=[current_date])
+            current_day_data['platform_encoded'] = platform_id
+            current_day_data = create_time_features(current_day_data)
+            
+            # CRITICAL: Manually set future special event flags (MUST be sourced from marketing calendar)
+            current_day_data['is_mega_sale_day'] = 0 
+            current_day_data['is_payday'] = 1 if current_date.day in [15, 30] else 0
+            
+            # Fill Lag Features from the last N days of the RECENT history (which includes predictions)
+            current_day_data['gross_revenue_lag_1'] = platform_rev_history['gross_revenue'].iloc[-1]
+            current_day_data['gross_revenue_lag_7'] = platform_rev_history['gross_revenue'].iloc[-7]
+            current_day_data['gross_revenue_lag_28'] = platform_rev_history['gross_revenue'].iloc[-28]
+            current_day_data['gross_revenue_lag_90'] = platform_rev_history['gross_revenue'].iloc[-90]
+            
+            current_day_data['gross_revenue_rolling_mean_7'] = platform_rev_history['gross_revenue'].iloc[-7:].mean()
 
-def load_model(filepath):
-    """Loads a trained model from disk."""
-    return joblib.load(filepath)
+            # --- B. Predict the revenue ---
+            current_day_features = current_day_data[model.feature_names_in_]
+            predicted_revenue = model.predict(current_day_features)[0]
+            
+            # --- C. Update history with the prediction ---
+            new_history_row = pd.DataFrame({
+                'gross_revenue': [predicted_revenue],
+                'platform_encoded': [platform_id]
+            }, index=[current_date])
+            platform_rev_history = pd.concat([platform_rev_history, new_history_row])
+            
+            # --- D. Store the forecast ---
+            forecast_df.append({
+                'date': current_date,
+                'platform_name': platform_name,
+                'predicted_gross_revenue_xgb': predicted_revenue
+            })
 
-# --- EVALUATION UTILITY ---
+    return pd.DataFrame(forecast_df)
 
-def evaluate_model(y_true, y_pred, model_name="Model"):
-    """Calculates Mean Absolute Percentage Error (MAPE)."""
-    mape = mean_absolute_percentage_error(y_true, y_pred)
-    print(f"{model_name} MAPE: {mape:.4f}")
-    return mape
 
-# --- PROPHET UTILITIES ---
-
-def train_prophet_model(df, platform_name):
-    """Initializes and trains a Prophet model for a specific platform."""
+def run_sales_forecast():
     
-    platform_df = df[df['platform_name'] == platform_name].copy()
-    prophet_data = platform_df.reset_index()[['date', 'gross_revenue', 'is_mega_sale_day', 'is_payday']].rename(
-        columns={'date': 'ds', 'gross_revenue': 'y'}
+    # 1. Load and Prepare Data
+    print("1. Loading and preparing data...")
+    base_df = load_base_sales_data()
+    X, y, platform_map = prepare_data_for_xgb(base_df.copy())
+    last_historical_date = y.index.max() 
+    
+    # Combine X and y for the historical data used in iterative forecasting
+    historical_data = X.copy()
+    historical_data['gross_revenue'] = y
+    
+    # --- 2. XGBoost Pipeline (High-Accuracy Model) ---
+    print("\n2. Training XGBoost Model...")
+    
+    # Train the final model on all available data
+    final_xgb_model = xgb.XGBRegressor(
+        n_estimators=1000, 
+        learning_rate=0.01, 
+        objective='reg:squarederror', 
+        random_state=42,
+        n_jobs=-1
+    )
+    final_xgb_model.fit(X, y)
+
+    print("Generating 90-day XGBoost forecast...")
+    xgb_forecast = forecast_sales_iterative(
+        model=final_xgb_model,
+        last_date=last_historical_date,
+        platform_map=platform_map,
+        historical_data=historical_data
     )
     
-    m = Prophet(
-        seasonality_mode='multiplicative',
-        yearly_seasonality=True, 
-        weekly_seasonality=True
-    )
+    # --- 3. Prophet Pipeline (Baseline Model) ---
+    print("\n3. Running Prophet Baseline Forecast...")
+    prophet_forecasts_list = []
     
-    # Add key features from DIM_TIME as extra regressors
-    m.add_regressor('is_mega_sale_day')
-    m.add_regressor('is_payday')
-    
-    m.fit(prophet_data)
-    return m, prophet_data
+    # Train and forecast for each platform
+    for platform_name in platform_map.keys():
+        prophet_model, _ = train_prophet_model(base_df.reset_index(), platform_name)
+        prophet_forecast = generate_prophet_forecast(
+            prophet_model, 
+            base_df.reset_index(), 
+            platform_name, 
+            horizon=90
+        )
+        prophet_forecasts_list.append(prophet_forecast)
 
-def generate_prophet_forecast(model, historical_df, platform_name, horizon=90):
-    """Generates the future dataframe and runs the prediction."""
+    final_prophet_forecast = pd.concat(prophet_forecasts_list)
     
-    future = model.make_future_dataframe(periods=horizon)
+    # --- 4. Final Reporting and Output ---
     
-    # Get the regressor data (is_mega_sale_day, is_payday)
-    platform_hist = historical_df[historical_df['platform_name'] == platform_name].reset_index()
-    
-    # Merge future dates with the regressors
-    future_df = pd.merge(
-        future, 
-        platform_hist[['date', 'is_mega_sale_day', 'is_payday']].rename(columns={'date': 'ds'}), 
-        on='ds', 
-        how='left'
+    # Merge both forecasts for easy comparison and saving
+    final_forecast_comparison = pd.merge(
+        xgb_forecast, 
+        final_prophet_forecast, 
+        on=['date', 'platform_name'], 
+        how='outer'
     )
-    
-    # CRITICAL: Fill future mega sales/paydays. Assuming 0 unless explicitly known.
-    future_df[['is_mega_sale_day', 'is_payday']] = future_df[['is_mega_sale_day', 'is_payday']].fillna(0)
-    
-    # Predict
-    forecast = model.predict(future_df)
-    
-    # Format output
-    forecast_result = forecast[['ds', 'yhat']].rename(columns={'ds': 'date', 'yhat': 'predicted_gross_revenue_prophet'})
-    forecast_result['platform_name'] = platform_name
-    return forecast_result
+
+    print("\n--- Sales Forecast Complete ---")
+    print(f"Forecast Horizon: {final_forecast_comparison['date'].min().date()} to {final_forecast_comparison['date'].max().date()}")
+    print("\nSample Forecast Comparison:")
+    print(final_forecast_comparison.head(10).to_markdown(index=False))
+
+    # Save the final output
+    final_forecast_comparison.to_csv('Analytics/sales_forecast_comparison.csv', index=False)
+    print("\nOutput saved to Analytics/sales_forecast_comparison.csv")
+
+
+if __name__ == '__main__':
+    run_sales_forecast()
