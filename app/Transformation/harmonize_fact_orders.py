@@ -298,10 +298,10 @@ def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, pho
     if buyer_user_id is not None and buyer_user_id != 0:
         return str(buyer_user_id)
     
-    # For buyer_user_id=0 (anonymous customers), return None to skip
-    # The dimension table doesn't include anonymous customers, so we can't create fact records for them
+    # For buyer_user_id=0 (anonymous customers), use anonymous customer placeholder
+    # The dimension table now includes an anonymous customer placeholder for these cases
     if buyer_user_id == 0:
-        return None  # This will cause customer_key lookup to fail and skip the record
+        return "0"  # This matches the anonymous Shopee customer in dim_customer
     
     # Fallback to old method if buyer_user_id not available (should not happen for Shopee)
     return None  # Skip records without valid buyer_user_id
@@ -413,8 +413,17 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_lookups, 
                     print(f"   - Sample customer IDs in lookup: {sample_customers}")
             
             if customer_key is None:
-                print(f"⚠️ Warning: Could not find customer_key for platform_customer_id '{platform_customer_id}' in order {platform_order_id}")
-                continue  # Skip records where we can't find the customer
+                # Use anonymous customer fallback for failed lookups
+                anonymous_platform_customer_id = "ANONYMOUS_LAZADA"
+                customer_key = customer_key_lookup.get(anonymous_platform_customer_id)
+                
+                if customer_key is None:
+                    print(f"❌ ERROR: Anonymous Lazada customer not found in dimension table!")
+                    continue  # Skip if even anonymous customer is missing
+                    
+                print(f"🔄 Using anonymous customer fallback for order {platform_order_id} (original platform_customer_id: '{platform_customer_id}')")
+                # Update platform_customer_id to reflect the fallback used
+                platform_customer_id = anonymous_platform_customer_id
             
             # Create one fact record per individual order item (no grouping/aggregation)
             for item in order_items:
@@ -432,8 +441,19 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_lookups, 
                     if product_item_id and product_item_id in product_key_lookup:
                         product_key = product_key_lookup.get(product_item_id)
                     
-                    # If not found, we need to find product via sku relationship
-                    # For now, skip items where we can't find the product mapping
+                    # If not found in products table, try to find via variants table
+                    if product_key is None:
+                        # Try sku_id lookup in variants table
+                        sku_id = str(item.get('sku_id', ''))
+                        if sku_id in variant_key_lookup:
+                            # Found in variants - get the associated product_key
+                            variant_row = variant_df[variant_df['platform_sku_id'] == sku_id]
+                            if not variant_row.empty:
+                                product_key = variant_row.iloc[0]['product_key']
+                                if order_item_key_counter <= 3:
+                                    print(f"🎯 FOUND via variants: Lazada item {product_item_id} (sku_id: {sku_id}) -> product_key: {product_key}")
+                    
+                    # If still not found, skip the item
                     if product_key is None:
                         if order_item_key_counter <= 3:
                             print(f"⚠️ Skipping Lazada item without product_key for product_item_id '{product_item_id}' (from sku '{sku}') in order {platform_order_id}")
@@ -630,6 +650,25 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
                     # Get product_key from item_id
                     item_id = str(item.get('item_id', ''))
                     product_key = product_key_lookup.get(item_id)
+                    
+                    # If not found in products table, try to find via variants table
+                    if product_key is None:
+                        # Try item_id or model_id lookup in variants table
+                        model_id = str(item.get('model_id', ''))
+                        
+                        # Check both item_id and model_id in variants
+                        if item_id in variant_key_lookup:
+                            variant_row = variant_df[variant_df['platform_sku_id'] == item_id]
+                            if not variant_row.empty:
+                                product_key = variant_row.iloc[0]['product_key']
+                                if order_item_key_counter <= 3:
+                                    print(f"🎯 FOUND via variants: Shopee item_id {item_id} -> product_key: {product_key}")
+                        elif model_id != '0' and model_id in variant_key_lookup:
+                            variant_row = variant_df[variant_df['platform_sku_id'] == model_id]
+                            if not variant_row.empty:
+                                product_key = variant_row.iloc[0]['product_key']
+                                if order_item_key_counter <= 3:
+                                    print(f"🎯 FOUND via variants: Shopee model_id {model_id} -> product_key: {product_key}")
                     
                     # Debug: Show what's available in first few iterations
                     if product_key is None and order_item_key_counter <= 6:

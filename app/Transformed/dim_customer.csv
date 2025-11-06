@@ -27856,3 +27856,5 @@ customer_key,platform_customer_id,buyer_segment,total_orders,customer_since,last
 37855.2,974980904,New Buyer,1,2025-10-30,2025-10-30,2
 37856.1,500004514766,New Buyer,1,2025-10-31,2025-10-31,1
 37857.1,500112168002,New Buyer,1,2025-10-31,2025-10-31,1
+37858.1,ANONYMOUS_LAZADA,Anonymous,0,2020-01-01,2025-12-31,1
+37859.2,0,Anonymous,0,2020-01-01,2025-12-31,2

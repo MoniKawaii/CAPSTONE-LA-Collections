@@ -814,10 +814,132 @@ def harmonize_dim_product():
     shopee_count = len(shopee_products)
     print(f"✅ Processed {shopee_count} Shopee products")
     
+    # Add orphaned products for missing product references
+    print("\n🔄 Adding orphaned products for missing product references...")
+    
+    # List of missing product IDs found in completed orders but not in product data
+    missing_lazada_ids = []  # No missing Lazada IDs found
+    missing_shopee_ids = [
+        '13008369961', '20182906848', '20220056189', '21720061273', '21931161899',
+        '2993820452', '3681850544', '4172668716', '4661610905', '5785078730',
+        '7393631843', '8025239683', '8260694757'
+    ]
+    
+    # Add missing Lazada products (if any)
+    for product_item_id in missing_lazada_ids:
+        orphaned_product_key = float(f"{product_key_counter}.1")
+        orphaned_product = {
+            'product_key': orphaned_product_key,
+            'product_item_id': product_item_id,
+            'product_name': 'Pulled Out Item',
+            'product_category': None,
+            'product_status': None,
+            'product_rating': None,
+            'platform_key': 1  # Lazada
+        }
+        product_df = pd.concat([product_df, pd.DataFrame([orphaned_product])], ignore_index=True)
+        
+        # Create variant for orphaned product
+        orphaned_variant_key = float(f"{variant_key_counter['current']}.1")
+        variant_key_counter['current'] += 1
+        current_timestamp = datetime.now()
+        
+        orphaned_variant = {
+            'product_variant_key': orphaned_variant_key,
+            'product_key': orphaned_product_key,
+            'platform_sku_id': product_item_id,
+            'canonical_sku': product_item_id,
+            'scent': 'Base Product',
+            'volume': 'N/A',
+            'current_price': None,
+            'original_price': None,
+            'created_at': current_timestamp,
+            'last_updated': current_timestamp,
+            'platform_key': 1
+        }
+        variant_df = pd.concat([variant_df, pd.DataFrame([orphaned_variant])], ignore_index=True)
+        print(f"✅ Added orphaned Lazada product {product_item_id} - 'Pulled Out Item'")
+        product_key_counter += 1
+    
+    # Add missing Shopee products
+    for product_item_id in missing_shopee_ids:
+        orphaned_product_key = float(f"{shopee_product_key_counter}.2")
+        orphaned_product = {
+            'product_key': orphaned_product_key,
+            'product_item_id': product_item_id,
+            'product_name': 'Pulled Out Item',
+            'product_category': None,
+            'product_status': None,
+            'product_rating': None,
+            'platform_key': 2  # Shopee
+        }
+        product_df = pd.concat([product_df, pd.DataFrame([orphaned_product])], ignore_index=True)
+        
+        # Create variant for orphaned product
+        orphaned_variant_key = float(f"{variant_key_counter['current']}.2")
+        variant_key_counter['current'] += 1
+        current_timestamp = datetime.now()
+        
+        orphaned_variant = {
+            'product_variant_key': orphaned_variant_key,
+            'product_key': orphaned_product_key,
+            'platform_sku_id': product_item_id,
+            'canonical_sku': product_item_id,
+            'scent': 'Base Product',
+            'volume': 'N/A',
+            'current_price': None,
+            'original_price': None,
+            'created_at': current_timestamp,
+            'last_updated': current_timestamp,
+            'platform_key': 2
+        }
+        variant_df = pd.concat([variant_df, pd.DataFrame([orphaned_variant])], ignore_index=True)
+        print(f"✅ Added orphaned Shopee product {product_item_id} - 'Pulled Out Item'")
+        shopee_product_key_counter += 1
+    
+    print(f"✅ Added {len(missing_lazada_ids)} missing Lazada products and {len(missing_shopee_ids)} missing Shopee products")
+    
+    # Add the original orphaned product for reference (keeping the existing one)
+    orphaned_product_key = float(f"{shopee_product_key_counter}.2")
+    orphaned_product = {
+        'product_key': orphaned_product_key,
+        'product_item_id': '5451694941',
+        'product_name': 'Pulled Out Item',
+        'product_category': None,
+        'product_status': None,
+        'product_rating': None,
+        'platform_key': 2  # Shopee
+    }
+    product_df = pd.concat([product_df, pd.DataFrame([orphaned_product])], ignore_index=True)
+    
+    # Create variant for the original orphaned product
+    orphaned_variant_key = float(f"{variant_key_counter['current']}.2")
+    variant_key_counter['current'] += 1
+    current_timestamp = datetime.now()
+    
+    orphaned_variant = {
+        'product_variant_key': orphaned_variant_key,
+        'product_key': orphaned_product_key,
+        'platform_sku_id': '5451694941',
+        'canonical_sku': '5451694941',
+        'scent': 'Base Product',
+        'volume': 'N/A',
+        'current_price': None,
+        'original_price': None,
+        'created_at': current_timestamp,
+        'last_updated': current_timestamp,
+        'platform_key': 2
+    }
+    variant_df = pd.concat([variant_df, pd.DataFrame([orphaned_variant])], ignore_index=True)
+    print(f"✅ Added original orphaned product 5451694941 - 'Pulled Out Item' (for reference)")
+    
+    shopee_product_key_counter += 1
+    
+    shopee_product_key_counter += 1
+    
     # Create default variants for all products (to use when SKU/model_id lookup fails)
     print("\n🔄 Creating default variants for all products...")
     default_variants_created = 0
-    current_timestamp = datetime.now()
     
     for _, product_row in product_df.iterrows():
         product_key = product_row['product_key']

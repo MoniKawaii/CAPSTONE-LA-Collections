@@ -561,7 +561,48 @@ def harmonize_dim_customer():
     print(f"   - Returning Buyers: {returning_buyers}")
     print(f"   - Average Orders per Customer: {customers_df['total_orders'].mean():.1f}")
     
-    return customers_df
+    # Add anonymous customer placeholders for missing customer references
+    print(f"\n🔄 Adding anonymous customer placeholders...")
+    
+    # Get the next customer key counter
+    if not customers_df.empty:
+        max_customer_key = customers_df['customer_key'].max()
+        next_key_counter = int(max_customer_key) + 1
+    else:
+        next_key_counter = 1
+    
+    # Add Anonymous Lazada Customer
+    anonymous_lazada = {
+        'customer_key': float(f"{next_key_counter}.1"),
+        'platform_customer_id': 'ANONYMOUS_LAZADA', 
+        'buyer_segment': 'Anonymous',
+        'total_orders': 0,
+        'customer_since': datetime(2020, 1, 1).date(),
+        'last_order_date': datetime(2025, 12, 31).date(),
+        'platform_key': 1
+    }
+    
+    # Add Anonymous Shopee Customer  
+    anonymous_shopee = {
+        'customer_key': float(f"{next_key_counter + 1}.2"),
+        'platform_customer_id': '0',
+        'buyer_segment': 'Anonymous', 
+        'total_orders': 0,
+        'customer_since': datetime(2020, 1, 1).date(),
+        'last_order_date': datetime(2025, 12, 31).date(),
+        'platform_key': 2
+    }
+    
+    # Add anonymous customers to the dataframe
+    anonymous_customers = pd.DataFrame([anonymous_lazada, anonymous_shopee])
+    customers_df = pd.concat([customers_df, anonymous_customers], ignore_index=True)
+    
+    print(f"✅ Added anonymous customers:")
+    print(f"   - Anonymous Lazada customer: {anonymous_lazada['customer_key']} (platform_customer_id: 'ANONYMOUS_LAZADA')")
+    print(f"   - Anonymous Shopee customer: {anonymous_shopee['customer_key']} (platform_customer_id: '0')")
+    
+    # Apply data types again for the new records
+    customers_df = apply_data_types(customers_df, 'dim_customer')
     
     return customers_df
 
