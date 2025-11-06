@@ -18,7 +18,7 @@ if project_root not in sys.path:
     sys.path.append(project_root)
 
 # Import the data loader utility
-from data_loader import load_base_sales_data 
+from data_loader import load_descriptive_analysis_data 
 
 # Set plotting style
 sns.set_theme(style="whitegrid")
@@ -35,6 +35,83 @@ HIGHLIGHT_COLOR = '#DC143C'
 
 # Define the output directory relative to where the script is executed
 OUTPUT_DIR = 'app/Analytics/'
+
+
+def _calculate_sales_figures(df, prefix):
+    """Calculates core sales metrics for a given dataframe and prefix."""
+    
+    # 1. Revenue & Discounts
+    total_gross_revenue = df['gross_revenue'].sum()
+    total_discount = df['total_discount'].sum()
+    
+    # Calculate Total Net Sales: Gross Revenue - Total Discounts
+    total_net_sales = total_gross_revenue - total_discount
+    
+    # Total Sales Revenue (Synonymous with Gross Revenue in this context)
+    total_sales_revenue = total_gross_revenue
+    
+    # 2. Order and Item Metrics
+    num_completed_orders = df['total_orders'].sum()
+    total_items_sold = df['total_items_sold'].sum()
+    # Total Units Sold (Using Total Items Sold as the proxy)
+    total_units_sold = total_items_sold 
+    
+    # 3. Derived Metrics
+    aov = total_gross_revenue / num_completed_orders if num_completed_orders > 0 else 0
+    
+    metrics = {
+        f"{prefix} Total Gross Revenue": f"PHP {total_gross_revenue:,.2f}",
+        f"{prefix} Total Discounts": f"PHP {total_discount:,.2f}",
+        f"{prefix} Total Net Sales (Gross - Discounts)": f"PHP {total_net_sales:,.2f}",
+        f"{prefix} Total Sales Revenue": f"PHP {total_sales_revenue:,.2f}", 
+        f"{prefix} Number of Completed Orders": f"{num_completed_orders:,.0f}",
+        f"{prefix} Total Items Sold": f"{total_items_sold:,.0f}",
+        f"{prefix} Total Units Sold": f"{total_units_sold:,.0f}",
+        f"{prefix} Average Order Value (AOV)": f"PHP {aov:,.2f}"
+    }
+    return metrics
+
+
+def get_summary_metrics(base_df):
+    """
+    Calculates and returns key sales and operations metrics, broken down by platform.
+    """
+
+    # --- 1. Overall/Total Metrics (including date range and record count) ---
+    start_date = base_df.index.min().date()
+    end_date = base_df.index.max().date()
+    total_records = len(base_df) 
+    
+    # Initialize Overall Metrics dict with non-financial stats
+    overall_metrics = {
+        "Date Range": f"{start_date} to {end_date}",
+        "Total Records (Aggregated Rows)": f"{total_records:,.0f}",
+    }
+    
+    # Calculate Total financial figures
+    total_figures = _calculate_sales_figures(base_df, "Overall")
+    overall_metrics.update(total_figures)
+    
+    
+    # --- 2. Platform Specific Metrics ---
+    
+    # Calculate Shopee figures
+    shopee_df = base_df[base_df['platform_name'] == 'Shopee'].copy()
+    shopee_metrics = _calculate_sales_figures(shopee_df, "Shopee")
+    
+    # Calculate Lazada figures
+    lazada_df = base_df[base_df['platform_name'] == 'Lazada'].copy()
+    lazada_metrics = _calculate_sales_figures(lazada_df, "Lazada")
+    
+    
+    # --- 3. Combine and Return Results ---
+    final_metrics = {
+        'Overall Summary': overall_metrics,
+        'Shopee Summary': shopee_metrics,
+        'Lazada Summary': lazada_metrics
+    }
+    
+    return final_metrics
 
 
 def generate_eda_plots(base_df):
@@ -63,7 +140,7 @@ def generate_eda_plots(base_df):
 
     # --- B. Seasonal Decomposition ---
     print("-> 4. Generating Seasonal Decomposition Plot...")
-    try:       
+    try:
         decomposition = seasonal_decompose(base_df_daily, model='additive', period=7)
         
         # Set figure size to a readable, optimal size
@@ -224,26 +301,26 @@ def generate_eda_plots(base_df):
 
 def run_descriptive_analysis():
     print("1. Starting Descriptive Analysis...")
-    base_df = load_base_sales_data()
+    base_df = load_descriptive_analysis_data()
     
     if base_df.empty:
         print("Analysis failed: No data loaded from Supabase.")
         return
 
-    # ... (Executive Summary Code) ...
+    # --- 2. Generating Executive Summary Metrics ---
     print("\n2. Generating Executive Summary Metrics...")
     
-    total_revenue = base_df['gross_revenue'].sum()
-    avg_daily_revenue = base_df['gross_revenue'].mean()
-    start_date = base_df.index.min().date()
-    end_date = base_df.index.max().date()
-    total_days = (end_date - start_date).days
+    # Call the new function to get the full suite of metrics
+    summary_metrics_nested = get_summary_metrics(base_df)
     
     print("\n--- Executive Summary ---")
-    print(f"Total Revenue (Historical): PHP {total_revenue:,.2f}")
-    print(f"Average Daily Revenue: PHP {avg_daily_revenue:,.2f}")
-    print(f"Total Period Analyzed: {total_days} days ({start_date} to {end_date})")
-    print("-" * 40)
+    
+    # Print metrics in structured sections
+    for section_title, metrics in summary_metrics_nested.items():
+        print(f"\n== {section_title} ==")
+        for name, value in metrics.items():
+            print(f"{name}: {value}")
+        print("-" * 40)
     
     # --- Generate all plots ---
     generate_eda_plots(base_df)
