@@ -139,7 +139,7 @@ def load_shopee_payment_details_raw():
 
 
 def load_dimension_lookups():
-    """Load dimension tables from CSV files for key lookups"""
+    """Load dimension tables from CSV files for key lookups - ONLY COMPLETED ORDERS"""
     transformed_dir = os.path.join(os.path.dirname(__file__), '..', 'Transformed')
     dim_lookups = {}
     
@@ -151,19 +151,23 @@ def load_dimension_lookups():
     product_df = pd.read_csv(os.path.join(transformed_dir, 'dim_product.csv'))
     dim_lookups['product'] = dict(zip(product_df['product_item_id'].astype(str), product_df['product_key']))
     
-    # Load order lookup
+    # Load order lookup - FILTER TO ONLY COMPLETED ORDERS
     order_df = pd.read_csv(os.path.join(transformed_dir, 'dim_order.csv'))
-    dim_lookups['order'] = dict(zip(order_df['platform_order_id'].astype(str), order_df['orders_key']))
+    completed_orders_df = order_df[order_df['order_status'] == 'COMPLETED'].copy()
+    dim_lookups['order'] = dict(zip(completed_orders_df['platform_order_id'].astype(str), completed_orders_df['orders_key']))
+    
+    # Also create a price lookup for COMPLETED orders to ensure price consistency
+    dim_lookups['order_prices'] = dict(zip(completed_orders_df['platform_order_id'].astype(str), completed_orders_df['price_total']))
     
     # Load product variant lookup
     variant_df = pd.read_csv(os.path.join(transformed_dir, 'dim_product_variant.csv'))
     # Use platform_sku_id for variant lookup
     dim_lookups['product_variant'] = dict(zip(variant_df['platform_sku_id'].astype(str), variant_df['product_variant_key']))
     
-    print(f"Loaded dimension lookups:")
+    print(f"Loaded dimension lookups (COMPLETED ORDERS ONLY):")
     print(f"  - Customers: {len(dim_lookups['customer'])}")
     print(f"  - Products: {len(dim_lookups['product'])}")
-    print(f"  - Orders: {len(dim_lookups['order'])}")
+    print(f"  - Orders (COMPLETED): {len(dim_lookups['order'])} of {len(order_df)} total")
     print(f"  - Product Variants: {len(dim_lookups['product_variant'])}")
     
     return dim_lookups, variant_df
@@ -326,6 +330,7 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_lookups, 
     """
     Extract and harmonize fact order records from Lazada order items
     Creates one record per individual order item (no aggregation)
+    ONLY PROCESSES COMPLETED ORDERS from dim_order
     
     Args:
         order_items_data (list): Raw Lazada order items from API  
@@ -338,7 +343,8 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_lookups, 
     fact_orders_records = []
     
     # Get lookup dictionaries from dim_lookups
-    order_key_lookup = dim_lookups.get('order', {})
+    order_key_lookup = dim_lookups.get('order', {})  # Only contains COMPLETED orders
+    order_prices_lookup = dim_lookups.get('order_prices', {})
     customer_key_lookup = dim_lookups.get('customer', {})
     product_key_lookup = dim_lookups.get('product', {})
     variant_key_lookup = dim_lookups.get('product_variant', {})
@@ -373,10 +379,10 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_lookups, 
             platform_order_id = str(order_record.get('order_id', ''))
             order_items = order_record.get('order_items', [])
             
-            # Get orders_key from dimension table
+            # Get orders_key from dimension table (only COMPLETED orders are in lookup)
             orders_key = order_key_lookup.get(platform_order_id)
             if orders_key is None:
-                print(f"⚠️ Warning: Could not find orders_key for order_id {platform_order_id}")
+                # Skip non-COMPLETED orders - they're not in the lookup
                 continue
             
             # Get customer info from orders lookup
@@ -459,9 +465,9 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_lookups, 
                     if not product_variant_key:
                         product_variant_key = 0.0
                     
-                    # Create individual fact record for this order item
+                    # Create individual fact record for this order item (without order_item_key for now)
                     fact_record = {
-                        'order_item_key': f"LO{order_item_key_counter:08d}",  # LO prefix for Lazada
+                        'order_item_key': None,  # Will be generated after sorting
                         'orders_key': orders_key,
                         'product_key': product_key,  # Should not be None due to earlier check
                         'product_variant_key': product_variant_key if product_variant_key else None,
@@ -477,7 +483,7 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_lookups, 
                     }
                     
                     fact_orders_records.append(fact_record)
-                    order_item_key_counter += 1
+                    # Remove order_item_key_counter increment - will be done after sorting
                     
                 except Exception as e:
                     print(f"⚠️ Error processing item in order {platform_order_id}: {e}")
@@ -510,19 +516,17 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_lookups, 
     return fact_orders_df
 
 
-def extract_order_items_from_shopee(orders_data, payment_details_data, dim_lookups, variant_df, order_item_key_counter_start=1):
+def extract_order_items_from_shopee(orders_data, payment_details_data, dim_lookups, variant_df):
     """
     Extract and harmonize fact order records from Shopee orders with payment details
     Creates one record per individual order item (no aggregation)
+    ONLY PROCESSES COMPLETED ORDERS from dim_order
     
     Args:
         orders_data (list): Raw Shopee orders from API (includes item_list)
         payment_details_data (list): Raw Shopee payment details from API
-        dim_order_df (DataFrame): Harmonized dimension order table
-        dim_customer_df (DataFrame): Harmonized dimension customer table
-        dim_product_df (DataFrame): Harmonized dimension product table
-        dim_variant_df (DataFrame): Harmonized dimension product variant table
-        order_item_key_counter_start (int): Starting counter for order_item_key
+        dim_lookups (dict): Dictionary of dimension key lookups
+        variant_df (DataFrame): Harmonized dimension product variant table
         
     Returns:
         DataFrame: Harmonized fact orders records (one per order item)
@@ -530,7 +534,8 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
     fact_orders_records = []
     
     # Get lookup dictionaries from dim_lookups
-    order_key_lookup = dim_lookups.get('order', {})
+    order_key_lookup = dim_lookups.get('order', {})  # Only contains COMPLETED orders
+    order_prices_lookup = dim_lookups.get('order_prices', {})
     customer_key_lookup = dim_lookups.get('customer', {})
     product_key_lookup = dim_lookups.get('product', {})
     variant_key_lookup = dim_lookups.get('product_variant', {})
@@ -548,17 +553,17 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
     print(f"📊 Processing Shopee orders with payment details...")
     print(f"📊 Created lookup for {len(payment_lookup)} payment records")
     
-    order_item_key_counter = order_item_key_counter_start
+    order_item_key_counter = 1
     
     for order in orders_data:
         try:
             platform_order_id = str(order.get('order_sn', ''))
             item_list = order.get('item_list', [])
             
-            # Get orders_key from dimension table
+            # Get orders_key from dimension table (only COMPLETED orders are in lookup)
             orders_key = order_key_lookup.get(platform_order_id)
             if orders_key is None:
-                print(f"⚠️ Warning: Could not find orders_key for order_sn {platform_order_id}")
+                # Skip non-COMPLETED orders - they're not in the lookup
                 continue
             
             # Get customer info from order
@@ -577,14 +582,14 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
             
             # Skip orders with anonymous customers (buyer_user_id=0) since they're not in dimension table
             if platform_customer_id is None:
-                if order_item_key_counter <= order_item_key_counter_start + 2:
+                if order_item_key_counter <= 3:
                     print(f"🔍 Skipping anonymous customer order {platform_order_id} (buyer_user_id={buyer_user_id})")
                 continue
                 
             customer_key = customer_key_lookup.get(platform_customer_id)
             
             # Debug customer key lookup for the first few records
-            if order_item_key_counter <= order_item_key_counter_start + 2:
+            if order_item_key_counter <= 3:
                 print(f"🔍 Debug Shopee order {platform_order_id}:")
                 print(f"   - buyer_username: '{buyer_username}'")
                 print(f"   - phone: '{phone}'")
@@ -627,7 +632,7 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
                     product_key = product_key_lookup.get(item_id)
                     
                     # Debug: Show what's available in first few iterations
-                    if product_key is None and order_item_key_counter <= order_item_key_counter_start + 5:
+                    if product_key is None and order_item_key_counter <= 6:
                         print(f"⚠️ Warning: Could not find product_key for item_id {item_id}")
                         # Show sample of available product IDs (Shopee only)
                         shopee_products = [pid for pid in product_key_lookup.keys() if pid not in ['', 'nan']]
@@ -734,9 +739,9 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
                     else:
                         shipping_per_item = order_shipping_fee / len(item_list) if len(item_list) > 0 else 0.0
                     
-                    # Create individual fact record for this order item
+                    # Create individual fact record for this order item (without order_item_key for now)
                     fact_record = {
-                        'order_item_key': f"SO{order_item_key_counter:08d}",  # SO prefix for Shopee
+                        'order_item_key': None,  # Will be generated after sorting
                         'orders_key': orders_key,
                         'product_key': product_key,
                         'product_variant_key': product_variant_key if product_variant_key else None,
@@ -752,7 +757,7 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
                     }
                     
                     fact_orders_records.append(fact_record)
-                    order_item_key_counter += 1
+                    # Remove order_item_key_counter increment - will be done after sorting
                     
                 except Exception as e:
                     print(f"⚠️ Error processing item in Shopee order {platform_order_id}: {e}")
@@ -823,10 +828,8 @@ def harmonize_fact_orders():
     print("\n🔄 Processing Shopee order items...")
     shopee_fact_df = pd.DataFrame()
     if shopee_orders_data:
-        # Start Shopee counter after Lazada records
-        shopee_start_counter = len(lazada_fact_df) + 1 if not lazada_fact_df.empty else 1
         shopee_fact_df = extract_order_items_from_shopee(
-            shopee_orders_data, shopee_payment_details_data, dim_lookups, variant_df, shopee_start_counter
+            shopee_orders_data, shopee_payment_details_data, dim_lookups, variant_df
         )
         print(f"✅ Processed {len(shopee_fact_df)} Shopee fact order records")
     else:
@@ -834,6 +837,27 @@ def harmonize_fact_orders():
     
     # Combine both platforms
     fact_orders_df = pd.concat([lazada_fact_df, shopee_fact_df], ignore_index=True)
+    
+    # Sort by orders_key to group related orders together
+    if len(fact_orders_df) > 0:
+        fact_orders_df = fact_orders_df.sort_values('orders_key').reset_index(drop=True)
+        
+        # Generate order_item_key based on platform_key after sorting
+        def generate_order_item_key(row, counter):
+            if row['platform_key'] == 1:  # Lazada
+                return f"L{counter:08d}"
+            elif row['platform_key'] == 2:  # Shopee  
+                return f"S{counter:08d}"
+            else:
+                return f"O{counter:08d}"  # Fallback
+        
+        # Apply order_item_key generation
+        fact_orders_df['order_item_key'] = [
+            generate_order_item_key(row, i+1) 
+            for i, (_, row) in enumerate(fact_orders_df.iterrows())
+        ]
+        
+        print(f"\n✅ Generated sequential order_item_keys after sorting by orders_key")
     
     print(f"\n✅ Successfully harmonized {len(fact_orders_df)} total fact order records")
     print(f"   - Lazada records: {len(lazada_fact_df)}")
