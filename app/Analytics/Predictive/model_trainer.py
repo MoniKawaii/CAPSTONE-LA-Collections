@@ -91,7 +91,7 @@ def train_and_forecast_model(
     model_name: str,
     target_col: str = 'gross_revenue',
     exog_cols: list = ['is_mega_sale_day', 'is_payday', 'avg_paid_price', 'avg_original_price', 'avg_discount_rate'],
-    test_size_days: int = 45,          # changed per user request
+    test_size_days: int = 365,          # changed per user request
     forecast_horizon: int = 90
 ) -> dict:
     """
@@ -220,12 +220,17 @@ def train_and_forecast_model(
             X_test = df_test_ml[features]
             y_test_actual = df_test_ml[target_col]
 
+            tree_estimators = 40 # Default for Lazada
+            if platform == 'Shopee':
+                # Shopee performed best at 300 estimators
+                tree_estimators = 100
+
             # XGBoost (version adaptive)
             if model_name == 'XGBoost':
                 import xgboost as xgb
                 
                 # 1. Initialize the model
-                model = XGBRegressor(n_estimators=300, learning_rate=0.05, random_state=42)
+                model = XGBRegressor(n_estimators=tree_estimators, learning_rate=0.05, random_state=42)
 
                 try:
                     version_str = xgb.__version__
@@ -290,14 +295,18 @@ def train_and_forecast_model(
 
             # LightGBM (fallback-safe)
             else:
-                model = LGBMRegressor(n_estimators=300, learning_rate=0.05, random_state=42)
+                # Use platform-specific optimal estimators (50 for all tree models now)
+                model = LGBMRegressor(n_estimators=tree_estimators, learning_rate=0.05, random_state=42)
                 try:
                     model.fit(
                         X_train, y_train_ml,
                         eval_set=[(X_valid, y_valid_ml)],
+                        # Use the common parameter name first
                         early_stopping_rounds=25
                     )
-                except TypeError:
+                except TypeError as e:
+                    # Catches if 'early_stopping_rounds' is rejected
+                    logging.warning(f"[{platform} - LightGBM] Early stopping fit failed due to: {e}. Fitting normally.")
                     model.fit(X_train, y_train_ml)
                 except Exception as e:
                     logging.warning(f"[{platform} - LightGBM] fallback fit due to: {e}")
@@ -346,15 +355,18 @@ def train_and_forecast_model(
                 # exog_test as-is
                 pass
             # compute exog_future: for each col, repeat last-7 mean
-            exog_future = pd.DataFrame()
-            last7 = df_agg.tail(7)
+            exog_future = pd.DataFrame(index=range(forecast_horizon))
+            last_agg = df_agg.tail(1)
+            
             for col in exog_cols:
                 if col in df_agg.columns:
                     if col in ['is_mega_sale_day', 'is_payday']:
-                        exog_future[col] = np.repeat(0, forecast_horizon)
+                        # Flags: Assume no mega sale/payday in the next 90 days unless manually specified
+                        exog_future[col] = np.repeat(0.0, forecast_horizon)
                     else:
-                        mean_val = last7[col].mean() if not last7[col].isna().all() else 0.0
-                        exog_future[col] = np.repeat(mean_val, forecast_horizon)
+                        # Price features: Use the last observed value
+                        last_val = last_agg[col].iloc[0] if col in last_agg.columns and not last_agg[col].isna().all() else 0.0
+                        exog_future[col] = np.repeat(last_val, forecast_horizon)
                 else:
                     exog_future[col] = np.repeat(0.0, forecast_horizon)
 
@@ -397,11 +409,18 @@ def train_and_forecast_model(
             future_df = pd.concat([df_prophet_test.drop(columns='y', errors='ignore'), pd.DataFrame({'ds': future_dates})], ignore_index=True, sort=False)
 
             for col in [c for c in exog_cols if c in df_prophet_train.columns]:
-                if col in df_prophet_test.columns and not df_prophet_test[col].isna().all():
-                    mean_val = df_prophet_test[col].tail(7).mean()
+                # Use the last observed value from the test set for imputation
+                last_test_val = df_prophet_test[col].iloc[-1] if col in df_prophet_test.columns and not df_prophet_test[col].isna().all() else 0.0
+
+                if col in ['is_mega_sale_day', 'is_payday']:
+                    # Flags: Set future to 0
+                    future_df.loc[future_df['ds'].isin(future_dates), col] = 0.0
                 else:
-                    mean_val = df_prophet_train[col].tail(7).mean() if col in df_prophet_train.columns else 0.0
-                future_df[col] = future_df[col].fillna(mean_val)
+                    # Price features: Use last observed value for future
+                    future_df.loc[future_df['ds'].isin(future_dates), col] = last_test_val
+                    
+                # Fill any remaining NaNs in the historical/test portion of future_df
+                future_df[col] = future_df[col].fillna(0.0)
 
             forecast_df = model.predict(future_df)
             # extract test predictions (matching test dates)
@@ -489,6 +508,22 @@ def train_and_forecast_model(
 
         future_dates = pd.date_range(start=df_test['date'].max() + pd.Timedelta(days=1), periods=forecast_horizon, freq='D')
         future_dates_series = pd.Series(future_dates)
+
+        # 1. Create a DataFrame for the raw 90-day forecast
+        forecast_df_to_save = pd.DataFrame({
+            'date': future_dates,
+            'forecasted_gross_revenue': np.array(forecast_90_days)
+        })
+        
+        # 2. Define path and save the CSV
+        csv_file_name = f"{platform.lower()}_{model_name.lower()}_forecast_{forecast_horizon}_days.csv"
+        csv_path = os.path.join('app/Analytics/csv_files', csv_file_name)
+        
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+        
+        forecast_df_to_save.to_csv(csv_path, index=False)
+        logging.info(f"✅ Saved CSV: {csv_file_name}")
 
         full_dates = pd.concat([history_dates, future_dates_series], ignore_index=True)
         full_history = np.concatenate([history_values.values, np.repeat(np.nan, forecast_horizon)])

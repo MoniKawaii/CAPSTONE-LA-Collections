@@ -11,6 +11,10 @@ def build_time_series_features(df, target_col, lag_periods, rolling_window):
     df['date'] = pd.to_datetime(df['date'])
     df = df.set_index('date').sort_index()
 
+    # --- NEW: Classification Target for Two-Part Model ---
+    df['has_revenue'] = (df[target_col] > 0).astype(int)
+    # ---------------------------------------------------
+
     # Calendar features
     df = df.assign(
         year=df.index.year,
@@ -30,6 +34,6 @@ def build_time_series_features(df, target_col, lag_periods, rolling_window):
     df[f'{target_col}_rolling_std_{rolling_window}'] = df[target_col].shift(1).rolling(window=rolling_window).std()
 
     # Drop initial NaNs caused by lagging
-    df = df.dropna(subset=[f'{target_col}_lag_{max(lag_periods)}', f'{target_col}_rolling_mean_{rolling_window}'])
+    df = df.dropna(subset=[f'{target_col}_lag_{lag_periods[0]}']) # Drop based on the smallest lag
 
-    return df.reset_index(drop=False)
+    return df.reset_index()
