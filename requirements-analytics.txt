@@ -1,3 +1,6 @@
 pip install prophet
 pip install xgboost
 pip install supabase
+pip install lightgbm
+pip install statsmodels
+pip install pmdarima

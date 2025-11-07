@@ -1,4 +1,4 @@
-# Analytics/Predictive_Modeling/data_loader.py (UPDATED)
+# Analytics/Predictive_Modeling/data_loader.py
 
 import sys
 import os
@@ -14,14 +14,17 @@ project_root = os.path.abspath(os.path.join(current_dir, '..'))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-# Now, the normal import should work
-from config import SUPABASE_URL, SUPABASE_KEY
+# Import the config file (assuming it contains SUPABASE_URL and SUPABASE_KEY)
+try:
+    from config import SUPABASE_URL, SUPABASE_KEY
+except ImportError:
+    print("Error: config.py not found or missing SUPABASE_URL/SUPABASE_KEY.")
+    sys.exit(1)
 
-MAX_ROWS = 35641
+MAX_ROWS = 50000
 
 def get_supabase_client() -> Client:
     """Initializes and returns the Supabase client."""
-    # Ensure you have 'pip install supabase'
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY, options=ClientOptions(schema="la_collections",))
     
     return supabase
@@ -35,37 +38,40 @@ def _process_dataframe(data: list) -> pd.DataFrame:
         return pd.DataFrame() 
 
     # Convert the BOOLEAN columns (returned from RPC) to integer (0 or 1) 
-    # for compatibility with Python analysis/model feature expectations.
-    df['is_mega_sale_day'] = df['is_mega_sale_day'].astype(int)
-    df['is_payday'] = df['is_payday'].astype(int)
+    # for compatibility with XGBoost
+    for col in ['is_mega_sale_day', 'is_payday']:
+        if col in df.columns:
+            # Downcasting is safe here as it converts boolean True/False to 1/0
+            df[col] = df[col].astype(int) 
 
-    # Final cleanup and indexing
-    df['date'] = pd.to_datetime(df['date'])
-    df.set_index('date', inplace=True)
-    
-    # Sort by platform and date for time-series feature creation
-    df = df.sort_values(by=['platform_key', 'date'])
+    # CRITICAL FIX: Convert 'date' to datetime and set as index
+    if 'date' in df.columns:
+        df['date'] = pd.to_datetime(df['date'])
+        df = df.sort_values('date').reset_index(drop=True)
     
     return df
 
 # --- ORIGINAL FUNCTION (FOR PREDICTIVE MODELING) ---
-def load_base_sales_data(start_date='2020-11-07'):
+def load_base_sales_data(start_date='2020-09-19'):
     """
     Executes the PostgreSQL RPC function to retrieve joined sales data for the predictive model.
+    (UPDATED to use get_factor_analysis_data which includes pricing features)
     """
     
     supabase = get_supabase_client()
     
     try:
-        print("Executing Supabase RPC function: get_sales_forecast_data (for model)...")
+        # CRITICAL CHANGE: Call the new, feature-rich function
+        print("Executing Supabase RPC function: get_factor_analysis_data (for model)...")
         response = (
             supabase.rpc(
-            'get_sales_forecast_data', 
+            'get_factor_analysis_data',  
             {'start_date_param': start_date}
             )
             .range(0, MAX_ROWS - 1)
             .execute()
             )
+        print("[DEBUG] Raw RPC keys:", response.data[0].keys())
 
         data = response.data
         
@@ -79,11 +85,9 @@ def load_base_sales_data(start_date='2020-11-07'):
     return df
 
 # --- NEW FUNCTION (FOR DESCRIPTIVE ANALYSIS / EXECUTIVE SUMMARY) ---
-def load_descriptive_analysis_data(start_date='2020-11-07'):
+def load_descriptive_analysis_data(start_date='2020-09-19'):
     """
     Executes the PostgreSQL RPC function to retrieve detailed sales data for descriptive analysis.
-    
-    This uses a separate RPC function that returns additional columns (total_discount, total_orders).
     """
     
     supabase = get_supabase_client()

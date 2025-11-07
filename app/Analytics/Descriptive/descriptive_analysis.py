@@ -247,7 +247,7 @@ def generate_eda_plots(base_df):
     # Platform Time Series 
     plt.figure(figsize=(12, 6))
     # This chart requires hue and palette for multi-color line display
-    sns.lineplot(data=df_temp, x='Date', y='gross_revenue', hue='platform_name', linewidth=1.5, palette=['#1f77b4', '#ff7f0e']) 
+    sns.lineplot(data=df_temp, x='Date', y='gross_revenue', hue='platform_name', linewidth=1.5, palette=['#ff7f0e', '#1f77b4']) 
     plt.title('Daily Revenue Trend by Platform')
     plt.xlabel('Date')
     plt.ylabel('Gross Revenue (PHP)')
@@ -306,6 +306,9 @@ def run_descriptive_analysis():
     if base_df.empty:
         print("Analysis failed: No data loaded from Supabase.")
         return
+    
+    if 'date' in base_df.columns:
+        base_df = base_df.set_index('date')
 
     # --- 2. Generating Executive Summary Metrics ---
     print("\n2. Generating Executive Summary Metrics...")
