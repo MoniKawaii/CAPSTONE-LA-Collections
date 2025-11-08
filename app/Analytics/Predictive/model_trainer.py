@@ -560,20 +560,22 @@ def train_and_forecast_model(
         y_pred_test = pd.Series(np.repeat(0.0, len(y_test_actual)), index=y_test_actual.index)
         forecast_90_days = np.repeat(0.0, forecast_horizon)
 
+    y_test_log_actual = y_test_actual.copy()
+
     # Evaluate metrics (if possible)
     try:
         try:
             # Safely convert test data and predictions back
             y_pred_test = np.expm1(y_pred_test)
             forecast_90_days = np.expm1(forecast_90_days)
-            df_test[target_col] = np.expm1(df_test[target_col])
+            y_test_linear_actual = np.expm1(y_test_log_actual)
             logging.info(f"[{platform}] Log-transform applied — median(log_revenue): {df_agg['log_revenue'].median():.2f}")
         except Exception as e:
             logging.warning(f"Inverse log transform failed: {e}")
             
-        mae = calculate_mae(df_test[target_col], y_pred_test)
-        mse = calculate_mse(df_test[target_col], y_pred_test)
-        rmse = calculate_rmse(df_test[target_col], y_pred_test)
+        mae = calculate_mae(y_test_linear_actual, y_pred_test)
+        mse = calculate_mse(y_test_linear_actual, y_pred_test)
+        rmse = calculate_rmse(y_test_linear_actual, y_pred_test)
     except Exception as e:
         logging.warning(f"Metric calculation failed: {e}")
         mae = mse = rmse = np.inf
@@ -582,7 +584,7 @@ def train_and_forecast_model(
     try:
         test_results_df = pd.DataFrame({
             'date': pd.to_datetime(df_test['date']),
-            'actual': np.array(y_test_actual).astype(float),
+            'actual': np.array(y_test_linear_actual).astype(float),
             'prediction': np.array(y_pred_test).astype(float)
         }).fillna(0.0)
         
@@ -608,12 +610,14 @@ def train_and_forecast_model(
 
         # --- Forecast Plot (History + Future) ---
         history_dates = pd.concat([df_train['date'], df_test['date']]).reset_index(drop=True)
-        history_values = pd.concat([df_train[target_col], df_test[target_col]]).reset_index(drop=True)
+        history_values_log = pd.concat([df_train[target_col], df_test[target_col]]).reset_index(drop=True)
+        history_values_linear = np.expm1(history_values_log.values)
+
         future_dates_series = pd.Series(future_dates)
         
         full_dates = pd.concat([history_dates, future_dates_series], ignore_index=True)
-        full_history = np.concatenate([history_values.values, np.repeat(np.nan, forecast_horizon)])
-        full_forecast = np.concatenate([np.repeat(np.nan, len(history_values)), np.nan_to_num(forecast_90_days, nan=0.0)])
+        full_history = np.concatenate([history_values_linear, np.repeat(np.nan, forecast_horizon)])
+        full_forecast = np.concatenate([np.repeat(np.nan, len(history_values_log)), np.nan_to_num(forecast_90_days, nan=0.0)])
 
         forecast_plot_df = pd.DataFrame({
             'date': full_dates,
