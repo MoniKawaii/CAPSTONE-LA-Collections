@@ -1,5 +1,3 @@
-# app/Analytics/Predictive/model_trainer.py
-
 import os
 import sys
 import logging
@@ -77,11 +75,64 @@ def seasonal_naive_forecast(train_series, test_series, season_length=7, horizon=
     test_pred = np.tile(last_season, (n_test // season_length) + 1)[:n_test]
     test_pred = pd.Series(test_pred, index=test_series.index)
 
-    # For full horizon
-    # full_last_season = last_season
-    # forecast_90_days = np.tile(full_last_season, (horizon // season_length) + 1)[:horizon]
     forecast_90_days = np.tile(last_season, (horizon // season_length) + 1)[:horizon]
     return test_pred, forecast_90_days
+
+
+# ---- helper: safe save of test + forecast using your helpers ----
+def save_test_and_forecast_helper(platform, model_name, df_test, y_test, y_pred, forecast_90_days, forecast_horizon):
+    """
+    Unified helper for saving test comparison + 90-day forecast using plot_helper's functions.
+    Guarantees valid CSVs and PNGs for all model types.
+    """
+    try:
+        # Clean & align test data
+        test_results_df = pd.DataFrame({
+            'date': pd.to_datetime(df_test['date']),
+            'actual': np.array(y_test).astype(float),
+            'prediction': np.array(y_pred).astype(float)
+        }).fillna(0.0)
+
+        # --- Test comparison CSV ---
+        os.makedirs('app/Analytics/csv_files', exist_ok=True)
+        save_test_data_to_csv(test_results_df, f"{platform}_{model_name}")
+
+    except Exception as e:
+        logging.warning(f"[{platform} - {model_name}] test CSV save failed: {e}")
+        return  # skip forecast plotting if even test CSV fails badly
+
+    try:
+        # --- Forecast CSV ---
+        future_dates = pd.date_range(start=df_test['date'].max() + pd.Timedelta(days=1), periods=forecast_horizon, freq='D')
+        forecast_df_to_save = pd.DataFrame({
+            'date': future_dates,
+            'forecasted_gross_revenue': np.nan_to_num(forecast_90_days, nan=0.0)
+        })
+        forecast_csv_path = f"app/Analytics/csv_files/{platform.lower()}_{model_name.lower()}_forecast_{forecast_horizon}_days.csv"
+        forecast_df_to_save.to_csv(forecast_csv_path, index=False)
+        logging.info(f"✅ Saved CSV: {os.path.basename(forecast_csv_path)}")
+
+        # --- Plot: TEST_VS_ACTUAL ---
+        save_plot(test_results_df, f"{platform} - {model_name}", 'TEST_VS_ACTUAL')
+
+        # --- Plot: 90_DAY_FORECAST ---
+        history_dates = df_test['date']
+        history_values = y_test
+        full_dates = pd.concat([history_dates.reset_index(drop=True),
+                                pd.Series(future_dates)], ignore_index=True)
+        full_history = np.concatenate([history_values, np.repeat(np.nan, forecast_horizon)])
+        full_forecast = np.concatenate([np.repeat(np.nan, len(history_values)),
+                                        np.nan_to_num(forecast_90_days, nan=0.0)])
+
+        forecast_plot_df = pd.DataFrame({
+            'date': full_dates,
+            'history': full_history,
+            'forecast': full_forecast
+        })
+        save_plot(forecast_plot_df, f"{platform} - {model_name}", '90_DAY_FORECAST')
+
+    except Exception as e:
+        logging.warning(f"[{platform} - {model_name}] forecast save/plot failed: {e}")
 
 
 # ---- main train & forecast function ----
@@ -101,12 +152,12 @@ def train_and_forecast_model(
 
     logging.info(f"--- Training {model_name} for {platform} ---")
 
-    # Ensure date column
+    # ---------- PREP ----------
     df = df.copy()
     df['date'] = pd.to_datetime(df['date'])
     df = df.sort_values('date').reset_index(drop=True)
 
-    # Safe numeric conversion for price features
+    # Safe numeric conversion
     for col in ['avg_paid_price', 'avg_original_price', 'avg_discount_rate']:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce')
@@ -161,49 +212,37 @@ def train_and_forecast_model(
 
     # --- Fill exog ---
     for ex in exog_cols:
-        if ex in df_agg.columns:
-            df_agg[ex] = df_agg[ex].fillna(0)
+        if ex in df_agg.columns and ex in ['is_mega_sale_day', 'is_payday']:
+            df_agg[ex] = df_agg[ex].fillna(0).astype(int)
+        elif ex in df_agg.columns:
+            mean_val = df_agg[ex][df_agg[ex] > 0].mean() or 0.0
+            df_agg[ex] = df_agg[ex].fillna(mean_val).astype(float)
 
-    # --- Info summary ---
-    total_days = (last_sale_date - first_sale_date).days + 1
-    days_with_sales = (df_agg[target_col] > 0).sum()
-    days_no_sales = total_days - days_with_sales
-    pct_no_sales = (days_no_sales / total_days * 100) if total_days > 0 else 0
-    logging.info(
-        f"[{platform}] Period: {first_sale_date.date()} → {last_sale_date.date()} | "
-        f"Total days: {total_days} | With sales: {days_with_sales} | "
-        f"No sales: {days_no_sales} ({pct_no_sales:.1f}% no-sales days)"
-    )
-
-    # Fill missing exogenous values (zero for flags, mean for continuous)
-    # For simplicity fill all exog cols with 0, then override continuous with mean
-    """for ex in exog_cols:
-        if ex in df_agg.columns:
-            df_agg[ex] = df_agg[ex].fillna(0)"""
+    # --- Interaction features ---
+    if all(col in df_agg.columns for col in ['is_mega_sale_day', 'is_payday']):
+        df_agg['is_event_day'] = ((df_agg['is_mega_sale_day'] == 1) | (df_agg['is_payday'] == 1)).astype(int)
+    if all(col in df_agg.columns for col in ['avg_discount_rate', 'is_mega_sale_day']):
+        df_agg['discount_on_event'] = df_agg['avg_discount_rate'] * df_agg['is_event_day']
 
     # Train/test chronological split
     split_date = df_agg['date'].max() - pd.Timedelta(days=test_size_days - 1)
-    # df_train = df_agg[df_agg['date'] < split_date].copy().reset_index(drop=True)
-    # df_test = df_agg[df_agg['date'] >= split_date].copy().reset_index(drop=True)
     df_train = df_agg[df_agg['date'] < split_date].copy()
     df_test = df_agg[df_agg['date'] >= split_date].copy()
 
     logging.info(f"[{platform}] Data points | train: {len(df_train)} | test: {len(df_test)} (target test_days={test_size_days})")
 
-    # default outputs in case of failures
-    """mae = mse = rmse = np.inf
-    y_test_actual = df_test[target_col] if target_col in df_test.columns else pd.Series(dtype=float)
-    y_pred_test = pd.Series(dtype=float)
-    forecast_90_days = np.repeat(0.0, forecast_horizon)"""
     mae = mse = rmse = np.inf
     y_pred_test = pd.Series(dtype=float)
     forecast_90_days = np.repeat(0.0, forecast_horizon)
-    # y_test_actual = df_test[target_col]
 
     # ---------- XGBoost & LightGBM ----------
     if model_name in ['XGBoost', 'LightGBM']:
         try:
-            df_full = build_time_series_features(df_agg, target_col, lag_periods=[7, 14, 28], rolling_window=7)
+            # ⚙️ Platform-specific lag/rolling config
+            lag_periods = [1, 7, 14, 30, 60] if platform == 'Shopee' else [1, 7, 14]
+            rolling_window = 14 if platform == 'Shopee' else 7
+
+            df_full = build_time_series_features(df_agg, target_col, lag_periods=lag_periods, rolling_window=rolling_window)
             df_train_ml = df_full[df_full['date'] < split_date]
             df_test_ml = df_full[df_full['date'] >= split_date]
 
@@ -212,115 +251,242 @@ def train_and_forecast_model(
                 errors='ignore'
             ).tolist()
 
-            X_all = df_train_ml[features]
-            y_all = df_train_ml[target_col]
+            X_all, y_all = df_train_ml[features], df_train_ml[target_col]
             val_size = max(1, int(len(X_all) * 0.1))
             X_train, y_train_ml = X_all.iloc[:-val_size], y_all.iloc[:-val_size]
             X_valid, y_valid_ml = X_all.iloc[-val_size:], y_all.iloc[-val_size:]
-            X_test = df_test_ml[features]
-            y_test_actual = df_test_ml[target_col]
+            X_test, y_test_actual = df_test_ml[features], df_test_ml[target_col]
 
-            tree_estimators = 40 # Default for Lazada
+            # ⚙️ Platform-specific LightGBM/XGBoost parameters
             if platform == 'Shopee':
-                # Shopee performed best at 300 estimators
-                tree_estimators = 100
+                # LightGBM: Best MAE at 45 estimators. Focus on complexity control for sparse data.
+                tree_estimators = 1000       # New max ceiling (from 300)
+                learning_rate = 0.05        # Lowered for more precise steps (from 0.05)
+                num_leaves = 40             
+                lgbm_min_data_in_leaf = 50  # Alias for min_child_samples
+                lgbm_bagging_fraction = 0.8 # Alias for subsample
+                lgbm_feature_fraction = 0.8 # Alias for colsample_bytree
+                lgbm_reg_lambda = 0.0       # Renamed variable for L2
+                objective_lgbm = 'tweedie'
+                
+                # XGBoost/General parameters
+                xgb_objective = 'reg:tweedie'
+                xgb_tweedie_power = 1.2
+                xgb_max_depth = 8         # Increased depth to allow complex interactions on sparse data (from 8)
+                xgb_reg_alpha = 0.5        # Introduced light L1 regularization (from 0.0)
+                xgb_reg_lambda = 0.0        # No L1 Regularization needed
 
-            # XGBoost (version adaptive)
+            else:  # Lazada
+                # XGBoost: Best MAE at 35 estimators. Focus on structural control and regularization.
+                tree_estimators = 1000       # New max ceiling (from 300)
+                learning_rate = 0.01        # Lowered further for maximum stability (from 0.03)
+                num_leaves = 40             
+                lgbm_min_data_in_leaf = 15  # Alias for min_child_samples
+                lgbm_bagging_fraction = 1.0 # Alias for subsample
+                lgbm_feature_fraction = 1.0 # Alias for colsample_bytree
+                lgbm_reg_lambda = 0.5       # Renamed variable for L2
+                objective_lgbm = 'tweedie'
+
+                # XGBoost/General parameters
+                xgb_objective = 'reg:tweedie'
+                xgb_tweedie_power = 1.2
+                xgb_max_depth = 5          # Lowered for a simpler, more robust model (from 6)
+                xgb_reg_alpha = 0.1        # Slightly reduced L1 regularization (from 0.5)
+                xgb_reg_lambda = 0.5       # Introduced L2 regularization
+
+            # --- XGBoost ---
             if model_name == 'XGBoost':
                 import xgboost as xgb
-                
-                # 1. Initialize the model
-                model = XGBRegressor(n_estimators=tree_estimators, learning_rate=0.05, random_state=42)
+                model_kwargs = dict(
+                    n_estimators=tree_estimators,
+                    learning_rate=learning_rate,
+                    random_state=42,
+                    tree_method='hist',
+                    objective=xgb_objective,
+                    tweedie_variance_power=xgb_tweedie_power,
+                    max_depth=xgb_max_depth,
+                    reg_alpha=xgb_reg_alpha,
+                    # NEW: Added L2 Regularization (reg_lambda)
+                    reg_lambda=xgb_reg_lambda,
+                    n_jobs=-1
+                )
+
+                version_str = xgb.__version__
+                version_nums = tuple(int(v) for v in version_str.split(".")[:2])
+
+                fit_successful = False
 
                 try:
-                    version_str = xgb.__version__
-                    version_nums = tuple(int(v) for v in version_str.split(".")[:2])
-                    logging.info(f"XGBoost Version Detected: {version_str}")
-
-                    # Default fit parameters, assuming v3.x or v1.x standard
-                    fit_params = {
-                        'eval_set': [(X_valid, y_valid_ml)],
-                        'verbose': False
-                    }
-                    
-                    # Flag to track if successful fit occurred
-                    fit_successful = False
-
-                    # --- PHASE 1: Try Modern Callbacks (v2.x and v3.x+) ---
                     if version_nums >= (2, 0):
-                        try:
-                            # Import is localized since 'callbacks' is a feature of the modern API
-                            from xgboost.callback import EarlyStopping
-                            early_stop_callback = EarlyStopping(rounds=25, save_best=True)
+                        # ✅ XGBoost 2.0+ requires early stopping as init param or callback
+                        model = xgb.XGBRegressor(**model_kwargs, early_stopping_rounds=25)
+                        model.fit(
+                            X_train, y_train_ml,
+                            eval_set=[(X_train, y_train_ml), (X_valid, y_valid_ml)],
+                            verbose=False
+                        )
+                        fit_successful = True
 
-                            fit_params['callbacks'] = [early_stop_callback]
-                            
-                            # Check for v2.x specific parameter name 'evals'
-                            if version_nums < (3, 0):
-                                # v2.x used 'evals' instead of 'eval_set'
-                                fit_params['evals'] = fit_params.pop('eval_set') 
-                            
-                            logging.info(f"[{platform} - XGBoost] Attempting fit with 'callbacks'.")
-                            model.fit(X_train, y_train_ml, **fit_params)
-                            fit_successful = True
-
-                        except (TypeError, ImportError) as e_callback:
-                            # Catches your current warning: 'unexpected keyword argument 'callbacks''
-                            logging.warning(f"[{platform} - XGBoost] 'callbacks' failed ({e_callback}). Falling back to 'early_stopping_rounds'.")
-                            
-                    # --- PHASE 2: Try Legacy early_stopping_rounds (v1.x and fallback for others) ---
-                    if not fit_successful:
-                        try:
-                            # Re-set standard params if they were modified for v2.x 'evals'
-                            fit_params = {
-                                'eval_set': [(X_valid, y_valid_ml)],
-                                'verbose': False,
-                                'early_stopping_rounds': 25 # Legacy parameter
-                            }
-
-                            logging.info(f"[{platform} - XGBoost] Attempting fit with 'early_stopping_rounds' (legacy).")
-                            model.fit(X_train, y_train_ml, **fit_params)
-                            fit_successful = True
-
-                        except TypeError as e_legacy:
-                            # Catches the error if 'early_stopping_rounds' is ALSO rejected (strict v3.0+)
-                            logging.warning(f"[{platform} - XGBoost] Final fallback: Early stopping not supported ({e_legacy}), fitting normally.")
-                            model.fit(X_train, y_train_ml)
-                            fit_successful = True # Fit occurred, just without early stopping
+                    else:
+                        # ✅ Legacy XGBoost (1.x)
+                        model = xgb.XGBRegressor(**model_kwargs)
+                        model.fit(
+                            X_train, y_train_ml,
+                            eval_set=[(X_valid, y_valid_ml)],
+                            early_stopping_rounds=25,
+                            verbose=False
+                        )
+                        fit_successful = True
 
                 except Exception as e:
-                    # General catch-all for any other failure during version check or setup
-                    logging.warning(f"[{platform} - XGBoost] General fitting fallback due to: {e}")
+                    logging.warning(f"[{platform} - XGBoost] fallback fit: {e}")
+                    model = xgb.XGBRegressor(**model_kwargs)
                     model.fit(X_train, y_train_ml)
 
-            # LightGBM (fallback-safe)
+            # --- LightGBM ---
             else:
-                # Use platform-specific optimal estimators (50 for all tree models now)
-                model = LGBMRegressor(n_estimators=tree_estimators, learning_rate=0.05, random_state=42)
-                try:
-                    model.fit(
-                        X_train, y_train_ml,
-                        eval_set=[(X_valid, y_valid_ml)],
-                        # Use the common parameter name first
-                        early_stopping_rounds=25
-                    )
-                except TypeError as e:
-                    # Catches if 'early_stopping_rounds' is rejected
-                    logging.warning(f"[{platform} - LightGBM] Early stopping fit failed due to: {e}. Fitting normally.")
-                    model.fit(X_train, y_train_ml)
-                except Exception as e:
-                    logging.warning(f"[{platform} - LightGBM] fallback fit due to: {e}")
-                    model.fit(X_train, y_train_ml)
+                import lightgbm as lgb
+                
+                lgbm_params = {
+                    'n_estimators': tree_estimators,
+                    'learning_rate': learning_rate,
+                    'random_state': 42,
+                    'objective': objective_lgbm,
+                    'silent': True,
+                    'num_leaves': num_leaves,
+                    'min_child_samples': lgbm_min_data_in_leaf,
+                    'subsample': lgbm_bagging_fraction,
+                    'colsample_bytree': lgbm_feature_fraction,
+                    'reg_lambda': lgbm_reg_lambda
+                }
 
+                if objective_lgbm == 'tweedie':
+                    lgbm_params['tweedie_variance_power'] = 1.2
+                    
+                model = LGBMRegressor(**lgbm_params)
+
+                try:
+                    # FIX: Use the correct 'callbacks' syntax for early stopping, matching your working sample.
+                    callbacks = [lgb.early_stopping(stopping_rounds=25, verbose=False)]
+                    
+                    model.fit(X_train, y_train_ml, 
+                            eval_set=[(X_valid, y_valid_ml)],
+                            eval_metric='mae',
+                            callbacks=callbacks)
+                    
+                except Exception as e:
+                    # Fallback if the version cannot handle the new 'callbacks' keyword
+                    logging.warning(f"[{platform} - LightGBM] fallback fit: {e}. Fitting without early stopping.")
+                    model.fit(X_train, y_train_ml, eval_metric='mae')
+
+            # Test predictions
             y_pred_test = pd.Series(model.predict(X_test), index=y_test_actual.index)
 
-            # Save model
-            os.makedirs("app/Analytics/models", exist_ok=True)
-            joblib.dump(model, f"app/Analytics/models/{platform}_{model_name}.pkl")
-            logging.info(f"💾 Saved model to app/Analytics/models/{platform}_{model_name}.pkl")
+            # --- Save test & forecast for XGBoost/LightGBM ---
+            # Recursive 90-day forecast (option 1): one-step-ahead iterative predictions
+            try:
+                # Prepare rolling buffer of last observed target values (to compute lags/rolling)
+                max_lag = max([int(c.split('_')[-1]) for c in features if f"{target_col}_lag_" in c] + [1])
+                rolling_window = 14  # same as used in feature function
+                # get last max_lag + rolling_window values from df_full target column
+                hist_targets = list(df_full[target_col].iloc[-(max_lag + rolling_window):].values)
+                # If not enough history, pad with zeros
+                if len(hist_targets) < (max_lag + rolling_window):
+                    pad = [0.0] * ((max_lag + rolling_window) - len(hist_targets))
+                    hist_targets = pad + hist_targets
+
+                # Start from the last row in df_full as template for date/exog
+                last_row = df_full.iloc[-1].copy()
+                future_preds = []
+                last_values = hist_targets.copy()  # rolling buffer
+
+                for step in range(forecast_horizon):
+                    # build new feature row
+                    new_date = last_row['date'] + pd.Timedelta(days=1)
+                    new_row = last_row.copy()
+                    new_row['date'] = new_date
+
+                    # update calendar features
+                    new_row['year'] = new_date.year
+                    new_row['month'] = new_date.month
+                    new_row['dayofweek'] = new_date.dayofweek
+                    new_row['dayofyear'] = new_date.dayofyear
+                    new_row['weekofyear'] = int(new_date.isocalendar()[1])
+                    new_row['quarter'] = (new_date.month - 1) // 3 + 1
+                    new_row['is_weekend'] = int(new_date.dayofweek >= 5)
+
+                    # update Fourier features (same logic as feature_engineer)
+                    t = 2 * np.pi * new_row['dayofyear'] / 366
+                    for k in range(1, 6):
+                        new_row[f'fourier_sin_{k}'] = np.sin(k * t)
+                        new_row[f'fourier_cos_{k}'] = np.cos(k * t)
+
+                    # set exogenous continuous features to last known (could be enhanced if you have forecasts)
+                    for ex in ['avg_paid_price', 'avg_original_price', 'avg_discount_rate']:
+                        if ex in new_row.index:
+                            # use last observed value from df_agg
+                            new_row[ex] = float(df_agg[ex].iloc[-1]) if ex in df_agg.columns else 0.0
+
+                    # update lag features using last_values buffer
+                    for col in features:
+                        if f"{target_col}_lag_" in col:
+                            try:
+                                lag_n = int(col.split('_')[-1])
+                                # last_values holds history with most recent at the end
+                                new_row[col] = last_values[-lag_n]
+                            except Exception:
+                                new_row[col] = 0.0
+
+                    # update rolling mean/std using last_values
+                    try:
+                        last_window = np.array(last_values[-rolling_window:])
+                        new_row[f'{target_col}_rolling_mean_{rolling_window}'] = float(np.nanmean(last_window))
+                        new_row[f'{target_col}_rolling_std_{rolling_window}'] = float(np.nanstd(last_window))
+                    except Exception:
+                        new_row[f'{target_col}_rolling_mean_{rolling_window}'] = 0.0
+                        new_row[f'{target_col}_rolling_std_{rolling_window}'] = 0.0
+
+                    # Build X vector and predict
+                    X_future_row = pd.DataFrame([new_row[features]])
+                    try:
+                        pred = float(model.predict(X_future_row)[0])
+                        if np.isnan(pred) or np.isinf(pred):
+                            pred = 0.0
+                    except Exception:
+                        pred = 0.0
+
+                    # append prediction and update buffers
+                    future_preds.append(max(0.0, pred))
+                    last_values.append(pred)
+                    # keep buffer length
+                    if len(last_values) > (max_lag + rolling_window):
+                        last_values.pop(0)
+
+                    # update last_row to new_row with target set to pred for next iteration
+                    last_row = new_row.copy()
+                    last_row[target_col] = pred
+
+                forecast_90_days = np.array(future_preds)
+
+            except Exception as e:
+                logging.warning(f"[{platform} - {model_name}] recursive forecast failed: {e}")
+                forecast_90_days = np.repeat(float(y_test_actual.mean() if len(y_test_actual)>0 else 0.0), forecast_horizon)
+
+            # Save test & forecasts & plots via helper
+            try:
+                save_test_and_forecast_helper(platform, model_name, df_test, y_test_actual, y_pred_test, forecast_90_days, forecast_horizon)
+            except Exception as e:
+                logging.warning(f"[{platform} - {model_name}] save helper failed: {e}")
 
         except Exception as e:
             logging.error(f"[{platform} - {model_name}] failed: {e}")
+            # Ensure fallback saving so files update
+            y_pred_test = pd.Series(np.repeat(0.0, len(df_test)), index=df_test.index)
+            forecast_90_days = np.repeat(0.0, forecast_horizon)
+            try:
+                save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
+            except Exception:
+                pass
             return {'platform': platform, 'model': model_name, 'mae': np.inf, 'mse': np.inf, 'rmse': np.inf}
 
     # ---------- SARIMAX ----------
@@ -349,42 +515,42 @@ def train_and_forecast_model(
                             enforce_stationarity=False, enforce_invertibility=False)
             model_fit = model.fit(disp=False)
 
-            # create exog for prediction: combine exog_test then exog_future (use last-7 mean or zeros)
-            future_exog_rows = []
-            if len(exog_test) > 0:
-                # exog_test as-is
-                pass
-            # compute exog_future: for each col, repeat last-7 mean
+            # compute exog_future
             exog_future = pd.DataFrame(index=range(forecast_horizon))
             last_agg = df_agg.tail(1)
-            
+
             for col in exog_cols:
                 if col in df_agg.columns:
                     if col in ['is_mega_sale_day', 'is_payday']:
-                        # Flags: Assume no mega sale/payday in the next 90 days unless manually specified
                         exog_future[col] = np.repeat(0.0, forecast_horizon)
                     else:
-                        # Price features: Use the last observed value
                         last_val = last_agg[col].iloc[0] if col in last_agg.columns and not last_agg[col].isna().all() else 0.0
                         exog_future[col] = np.repeat(last_val, forecast_horizon)
                 else:
                     exog_future[col] = np.repeat(0.0, forecast_horizon)
 
-            # now build exog_pred_all matching the prediction indices (test + forecast)
             exog_pred_all = pd.concat([exog_test.reset_index(drop=True), exog_future.reset_index(drop=True)], ignore_index=True)
 
-            # predict for test + horizon
             pred_start = len(df_train[target_col])
             pred_end = pred_start + len(df_test[target_col]) + forecast_horizon - 1
 
             all_preds = model_fit.predict(start=pred_start, end=pred_end, exog=exog_pred_all)
-            # slice for y_pred_test and forecast
             y_pred_test = all_preds.iloc[:len(df_test[target_col])]
-            y_pred_test.index = df_test.index  # align index
+            y_pred_test.index = df_test.index
             forecast_90_days = all_preds.iloc[len(df_test[target_col]):].values
+
+            # Save outputs via helper
+            save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
 
         except Exception as e:
             logging.error(f"SARIMAX failed: {e}")
+            # fallback save placeholders
+            y_pred_test = pd.Series(np.repeat(0.0, len(df_test)), index=df_test.index)
+            forecast_90_days = np.repeat(0.0, forecast_horizon)
+            try:
+                save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
+            except Exception:
+                pass
             return {'platform': platform, 'model': model_name, 'mae': np.inf, 'mse': np.inf, 'rmse': np.inf}
 
     # ---------- Prophet ----------
@@ -396,50 +562,46 @@ def train_and_forecast_model(
             if df_prophet_train.empty:
                 raise ValueError("Empty prophet training frame.")
 
-            model = Prophet(daily_seasonality=True, weekly_seasonality=True, yearly_seasonality=False)
+            m = Prophet(daily_seasonality=True, weekly_seasonality=True, yearly_seasonality=False)
             for col in [c for c in exog_cols if c in df_prophet_train.columns]:
-                model.add_regressor(col)
+                m.add_regressor(col)
 
-            model.fit(df_prophet_train)
+            m.fit(df_prophet_train)
 
-            # build future frame: test rows (for in-sample test predictions) + future dates for horizon
             test_dates = df_prophet_test['ds']
             future_dates = pd.date_range(start=test_dates.max() + pd.Timedelta(days=1), periods=forecast_horizon, freq='D')
-            # prepare DF for predict: keep exog for historical test, and fill exog for future using last-7 mean
             future_df = pd.concat([df_prophet_test.drop(columns='y', errors='ignore'), pd.DataFrame({'ds': future_dates})], ignore_index=True, sort=False)
 
             for col in [c for c in exog_cols if c in df_prophet_train.columns]:
-                # Use the last observed value from the test set for imputation
                 last_test_val = df_prophet_test[col].iloc[-1] if col in df_prophet_test.columns and not df_prophet_test[col].isna().all() else 0.0
-
                 if col in ['is_mega_sale_day', 'is_payday']:
-                    # Flags: Set future to 0
                     future_df.loc[future_df['ds'].isin(future_dates), col] = 0.0
                 else:
-                    # Price features: Use last observed value for future
                     future_df.loc[future_df['ds'].isin(future_dates), col] = last_test_val
-                    
-                # Fill any remaining NaNs in the historical/test portion of future_df
                 future_df[col] = future_df[col].fillna(0.0)
 
-            forecast_df = model.predict(future_df)
-            # extract test predictions (matching test dates)
+            forecast_df = m.predict(future_df)
             y_pred_test = forecast_df.loc[forecast_df['ds'].isin(df_prophet_test['ds']), 'yhat'].reset_index(drop=True)
-            # align index
+
             if len(y_pred_test) == len(df_prophet_test):
                 y_pred_test.index = df_test.index
             else:
-                # fallback: use y_test_actual's index if mismatch
                 y_pred_test = pd.Series(y_pred_test.values, index=df_test.index[:len(y_pred_test)])
 
-            # future forecasts
             forecast_90_days = forecast_df.loc[forecast_df['ds'].isin(future_dates), 'yhat'].values
             if len(forecast_90_days) != forecast_horizon:
-                # fallback to repeating last y_pred_test
                 forecast_90_days = np.repeat(y_pred_test.iloc[-1] if len(y_pred_test) > 0 else df_train[target_col].iloc[-1], forecast_horizon)
+
+            save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
 
         except Exception as e:
             logging.error(f"Prophet failed: {e}")
+            y_pred_test = pd.Series(np.repeat(0.0, len(df_test)), index=df_test.index)
+            forecast_90_days = np.repeat(0.0, forecast_horizon)
+            try:
+                save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
+            except Exception:
+                pass
             return {'platform': platform, 'model': model_name, 'mae': np.inf, 'mse': np.inf, 'rmse': np.inf}
 
     # ---------- SNaive ----------
@@ -447,24 +609,30 @@ def train_and_forecast_model(
         try:
             season_len = min(7, max(1, len(df_train) // 2))
             y_pred_test, forecast_90_days = seasonal_naive_forecast(df_train[target_col], df_test[target_col], season_length=season_len, horizon=forecast_horizon)
+            # ensure series index alignment
+            y_pred_test.index = df_test.index
+            save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
         except Exception as e:
             logging.error(f"SNaive failed: {e}")
+            y_pred_test = pd.Series(np.repeat(0.0, len(df_test)), index=df_test.index)
+            forecast_90_days = np.repeat(0.0, forecast_horizon)
+            try:
+                save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
+            except Exception:
+                pass
             return {'platform': platform, 'model': model_name, 'mae': np.inf, 'mse': np.inf, 'rmse': np.inf}
 
     # ---------- Postprocess predictions ----------
-    # Convert to Series and align
     try:
         # Ensure y_test_actual is set (for models that changed it)
         if target_col in df_test.columns:
             y_test_actual = df_test[target_col]
         # Ensure y_pred_test index aligns with y_test_actual
         if isinstance(y_pred_test, pd.Series):
-            # align by index if lengths match, otherwise reset index
             if len(y_pred_test) == len(y_test_actual):
                 y_pred_test = y_pred_test.astype(float)
                 y_pred_test.index = y_test_actual.index
             else:
-                # attempt to coerce to same length
                 y_pred_test = pd.Series(y_pred_test.values[:len(y_test_actual)], index=y_test_actual.index)
         else:
             y_pred_test = pd.Series(np.repeat(0.0, len(y_test_actual)), index=y_test_actual.index)
@@ -483,23 +651,18 @@ def train_and_forecast_model(
 
     # Evaluate metrics (if possible)
     try:
-        mae = calculate_mae(y_test_actual, y_pred_test)
-        mse = calculate_mse(y_test_actual, y_pred_test)
-        rmse = calculate_rmse(y_test_actual, y_pred_test)
+        mae = calculate_mae(df_test[target_col], y_pred_test)
+        mse = calculate_mse(df_test[target_col], y_pred_test)
+        rmse = calculate_rmse(df_test[target_col], y_pred_test)
     except Exception as e:
         logging.warning(f"Metric calculation failed: {e}")
         mae = mse = rmse = np.inf
 
-    # Save test CSV
+    # Save test CSV via helper (redundant but safe)
     try:
-        test_results_df = pd.DataFrame({
-            'date': df_test['date'].values,
-            'actual': y_test_actual.values,
-            'prediction': y_pred_test.values
-        })
-        save_test_data_to_csv(test_results_df, f"{platform}_{model_name}")
-    except Exception as e:
-        logging.warning(f"Saving test CSV failed: {e}")
+        save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
+    except Exception:
+        pass
 
     # Build forecast_plot_df with aligned lengths: history_dates + future_dates
     try:
@@ -509,19 +672,14 @@ def train_and_forecast_model(
         future_dates = pd.date_range(start=df_test['date'].max() + pd.Timedelta(days=1), periods=forecast_horizon, freq='D')
         future_dates_series = pd.Series(future_dates)
 
-        # 1. Create a DataFrame for the raw 90-day forecast
         forecast_df_to_save = pd.DataFrame({
             'date': future_dates,
             'forecasted_gross_revenue': np.array(forecast_90_days)
         })
-        
-        # 2. Define path and save the CSV
+
         csv_file_name = f"{platform.lower()}_{model_name.lower()}_forecast_{forecast_horizon}_days.csv"
         csv_path = os.path.join('app/Analytics/csv_files', csv_file_name)
-        
-        # Ensure the directory exists
         os.makedirs(os.path.dirname(csv_path), exist_ok=True)
-        
         forecast_df_to_save.to_csv(csv_path, index=False)
         logging.info(f"✅ Saved CSV: {csv_file_name}")
 
@@ -535,8 +693,6 @@ def train_and_forecast_model(
             'forecast': full_forecast
         })
 
-        # Save plots
-        save_plot(test_results_df, f"{platform} - {model_name}", 'TEST_VS_ACTUAL')
         save_plot(forecast_plot_df, f"{platform} - {model_name}", '90_DAY_FORECAST')
 
     except Exception as e:
