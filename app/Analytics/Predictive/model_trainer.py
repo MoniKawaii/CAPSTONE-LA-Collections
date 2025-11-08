@@ -6,7 +6,6 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-import joblib
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
@@ -78,63 +77,6 @@ def seasonal_naive_forecast(train_series, test_series, season_length=7, horizon=
     forecast_90_days = np.tile(last_season, (horizon // season_length) + 1)[:horizon]
     return test_pred, forecast_90_days
 
-
-# ---- helper: safe save of test + forecast using your helpers ----
-def save_test_and_forecast_helper(platform, model_name, df_test, y_test, y_pred, forecast_90_days, forecast_horizon):
-    """
-    Unified helper for saving test comparison + 90-day forecast using plot_helper's functions.
-    Guarantees valid CSVs and PNGs for all model types.
-    """
-    try:
-        # Clean & align test data
-        test_results_df = pd.DataFrame({
-            'date': pd.to_datetime(df_test['date']),
-            'actual': np.array(y_test).astype(float),
-            'prediction': np.array(y_pred).astype(float)
-        }).fillna(0.0)
-
-        # --- Test comparison CSV ---
-        os.makedirs('app/Analytics/csv_files', exist_ok=True)
-        save_test_data_to_csv(test_results_df, f"{platform}_{model_name}")
-
-    except Exception as e:
-        logging.warning(f"[{platform} - {model_name}] test CSV save failed: {e}")
-        return  # skip forecast plotting if even test CSV fails badly
-
-    try:
-        # --- Forecast CSV ---
-        future_dates = pd.date_range(start=df_test['date'].max() + pd.Timedelta(days=1), periods=forecast_horizon, freq='D')
-        forecast_df_to_save = pd.DataFrame({
-            'date': future_dates,
-            'forecasted_gross_revenue': np.nan_to_num(forecast_90_days, nan=0.0)
-        })
-        forecast_csv_path = f"app/Analytics/csv_files/{platform.lower()}_{model_name.lower()}_forecast_{forecast_horizon}_days.csv"
-        forecast_df_to_save.to_csv(forecast_csv_path, index=False)
-        logging.info(f"✅ Saved CSV: {os.path.basename(forecast_csv_path)}")
-
-        # --- Plot: TEST_VS_ACTUAL ---
-        save_plot(test_results_df, f"{platform} - {model_name}", 'TEST_VS_ACTUAL')
-
-        # --- Plot: 90_DAY_FORECAST ---
-        history_dates = df_test['date']
-        history_values = y_test
-        full_dates = pd.concat([history_dates.reset_index(drop=True),
-                                pd.Series(future_dates)], ignore_index=True)
-        full_history = np.concatenate([history_values, np.repeat(np.nan, forecast_horizon)])
-        full_forecast = np.concatenate([np.repeat(np.nan, len(history_values)),
-                                        np.nan_to_num(forecast_90_days, nan=0.0)])
-
-        forecast_plot_df = pd.DataFrame({
-            'date': full_dates,
-            'history': full_history,
-            'forecast': full_forecast
-        })
-        save_plot(forecast_plot_df, f"{platform} - {model_name}", '90_DAY_FORECAST')
-
-    except Exception as e:
-        logging.warning(f"[{platform} - {model_name}] forecast save/plot failed: {e}")
-
-
 # ---- main train & forecast function ----
 def train_and_forecast_model(
     df: pd.DataFrame,
@@ -190,6 +132,8 @@ def train_and_forecast_model(
     full_date_range = pd.date_range(start=first_sale_date, end=last_sale_date, freq='D')
     df_agg = df_agg.set_index('date').reindex(full_date_range).fillna(0.0).rename_axis('date').reset_index()
 
+    df_agg['log_revenue'] = np.log1p(df_agg['gross_revenue'])
+
     # --- Track global latest date across all platforms ---
     latest_date_file = "app/Analytics/Predictive/_latest_date.txt"
     global_latest = None
@@ -216,6 +160,8 @@ def train_and_forecast_model(
         elif ex in df_agg.columns:
             mean_val = df_agg[ex][df_agg[ex] > 0].mean() or 0.0
             df_agg[ex] = df_agg[ex].fillna(mean_val).astype(float)
+
+    target_col = 'log_revenue'
 
     # --- Interaction features ---
     if all(col in df_agg.columns for col in ['is_mega_sale_day', 'is_payday']):
@@ -259,7 +205,7 @@ def train_and_forecast_model(
             # Platform-specific LightGBM/XGBoost parameters
             if platform == 'Shopee':
                 # LIghtGBM/General parameters
-                tree_estimators = 1000
+                tree_estimators = 300
                 learning_rate = 0.03
                 num_leaves = 40
                 lgbm_min_data_in_leaf = 50
@@ -277,7 +223,7 @@ def train_and_forecast_model(
 
             else:  # Lazada
                 # LightGBM/General parameters
-                tree_estimators = 1000
+                tree_estimators = 300
                 learning_rate = 0.01
                 num_leaves = 40
                 lgbm_min_data_in_leaf = 15
@@ -466,21 +412,11 @@ def train_and_forecast_model(
                 logging.warning(f"[{platform} - {model_name}] recursive forecast failed: {e}")
                 forecast_90_days = np.repeat(float(y_test_actual.mean() if len(y_test_actual)>0 else 0.0), forecast_horizon)
 
-            # Save test & forecasts & plots via helper
-            try:
-                save_test_and_forecast_helper(platform, model_name, df_test, y_test_actual, y_pred_test, forecast_90_days, forecast_horizon)
-            except Exception as e:
-                logging.warning(f"[{platform} - {model_name}] save helper failed: {e}")
-
         except Exception as e:
             logging.error(f"[{platform} - {model_name}] failed: {e}")
             # Ensure fallback saving so files update
             y_pred_test = pd.Series(np.repeat(0.0, len(df_test)), index=df_test.index)
             forecast_90_days = np.repeat(0.0, forecast_horizon)
-            try:
-                save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
-            except Exception:
-                pass
             return {'platform': platform, 'model': model_name, 'mae': np.inf, 'mse': np.inf, 'rmse': np.inf}
 
     # ---------- SARIMAX ----------
@@ -533,18 +469,12 @@ def train_and_forecast_model(
             y_pred_test.index = df_test.index
             forecast_90_days = all_preds.iloc[len(df_test[target_col]):].values
 
-            # Save outputs via helper
-            save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
-
         except Exception as e:
             logging.error(f"SARIMAX failed: {e}")
             # fallback save placeholders
             y_pred_test = pd.Series(np.repeat(0.0, len(df_test)), index=df_test.index)
             forecast_90_days = np.repeat(0.0, forecast_horizon)
-            try:
-                save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
-            except Exception:
-                pass
+
             return {'platform': platform, 'model': model_name, 'mae': np.inf, 'mse': np.inf, 'rmse': np.inf}
 
     # ---------- Prophet ----------
@@ -586,16 +516,11 @@ def train_and_forecast_model(
             if len(forecast_90_days) != forecast_horizon:
                 forecast_90_days = np.repeat(y_pred_test.iloc[-1] if len(y_pred_test) > 0 else df_train[target_col].iloc[-1], forecast_horizon)
 
-            save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
-
         except Exception as e:
             logging.error(f"Prophet failed: {e}")
             y_pred_test = pd.Series(np.repeat(0.0, len(df_test)), index=df_test.index)
             forecast_90_days = np.repeat(0.0, forecast_horizon)
-            try:
-                save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
-            except Exception:
-                pass
+
             return {'platform': platform, 'model': model_name, 'mae': np.inf, 'mse': np.inf, 'rmse': np.inf}
 
     # ---------- SNaive ----------
@@ -605,15 +530,10 @@ def train_and_forecast_model(
             y_pred_test, forecast_90_days = seasonal_naive_forecast(df_train[target_col], df_test[target_col], season_length=season_len, horizon=forecast_horizon)
             # ensure series index alignment
             y_pred_test.index = df_test.index
-            save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
         except Exception as e:
             logging.error(f"SNaive failed: {e}")
             y_pred_test = pd.Series(np.repeat(0.0, len(df_test)), index=df_test.index)
             forecast_90_days = np.repeat(0.0, forecast_horizon)
-            try:
-                save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
-            except Exception:
-                pass
             return {'platform': platform, 'model': model_name, 'mae': np.inf, 'mse': np.inf, 'rmse': np.inf}
 
     # ---------- Postprocess predictions ----------
@@ -630,21 +550,27 @@ def train_and_forecast_model(
                 y_pred_test = pd.Series(y_pred_test.values[:len(y_test_actual)], index=y_test_actual.index)
         else:
             y_pred_test = pd.Series(np.repeat(0.0, len(y_test_actual)), index=y_test_actual.index)
+
+        # Clip negative predictions to zero
+        y_pred_test[y_pred_test < 0] = 0
+        forecast_90_days = np.array(forecast_90_days)
+        forecast_90_days[forecast_90_days < 0] = 0
     except Exception as e:
         logging.warning(f"Postprocessing predictions failed: {e}")
         y_pred_test = pd.Series(np.repeat(0.0, len(y_test_actual)), index=y_test_actual.index)
         forecast_90_days = np.repeat(0.0, forecast_horizon)
 
-    # Clip negative predictions to zero
-    try:
-        y_pred_test[y_pred_test < 0] = 0
-        forecast_90_days = np.array(forecast_90_days)
-        forecast_90_days[forecast_90_days < 0] = 0
-    except Exception:
-        pass
-
     # Evaluate metrics (if possible)
     try:
+        try:
+            # Safely convert test data and predictions back
+            y_pred_test = np.expm1(y_pred_test)
+            forecast_90_days = np.expm1(forecast_90_days)
+            df_test[target_col] = np.expm1(df_test[target_col])
+            logging.info(f"[{platform}] Log-transform applied — median(log_revenue): {df_agg['log_revenue'].median():.2f}")
+        except Exception as e:
+            logging.warning(f"Inverse log transform failed: {e}")
+            
         mae = calculate_mae(df_test[target_col], y_pred_test)
         mse = calculate_mse(df_test[target_col], y_pred_test)
         rmse = calculate_rmse(df_test[target_col], y_pred_test)
@@ -654,21 +580,24 @@ def train_and_forecast_model(
 
     # Save test CSV via helper (redundant but safe)
     try:
-        save_test_and_forecast_helper(platform, model_name, df_test, df_test[target_col], y_pred_test, forecast_90_days, forecast_horizon)
-    except Exception:
-        pass
+        test_results_df = pd.DataFrame({
+            'date': pd.to_datetime(df_test['date']),
+            'actual': np.array(y_test_actual).astype(float),
+            'prediction': np.array(y_pred_test).astype(float)
+        }).fillna(0.0)
+        
+        save_test_data_to_csv(test_results_df, f"{platform}_{model_name}")
+        save_plot(test_results_df, f"{platform} - {model_name}", 'TEST_VS_ACTUAL')
+    except Exception as e:
+        logging.error(f"[{platform} - {model_name}] Test save/plot failed: {e}")
 
     # Build forecast_plot_df with aligned lengths: history_dates + future_dates
     try:
-        history_dates = pd.concat([df_train['date'], df_test['date']]).reset_index(drop=True)
-        history_values = pd.concat([df_train[target_col], df_test[target_col]]).reset_index(drop=True)
-
+        # --- Forecast CSV ---
         future_dates = pd.date_range(start=df_test['date'].max() + pd.Timedelta(days=1), periods=forecast_horizon, freq='D')
-        future_dates_series = pd.Series(future_dates)
-
         forecast_df_to_save = pd.DataFrame({
             'date': future_dates,
-            'forecasted_gross_revenue': np.array(forecast_90_days)
+            'forecasted_gross_revenue': np.nan_to_num(forecast_90_days, nan=0.0)
         })
 
         csv_file_name = f"{platform.lower()}_{model_name.lower()}_forecast_{forecast_horizon}_days.csv"
@@ -677,20 +606,24 @@ def train_and_forecast_model(
         forecast_df_to_save.to_csv(csv_path, index=False)
         logging.info(f"✅ Saved CSV: {csv_file_name}")
 
+        # --- Forecast Plot (History + Future) ---
+        history_dates = pd.concat([df_train['date'], df_test['date']]).reset_index(drop=True)
+        history_values = pd.concat([df_train[target_col], df_test[target_col]]).reset_index(drop=True)
+        future_dates_series = pd.Series(future_dates)
+        
         full_dates = pd.concat([history_dates, future_dates_series], ignore_index=True)
         full_history = np.concatenate([history_values.values, np.repeat(np.nan, forecast_horizon)])
-        full_forecast = np.concatenate([np.repeat(np.nan, len(history_values)), np.array(forecast_90_days)])
+        full_forecast = np.concatenate([np.repeat(np.nan, len(history_values)), np.nan_to_num(forecast_90_days, nan=0.0)])
 
         forecast_plot_df = pd.DataFrame({
             'date': full_dates,
             'history': full_history,
             'forecast': full_forecast
         })
-
         save_plot(forecast_plot_df, f"{platform} - {model_name}", '90_DAY_FORECAST')
 
     except Exception as e:
-        logging.warning(f"Plot generation failed: {e}")
-
+        logging.error(f"[{platform} - {model_name}] Forecast save/plot failed: {e}")
+        
     logging.info(f"✅ {platform} {model_name} — MAE: {mae:.2f}, RMSE: {rmse:.2f}")
     return {'platform': platform, 'model': model_name, 'mae': mae, 'mse': mse, 'rmse': rmse}

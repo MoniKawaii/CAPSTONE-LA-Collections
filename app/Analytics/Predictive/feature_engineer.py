@@ -107,12 +107,56 @@ def build_time_series_features(df, target_col, lag_periods=[1, 7, 14, 30, 60], r
     df[f"{target_col}_rolling_median_{rolling_window}"] = df[target_col].shift(1).rolling(window=rolling_window).median()
 
     # ======================
+    # 📈 4B. MOMENTUM & TREND FEATURES (from SQL + extra smoothing)
+    # ======================
+
+    # If the new SQL trend columns exist (from RPC v2), integrate them directly
+    sql_trend_cols = [
+        'prev_day_revenue', 'daily_revenue_growth', 'rolling_revenue_7d',
+        'rolling_revenue_growth_7d', 'rolling_discount_rate_7d',
+        'discount_change_rate_1d', 'price_change_rate_1d'
+    ]
+    for col in sql_trend_cols:
+        if col not in df.columns:
+            df[col] = 0.0  # Safety fallback for backward compatibility
+
+    # Smooth high-variance daily growth
+    df['daily_revenue_growth_smoothed'] = (
+        df['daily_revenue_growth'].rolling(3, min_periods=1).mean()
+    )
+
+    # Smoothed discount trend change
+    df['discount_change_rate_3d'] = (
+        df['discount_change_rate_1d'].rolling(3, min_periods=1).mean()
+    )
+
+    # Combine momentum + pricing interactions
+    df['growth_x_discount'] = df['daily_revenue_growth_smoothed'] * df['avg_discount_rate']
+    df['growth_x_price_change'] = df['daily_revenue_growth_smoothed'] * df['price_change_rate_1d']
+
+
+    # ======================
     # 🔄 5. FOURIER FEATURES 
     # ======================
     t = 2 * np.pi * df["dayofyear"] / 366
     for k in range(1, 6):
         df[f"fourier_sin_{k}"] = np.sin(k * t)
         df[f"fourier_cos_{k}"] = np.cos(k * t)
+
+    # ======================
+    # ⚙️ 5B. VOLATILITY & RELATIVE MOMENTUM
+    # ======================
+
+    # Revenue volatility — captures unstable sales behavior
+    df['revenue_volatility_7d'] = df[target_col].rolling(7, min_periods=1).std().fillna(0)
+
+    # Relative change vs 7-day rolling mean (momentum signal)
+    rolling_mean_7 = df[target_col].rolling(7, min_periods=1).mean().replace(0, np.nan)
+    df['revenue_vs_rolling_7d'] = (df[target_col] - rolling_mean_7) / rolling_mean_7.fillna(1)
+
+    # Price volatility (optional if prices are stable)
+    if 'avg_paid_price' in df.columns:
+        df['price_volatility_7d'] = df['avg_paid_price'].rolling(7, min_periods=1).std().fillna(0)
 
     # ======================
     # ⚡ 6. INTERACTION FEATURES 
@@ -124,6 +168,14 @@ def build_time_series_features(df, target_col, lag_periods=[1, 7, 14, 30, 60], r
     if "last_non_zero_sale_value" in df.columns and "is_day_before_event" in df.columns:
         df["last_sale_event_interaction"] = df["last_non_zero_sale_value"] * df["is_day_before_event"]
 
+    # === NEW SECTION: TREND × EVENT INTERACTIONS ===
+    if 'daily_revenue_growth_smoothed' in df.columns:
+        df['growth_on_event'] = df['daily_revenue_growth_smoothed'] * df['is_mega_sale_day']
+        df['growth_on_payday'] = df['daily_revenue_growth_smoothed'] * df['is_payday']
+
+    if 'rolling_revenue_growth_7d' in df.columns:
+        df['rolling_growth_on_event'] = df['rolling_revenue_growth_7d'] * df['is_mega_sale_day']
+
     # ======================
     # 🧹 Final cleanup
     # ======================
@@ -134,5 +186,6 @@ def build_time_series_features(df, target_col, lag_periods=[1, 7, 14, 30, 60], r
     df = df.replace([np.inf, -np.inf], np.nan)
     df = df.fillna(0)
 
+    logging.info(f"[FeatureBuilder] Added trend/volatility features from RPC v2 if available.")
     logging.info(f"[FeatureBuilder] Generated {df.shape[1]} columns.")
     return df

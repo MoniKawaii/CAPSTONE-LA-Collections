@@ -62,10 +62,10 @@ def load_base_sales_data(start_date='2020-09-19'):
     
     try:
         # CRITICAL CHANGE: Call the new, feature-rich function
-        print("Executing Supabase RPC function: get_factor_analysis_data (for model)...")
+        print("Executing Supabase RPC function: get_factor_analysis_data_v2 (for model)...")
         response = (
             supabase.rpc(
-            'get_factor_analysis_data',  
+            'get_factor_analysis_data_v2',  
             {'start_date_param': start_date}
             )
             .range(0, MAX_ROWS - 1)
