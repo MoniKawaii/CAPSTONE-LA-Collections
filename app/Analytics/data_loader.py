@@ -71,7 +71,6 @@ def load_base_sales_data(start_date='2020-09-19'):
             .range(0, MAX_ROWS - 1)
             .execute()
             )
-        print("[DEBUG] Raw RPC keys:", response.data[0].keys())
 
         data = response.data
         

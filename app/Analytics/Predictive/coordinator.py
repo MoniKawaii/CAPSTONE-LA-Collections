@@ -78,7 +78,8 @@ def run_predictive_analysis():
     for platform in platforms:
         platform_results = results_df[results_df['platform'] == platform].sort_values(by='mae')
         logging.info(f"\n--- {platform} MAE Comparison (Lower is Better) ---")
-        logging.info(f"\n{platform_results.to_string(index=False)}")
+        current_platform_results_string = platform_results.to_string(index=False)
+        logging.info(f"\n{current_platform_results_string}")
 
         if not platform_results.empty:
             best_model = platform_results.iloc[0]

@@ -75,6 +75,10 @@ def build_time_series_features(df, target_col, lag_periods=[1, 7, 14, 30, 60], r
     # 💰 3. LAGGED FEATURES (ENHANCED)
     # ======================
     
+    last_sale_series = df[target_col].where(df[target_col] > 0)
+    last_sale_value = last_sale_series.ffill()
+    df['last_non_zero_sale_value'] = last_sale_value.shift(1).fillna(0)
+
     # New: Non-Zero Lags (to focus on sales signal and ignore long zero periods)
     # Note: df[target_col] must be > 0 for this to work as intended.
     df[f"{target_col}_nonzero"] = df[target_col].apply(lambda x: x if x > 0 else 0)
@@ -117,6 +121,8 @@ def build_time_series_features(df, target_col, lag_periods=[1, 7, 14, 30, 60], r
         df["discount_on_event"] = df["is_mega_sale_day"] * df["avg_discount_rate"]
     if "avg_discount_rate" in df.columns and "is_payday" in df.columns:
         df["discount_on_payday"] = df["avg_discount_rate"] * df["is_payday"]
+    if "last_non_zero_sale_value" in df.columns and "is_day_before_event" in df.columns:
+        df["last_sale_event_interaction"] = df["last_non_zero_sale_value"] * df["is_day_before_event"]
 
     # ======================
     # 🧹 Final cleanup

@@ -141,8 +141,7 @@ def train_and_forecast_model(
     platform: str,
     model_name: str,
     target_col: str = 'gross_revenue',
-    exog_cols: list = ['is_mega_sale_day', 'is_payday', 'avg_paid_price', 'avg_original_price', 'avg_discount_rate'],
-    test_size_days: int = 365,          # changed per user request
+    exog_cols: list = ['is_mega_sale_day', 'is_payday', 'avg_paid_price', 'avg_original_price', 'avg_discount_rate', 'is_event_day', 'discount_on_event'],    test_size_days: int = 365,          # changed per user request
     forecast_horizon: int = 90
 ) -> dict:
     """
@@ -257,42 +256,42 @@ def train_and_forecast_model(
             X_valid, y_valid_ml = X_all.iloc[-val_size:], y_all.iloc[-val_size:]
             X_test, y_test_actual = df_test_ml[features], df_test_ml[target_col]
 
-            # ⚙️ Platform-specific LightGBM/XGBoost parameters
+            # Platform-specific LightGBM/XGBoost parameters
             if platform == 'Shopee':
-                # LightGBM: Best MAE at 45 estimators. Focus on complexity control for sparse data.
-                tree_estimators = 1000       # New max ceiling (from 300)
-                learning_rate = 0.05        # Lowered for more precise steps (from 0.05)
-                num_leaves = 40             
-                lgbm_min_data_in_leaf = 50  # Alias for min_child_samples
-                lgbm_bagging_fraction = 0.8 # Alias for subsample
-                lgbm_feature_fraction = 0.8 # Alias for colsample_bytree
-                lgbm_reg_lambda = 0.0       # Renamed variable for L2
+                # LIghtGBM/General parameters
+                tree_estimators = 1000
+                learning_rate = 0.03
+                num_leaves = 40
+                lgbm_min_data_in_leaf = 50
+                lgbm_bagging_fraction = 0.8
+                lgbm_feature_fraction = 0.8
+                lgbm_reg_lambda = 0.0
                 objective_lgbm = 'tweedie'
                 
                 # XGBoost/General parameters
                 xgb_objective = 'reg:tweedie'
                 xgb_tweedie_power = 1.2
-                xgb_max_depth = 8         # Increased depth to allow complex interactions on sparse data (from 8)
-                xgb_reg_alpha = 0.5        # Introduced light L1 regularization (from 0.0)
-                xgb_reg_lambda = 0.0        # No L1 Regularization needed
+                xgb_max_depth = 8
+                xgb_reg_alpha = 0.5
+                xgb_reg_lambda = 0.0
 
             else:  # Lazada
-                # XGBoost: Best MAE at 35 estimators. Focus on structural control and regularization.
-                tree_estimators = 1000       # New max ceiling (from 300)
-                learning_rate = 0.01        # Lowered further for maximum stability (from 0.03)
-                num_leaves = 40             
-                lgbm_min_data_in_leaf = 15  # Alias for min_child_samples
-                lgbm_bagging_fraction = 1.0 # Alias for subsample
-                lgbm_feature_fraction = 1.0 # Alias for colsample_bytree
-                lgbm_reg_lambda = 0.5       # Renamed variable for L2
+                # LightGBM/General parameters
+                tree_estimators = 1000
+                learning_rate = 0.01
+                num_leaves = 40
+                lgbm_min_data_in_leaf = 15
+                lgbm_bagging_fraction = 1.0
+                lgbm_feature_fraction = 1.0
+                lgbm_reg_lambda = 0.5
                 objective_lgbm = 'tweedie'
 
                 # XGBoost/General parameters
                 xgb_objective = 'reg:tweedie'
                 xgb_tweedie_power = 1.2
-                xgb_max_depth = 5          # Lowered for a simpler, more robust model (from 6)
-                xgb_reg_alpha = 0.1        # Slightly reduced L1 regularization (from 0.5)
-                xgb_reg_lambda = 0.5       # Introduced L2 regularization
+                xgb_max_depth = 5
+                xgb_reg_alpha = 0.1
+                xgb_reg_lambda = 0.5
 
             # --- XGBoost ---
             if model_name == 'XGBoost':
@@ -306,7 +305,6 @@ def train_and_forecast_model(
                     tweedie_variance_power=xgb_tweedie_power,
                     max_depth=xgb_max_depth,
                     reg_alpha=xgb_reg_alpha,
-                    # NEW: Added L2 Regularization (reg_lambda)
                     reg_lambda=xgb_reg_lambda,
                     n_jobs=-1
                 )
@@ -318,7 +316,6 @@ def train_and_forecast_model(
 
                 try:
                     if version_nums >= (2, 0):
-                        # ✅ XGBoost 2.0+ requires early stopping as init param or callback
                         model = xgb.XGBRegressor(**model_kwargs, early_stopping_rounds=25)
                         model.fit(
                             X_train, y_train_ml,
@@ -328,7 +325,6 @@ def train_and_forecast_model(
                         fit_successful = True
 
                     else:
-                        # ✅ Legacy XGBoost (1.x)
                         model = xgb.XGBRegressor(**model_kwargs)
                         model.fit(
                             X_train, y_train_ml,
@@ -352,7 +348,7 @@ def train_and_forecast_model(
                     'learning_rate': learning_rate,
                     'random_state': 42,
                     'objective': objective_lgbm,
-                    'silent': True,
+                    # 'silent': True,
                     'num_leaves': num_leaves,
                     'min_child_samples': lgbm_min_data_in_leaf,
                     'subsample': lgbm_bagging_fraction,
@@ -361,12 +357,11 @@ def train_and_forecast_model(
                 }
 
                 if objective_lgbm == 'tweedie':
-                    lgbm_params['tweedie_variance_power'] = 1.2
-                    
+                    lgbm_params['tweedie_variance_power'] = xgb_tweedie_power      
+
                 model = LGBMRegressor(**lgbm_params)
 
                 try:
-                    # FIX: Use the correct 'callbacks' syntax for early stopping, matching your working sample.
                     callbacks = [lgb.early_stopping(stopping_rounds=25, verbose=False)]
                     
                     model.fit(X_train, y_train_ml, 
@@ -375,7 +370,6 @@ def train_and_forecast_model(
                             callbacks=callbacks)
                     
                 except Exception as e:
-                    # Fallback if the version cannot handle the new 'callbacks' keyword
                     logging.warning(f"[{platform} - LightGBM] fallback fit: {e}. Fitting without early stopping.")
                     model.fit(X_train, y_train_ml, eval_metric='mae')
 
