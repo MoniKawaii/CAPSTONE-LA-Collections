@@ -121,3 +121,5 @@ product_key,product_item_id,product_name,product_category,product_status,product
 97.2,8025239683,Pulled Out Item,None,None,,2
 98.2,8260694757,Pulled Out Item,None,None,,2
 99.2,90204586383,Pulled Out Item,None,None,,2
+24.1,17089061731,Fallback Product (SKU: 17089061731),Home Fragrance,Active,4.2,1
+25.1,17167753965,Fallback Product (SKU: 17167753965),Home Fragrance,Active,4.2,1

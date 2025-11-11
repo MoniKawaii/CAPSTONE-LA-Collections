@@ -23,7 +23,12 @@ def load_lazada_tokens():
     Returns:
         dict: Lazada tokens and app credentials
     """
-    tokens_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lazada', 'lazada_tokens.json')
+    # Try multiple possible token file locations
+    possible_locations = [
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'tokens', 'lazada_tokens.json'),  # ../tokens/lazada_tokens.json
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lazada', 'lazada_tokens.json'),  # ./lazada/lazada_tokens.json
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tokens', 'lazada_tokens.json')  # ../tokens/lazada_tokens.json (alternative)
+    ]
     
     # Default empty tokens
     tokens = {
@@ -34,14 +39,23 @@ def load_lazada_tokens():
         "created_at": None
     }
     
-    # Load from JSON file if it exists
-    if os.path.exists(tokens_file):
-        try:
-            with open(tokens_file, 'r') as f:
-                file_tokens = json.load(f)
-                tokens.update(file_tokens)
-        except (json.JSONDecodeError, IOError) as e:
-            print(f"Warning: Could not load Lazada tokens from {tokens_file}: {e}")
+    # Try to load from JSON file from multiple locations
+    tokens_loaded = False
+    for tokens_file in possible_locations:
+        if os.path.exists(tokens_file):
+            try:
+                with open(tokens_file, 'r') as f:
+                    file_tokens = json.load(f)
+                    tokens.update(file_tokens)
+                    tokens_loaded = True
+                    print(f"✅ Lazada tokens loaded from: {tokens_file}")
+                    break
+            except (json.JSONDecodeError, IOError) as e:
+                print(f"Warning: Could not load Lazada tokens from {tokens_file}: {e}")
+    
+    if not tokens_loaded:
+        print(f"⚠️ Warning: Could not find Lazada tokens in any expected location")
+        print(f"   Searched: {possible_locations}")
     
     # Add app credentials from environment variables
     tokens.update({
@@ -163,6 +177,7 @@ DIM_PRODUCT_COLUMNS = [
 ]
 
 # Product Variant Dimension
+# Enhanced to support Lazada's SKU structure with up to 2 levels of sales attributes
 DIM_PRODUCT_VARIANT_COLUMNS = [
     'product_variant_key', 'product_key', 'platform_sku_id', 'canonical_sku',
     'scent', 'volume', 'current_price', 'original_price',
@@ -359,12 +374,14 @@ def validate_config():
 # =============================================================================
 
 LAZADA_TO_UNIFIED_MAPPING = {
-    # --- Dim_Product ---
+    # --- Dim_Product (from lazada_products_raw.json) ---
+    # Note: Lazada has no single "master" SKU per product listing
+    # Each product (item_id) contains multiple variant SKUs in skus[] array
     "item_id": "product_item_id",
     "name": "product_name",
     "primary_category_name": "product_category",
     "status": "product_status",
-    "price": "product_price",  # Base price
+    "price": "product_price",  # Base price - may not reflect variant pricing
     "product_rating": "product_rating",
     "platform_key": "platform_key",  # Always 1 for Lazada
     
@@ -377,12 +394,35 @@ LAZADA_TO_UNIFIED_MAPPING = {
     "review.product_title": "product_title",  # Product name from review
     "review.id": "review_id",  # Unique review identifier
     
-    # --- Dim_Product_Variant (from skus array) ---
-    "SkuId": "platform_sku_id",  # From skus[].SkuId
-    "SellerSku": "variant_sku",  # From skus[].SellerSku
-    "Variation1": "variant_attribute_1",  
-    "Variation2": "variant_attribute_2",  
-    "Variation3": "variant_attribute_3",  
+    # --- Dim_Product_Variant (from skus[] array within each product) ---
+    # Important: Each product can have up to 2 levels of sales attributes (variations)
+    # SKU Structure: Each variant has its own unique SkuId and SellerSku
+    # SellerSku must be unique within the same item_id (but can repeat across different items as of Nov 2023)
+    "SkuId": "platform_sku_id",  # From skus[].SkuId - Lazada's internal SKU identifier
+    "SellerSku": "variant_sku",  # From skus[].SellerSku - Seller-defined SKU (unique within item)
+    "Status": "variant_status",  # From skus[].Status - Variant-level status
+    "quantity": "variant_stock",  # From skus[].quantity - Available stock for this variant
+    "price": "variant_price",  # From skus[].price - Variant-specific current price
+    "package_length": "package_length",  # From skus[].package_length - Shipping dimensions
+    "package_width": "package_width",  # From skus[].package_width
+    "package_height": "package_height",  # From skus[].package_height
+    "package_weight": "package_weight",  # From skus[].package_weight
+    
+    # Sales Attributes (Up to 2 levels supported by Lazada)
+    # These map to the variant differentiation attributes (e.g., size, color, scent, volume)
+    "Attributes.name": "attribute_name",  # From skus[].Attributes[].name - Attribute type (e.g., "Size", "Color")
+    "Attributes.value": "attribute_value",  # From skus[].Attributes[].value - Attribute value (e.g., "Small", "Red")
+    
+    # Alternative mapping for when attributes are flattened
+    "attribute_1_name": "variant_attribute_1_name",  # First variation type (e.g., "Scent")
+    "attribute_1_value": "variant_attribute_1_value",  # First variation value (e.g., "Lavender")
+    "attribute_2_name": "variant_attribute_2_name",  # Second variation type (e.g., "Volume")  
+    "attribute_2_value": "variant_attribute_2_value",  # Second variation value (e.g., "50ml")
+    
+    # Legacy mappings (kept for backward compatibility)
+    "Variation1": "variant_attribute_1",  # Deprecated - use attribute mappings above
+    "Variation2": "variant_attribute_2",  # Deprecated - use attribute mappings above
+    "Variation3": "variant_attribute_3",  # Deprecated - Lazada only supports 2 levels
     
     # --- Dim_Order ---
     "id": "orders_key",  # not pulled from API, generated internally incremental
@@ -407,13 +447,14 @@ LAZADA_TO_UNIFIED_MAPPING = {
     "platform_key": "platform_key",  # Always 1 for Lazada
     
     # --- Fact_Orders (from order_items and orders) ---
+    # Note: Order items reference variants by sku_id (maps to SkuId in product skus[])
     "item_id": "product_item_id",
-    "sku_id": "product_variant_id",
+    "sku_id": "product_variant_id",  # This should map to SkuId from product skus[] array
     "quantity": "item_quantity",
     "item_price": "original_unit_price",  # The line total price before seller discounts or platform vouchers (renamed from "price" to avoid conflict)
     "final_price": "paid_price",  # The line total price after seller discounts/bundle deals
     "voucher_absorbed_by_seller": "voucher_seller_amount",  # The total seller voucher value attributed to this line
-    "voucher_absorbed_by_shopee": "voucher_platform_amount",  # The total Shopee voucher value attributed to this line
+    "voucher_absorbed_by_shopee": "voucher_platform_amount",  # The total Lazada voucher value attributed to this line
     "actual_shipping_fee": "shipping_fee_paid_by_buyer"
 }
 
@@ -822,6 +863,155 @@ def get_platform_api_url(platform_name):
         return SHOPEE_BASE_URL
     else:
         raise ValueError(f"Unknown platform: {platform_name}. Must be 'lazada' or 'shopee'")
+
+# =============================================================================
+# LAZADA SKU STRUCTURE HELPER FUNCTIONS
+# =============================================================================
+
+def extract_lazada_variant_attributes(sku_data):
+    """
+    Extract variant attributes from Lazada SKU data structure
+    
+    Args:
+        sku_data (dict): Individual SKU data from skus[] array
+        
+    Returns:
+        dict: Standardized variant attributes
+    """
+    attributes = {
+        'attribute_1_name': None,
+        'attribute_1_value': None,
+        'attribute_2_name': None,
+        'attribute_2_value': None
+    }
+    
+    # Extract from Attributes array (preferred method)
+    if 'Attributes' in sku_data and isinstance(sku_data['Attributes'], list):
+        for i, attr in enumerate(sku_data['Attributes'][:2]):  # Max 2 levels supported
+            if isinstance(attr, dict):
+                attributes[f'attribute_{i+1}_name'] = attr.get('name')
+                attributes[f'attribute_{i+1}_value'] = attr.get('value')
+    
+    # Fallback to legacy variation fields
+    elif any(key in sku_data for key in ['Variation1', 'Variation2']):
+        if 'Variation1' in sku_data:
+            attributes['attribute_1_name'] = 'Variation1'
+            attributes['attribute_1_value'] = sku_data['Variation1']
+        if 'Variation2' in sku_data:
+            attributes['attribute_2_name'] = 'Variation2'
+            attributes['attribute_2_value'] = sku_data['Variation2']
+    
+    return attributes
+
+def validate_lazada_sku_uniqueness(product_data):
+    """
+    Validate that SellerSku values are unique within a product (item_id)
+    
+    Args:
+        product_data (dict): Product data containing skus[] array
+        
+    Returns:
+        dict: Validation results
+    """
+    if 'skus' not in product_data or not isinstance(product_data['skus'], list):
+        return {'valid': False, 'error': 'No skus array found'}
+    
+    seller_skus = []
+    sku_ids = []
+    duplicates = []
+    
+    for sku in product_data['skus']:
+        seller_sku = sku.get('SellerSku')
+        sku_id = sku.get('SkuId')
+        
+        if seller_sku:
+            if seller_sku in seller_skus:
+                duplicates.append(seller_sku)
+            else:
+                seller_skus.append(seller_sku)
+        
+        if sku_id:
+            sku_ids.append(sku_id)
+    
+    return {
+        'valid': len(duplicates) == 0,
+        'total_variants': len(product_data['skus']),
+        'unique_seller_skus': len(seller_skus),
+        'unique_sku_ids': len(sku_ids),
+        'duplicate_seller_skus': duplicates,
+        'item_id': product_data.get('item_id'),
+        'product_name': product_data.get('name', 'Unknown')
+    }
+
+def generate_canonical_sku(platform_sku_id, seller_sku, platform_key=1):
+    """
+    Generate a canonical SKU that combines platform info with variant identifier
+    
+    Args:
+        platform_sku_id (str): Platform's internal SKU ID (SkuId for Lazada)
+        seller_sku (str): Seller-defined SKU (SellerSku for Lazada)
+        platform_key (int): Platform identifier (1 for Lazada, 2 for Shopee)
+        
+    Returns:
+        str: Canonical SKU in format: LZ_{platform_sku_id}_{seller_sku}
+    """
+    platform_prefix = 'LZ' if platform_key == 1 else 'SP'
+    
+    # Clean the SKU components
+    clean_platform_sku = str(platform_sku_id).replace(' ', '_') if platform_sku_id else 'UNK'
+    clean_seller_sku = str(seller_sku).replace(' ', '_') if seller_sku else 'UNK'
+    
+    return f"{platform_prefix}_{clean_platform_sku}_{clean_seller_sku}"
+
+def parse_lazada_product_structure(product_data):
+    """
+    Parse Lazada product data and extract both product and variant information
+    
+    Args:
+        product_data (dict): Complete product data from Lazada API
+        
+    Returns:
+        dict: Parsed structure with product info and variants list
+    """
+    result = {
+        'product_info': {
+            'item_id': product_data.get('item_id'),
+            'name': product_data.get('name'),
+            'primary_category_name': product_data.get('primary_category_name'),
+            'status': product_data.get('status'),
+            'price': product_data.get('price'),  # Base price
+            'product_rating': product_data.get('product_rating'),
+        },
+        'variants': [],
+        'validation': validate_lazada_sku_uniqueness(product_data)
+    }
+    
+    # Process each variant in skus array
+    if 'skus' in product_data and isinstance(product_data['skus'], list):
+        for sku_data in product_data['skus']:
+            variant_attributes = extract_lazada_variant_attributes(sku_data)
+            
+            variant = {
+                'platform_sku_id': sku_data.get('SkuId'),
+                'seller_sku': sku_data.get('SellerSku'),
+                'variant_status': sku_data.get('Status'),
+                'variant_stock': sku_data.get('quantity', 0),
+                'current_price': sku_data.get('price'),
+                'package_length': sku_data.get('package_length'),
+                'package_width': sku_data.get('package_width'),
+                'package_height': sku_data.get('package_height'),
+                'package_weight': sku_data.get('package_weight'),
+                **variant_attributes,
+                'canonical_sku': generate_canonical_sku(
+                    sku_data.get('SkuId'),
+                    sku_data.get('SellerSku'),
+                    platform_key=1
+                )
+            }
+            
+            result['variants'].append(variant)
+    
+    return result
 
 # =============================================================================
 # MAIN EXECUTION

@@ -329,54 +329,261 @@ class LazadaDataExtractor:
                 return []
         return []
     
-    def extract_all_products(self, start_fresh=False):
+    def extract_all_products(self, start_fresh=False, enhanced_extraction=True):
         """
-        Extract ALL products from Lazada with pagination
+        Extract ALL products from Lazada with enhanced pagination and filtering
+        Uses multiple strategies to ensure completeness for missing SKUs
         Saves to lazada_products_raw.json
         """
         filename = 'lazada_products_raw.json'
         
         if not start_fresh:
             existing_data = self._load_from_json(filename)
-            if existing_data:
+            if existing_data and len(existing_data) > 50:
                 print(f"Found {len(existing_data)} existing products. Use start_fresh=True to re-extract.")
                 return existing_data
         
-        print("Starting complete product extraction...")
+        print("🔍 Starting enhanced product extraction...")
+        print("📊 Using comprehensive approach to capture all products")
+        
         all_products = []
+        strategies_used = []
+        
+        if enhanced_extraction:
+            # Strategy 1: Standard extraction with 'all' filter
+            print("\n📋 Strategy 1: Standard extraction (filter=all)...")
+            products_standard = self._extract_products_standard()
+            if products_standard:
+                all_products.extend(products_standard)
+                strategies_used.append(f"Standard: {len(products_standard)} products")
+            
+            # Strategy 2: Live products only
+            print("\n📋 Strategy 2: Live products extraction...")
+            products_live = self._extract_products_with_filter('live')
+            if products_live:
+                existing_ids = set(str(p.get('item_id', '')) for p in all_products)
+                new_products = [p for p in products_live if str(p.get('item_id', '')) not in existing_ids]
+                all_products.extend(new_products)
+                strategies_used.append(f"Live: {len(new_products)} new products")
+            
+            # Strategy 3: Sold out products
+            print("\n📋 Strategy 3: Sold out products extraction...")
+            products_sold_out = self._extract_products_with_filter('sold_out')
+            if products_sold_out:
+                existing_ids = set(str(p.get('item_id', '')) for p in all_products)
+                new_products = [p for p in products_sold_out if str(p.get('item_id', '')) not in existing_ids]
+                all_products.extend(new_products)
+                strategies_used.append(f"Sold out: {len(new_products)} new products")
+            
+            # Strategy 4: Extract by order-referenced SKUs (if order data exists)
+            print("\n📋 Strategy 4: Extract by order-referenced SKUs...")
+            products_by_sku = self._extract_products_by_order_skus()
+            if products_by_sku:
+                existing_ids = set(str(p.get('item_id', '')) for p in all_products)
+                new_products = [p for p in products_by_sku if str(p.get('item_id', '')) not in existing_ids]
+                all_products.extend(new_products)
+                strategies_used.append(f"By SKUs: {len(new_products)} new products")
+            
+            # Strategy 5: Extract detailed product information using /product/item/get
+            print("\n📋 Strategy 5: Extract detailed product information...")
+            detailed_products = self._extract_detailed_product_info(all_products)
+            if detailed_products:
+                strategies_used.append(f"Detailed info: {len(detailed_products)} products enhanced")
+        else:
+            # Simple extraction fallback
+            print("\n📋 Using simple extraction method...")
+            all_products = self._extract_products_standard()
+            strategies_used.append(f"Simple: {len(all_products)} products")
+        
+        # Remove duplicates by item_id (final cleanup)
+        unique_products = {}
+        for product in all_products:
+            item_id = str(product.get('item_id', ''))
+            if item_id and item_id != '':
+                unique_products[item_id] = product
+        
+        final_products = list(unique_products.values())
+        
+        # Final save
+        self._save_to_json(final_products, filename)
+        
+        print(f"\n🎉 Enhanced product extraction complete!")
+        print(f"📊 Extraction strategies used:")
+        for strategy in strategies_used:
+            print(f"   - {strategy}")
+        print(f"📦 Total unique products: {len(final_products)}")
+        print(f"🔄 API calls used: {self.api_calls_made}")
+        print(f"💡 This should capture products referenced in order data")
+        
+        return final_products
+    
+    def _extract_products_standard(self):
+        """Standard product extraction with 'all' filter and pagination"""
+        products = []
         offset = 0
         has_more = True
         
         while has_more and self.api_calls_made < self.max_daily_calls:
             request = lazop.LazopRequest('/products/get', 'GET')
-            request.add_api_param('filter', 'all')  # Get all products, not just live
+            request.add_api_param('filter', 'all')
             request.add_api_param('limit', str(self.batch_size))
             request.add_api_param('offset', str(offset))
             request.add_api_param('options', '1')
             
-            data = self._make_api_call(request, f"products-offset-{offset}")
-            
+            data = self._make_api_call(request, f"products-standard-{offset}")
             if not data:
                 break
             
-            products = data.get('data', {}).get('products', [])
-            
-            if not products:
+            batch_products = data.get('data', {}).get('products', [])
+            if not batch_products:
                 has_more = False
-                print("No more products found")
             else:
-                all_products.extend(products)
+                products.extend(batch_products)
                 offset += self.batch_size
-                print(f"Extracted {len(products)} products (Total: {len(all_products)})")
-                
-                # Save progress periodically
-                if len(all_products) % 500 == 0:
-                    self._save_to_json(all_products, filename)
+                print(f"   Standard: {len(batch_products)} products (Total: {len(products)})")
         
-        # Final save
-        self._save_to_json(all_products, filename)
-        print(f"🎉 Product extraction complete! Total: {len(all_products)} products")
-        return all_products
+        return products
+    
+    def _extract_products_with_filter(self, filter_type):
+        """Extract products with specific filter (live, sold_out, etc)"""
+        products = []
+        offset = 0
+        has_more = True
+        
+        while has_more and self.api_calls_made < self.max_daily_calls:
+            request = lazop.LazopRequest('/products/get', 'GET')
+            request.add_api_param('filter', filter_type)
+            request.add_api_param('limit', str(self.batch_size))
+            request.add_api_param('offset', str(offset))
+            request.add_api_param('options', '1')
+            
+            data = self._make_api_call(request, f"products-{filter_type}-{offset}")
+            if not data:
+                break
+            
+            batch_products = data.get('data', {}).get('products', [])
+            if not batch_products:
+                has_more = False
+            else:
+                products.extend(batch_products)
+                offset += self.batch_size
+                print(f"   {filter_type.title()}: {len(batch_products)} products (Total: {len(products)})")
+        
+        return products
+    
+    def _extract_products_by_order_skus(self):
+        """Extract products based on SKUs found in order data"""
+        # Load order items to get referenced SKUs
+        order_items = self._load_from_json('lazada_multiple_order_items_raw.json')
+        if not order_items:
+            print("   No order items found for SKU-based extraction")
+            return []
+        
+        # Get unique SKUs from orders
+        order_skus = set()
+        for item in order_items:
+            sku = item.get('sku_id') or item.get('sku')
+            if sku:
+                order_skus.add(str(sku))
+        
+        print(f"   Found {len(order_skus)} unique SKUs in order data")
+        
+        if not order_skus:
+            return []
+        
+        # Get all products and filter by referenced SKUs
+        all_products = self._extract_products_standard()
+        matched_products = []
+        
+        for product in all_products:
+            # Check if this product contains any of the referenced SKUs
+            skus = product.get('skus', [])
+            for sku_item in skus:
+                sku_id = str(sku_item.get('SkuId', ''))
+                if sku_id in order_skus:
+                    matched_products.append(product)
+                    break
+        
+        print(f"   Found {len(matched_products)} products matching order SKUs")
+        return matched_products
+    
+    def _extract_detailed_product_info(self, products):
+        """
+        Extract detailed product information using /product/item/get
+        Enhances existing product data with detailed information
+        Saves enhanced data to lazada_productitem_raw.json
+        """
+        if not products:
+            print("   No products provided for detailed extraction")
+            return []
+        
+        print(f"   Extracting detailed info for {len(products)} products...")
+        
+        # Load existing detailed product data to avoid duplicates
+        detailed_filename = 'lazada_productitem_raw.json'
+        existing_detailed = self._load_from_json(detailed_filename) or []
+        existing_item_ids = set(str(item.get('item_id', '')) for item in existing_detailed)
+        
+        # Filter products that don't have detailed info yet
+        products_to_detail = []
+        for product in products:
+            item_id = str(product.get('item_id', ''))
+            if item_id and item_id not in existing_item_ids:
+                products_to_detail.append(product)
+        
+        if not products_to_detail:
+            print(f"   All products already have detailed info")
+            return existing_detailed
+        
+        print(f"   Need detailed info for {len(products_to_detail)} products")
+        
+        detailed_products = []
+        batch_size = 20  # Process in smaller batches for /product/item/get
+        
+        for i in range(0, len(products_to_detail), batch_size):
+            if self.api_calls_made >= self.max_daily_calls:
+                print(f"   API limit reached, stopping detailed extraction")
+                break
+                
+            batch = products_to_detail[i:i + batch_size]
+            batch_num = (i // batch_size) + 1
+            
+            print(f"   Processing batch {batch_num}: {len(batch)} products")
+            
+            for product in batch:
+                item_id = product.get('item_id')
+                if not item_id:
+                    continue
+                
+                # Call /product/item/get for detailed info
+                request = lazop.LazopRequest('/product/item/get', 'GET')
+                request.add_api_param('item_id', str(item_id))
+                
+                detailed_data = self._make_api_call(request, f"product-detail-{item_id}")
+                
+                if detailed_data and 'data' in detailed_data:
+                    detailed_info = detailed_data.get('data', {})
+                    # Merge basic product info with detailed info
+                    enhanced_product = {**product, **detailed_info}
+                    detailed_products.append(enhanced_product)
+                else:
+                    # Keep original product if detailed fetch fails
+                    detailed_products.append(product)
+            
+            # Save progress periodically
+            if batch_num % 5 == 0:
+                current_detailed = existing_detailed + detailed_products
+                self._save_to_json(current_detailed, detailed_filename)
+                print(f"   Saved progress: {len(current_detailed)} detailed products")
+        
+        # Final save with all detailed products
+        all_detailed = existing_detailed + detailed_products
+        self._save_to_json(all_detailed, detailed_filename)
+        
+        print(f"   ✅ Detailed extraction complete: {len(detailed_products)} new detailed products")
+        print(f"   📊 Total detailed products: {len(all_detailed)}")
+        
+        return all_detailed
     
     def extract_all_orders(self, start_date=None, end_date=None, start_fresh=False, incremental=True):
         """
