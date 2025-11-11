@@ -219,13 +219,38 @@ def harmonize_order_record(order_data, source_file):
                 harmonized_record['updated_at'] = parse_date_to_date_only(order_data.get('updated_at'))
             
             elif lazada_field == 'price':
-                # Convert price to float
+                # PRICE_MAPPING_FIX_APPLIED - Enhanced price mapping with validation
                 price_total = None
-                if 'price' in order_data:
-                    try:
-                        price_total = float(order_data['price'])
-                    except (ValueError, TypeError):
-                        price_total = None
+                
+                # Try multiple price sources for robustness
+                price_sources = ['price', 'item_price', 'total_amount']
+                
+                for price_field in price_sources:
+                    if price_field in order_data and order_data[price_field] is not None:
+                        try:
+                            price_value = order_data[price_field]
+                            
+                            # Handle string prices (e.g., "350.00")
+                            if isinstance(price_value, str):
+                                price_value = price_value.strip()
+                                if price_value and price_value != '0.00':
+                                    price_total = float(price_value)
+                                    break
+                            
+                            # Handle numeric prices
+                            elif isinstance(price_value, (int, float)):
+                                if price_value > 0:
+                                    price_total = float(price_value)
+                                    break
+                                    
+                        except (ValueError, TypeError):
+                            continue
+                
+                # Price validation and logging
+                if price_total is None:
+                    print(f"⚠️  No valid price found for order {order_data.get('order_id', 'unknown')}")
+                    print(f"   Available price fields: {[f'{k}: {v}' for k, v in order_data.items() if 'price' in k.lower() or 'amount' in k.lower()]}")
+                
                 harmonized_record['price_total'] = price_total
             
             elif lazada_field == 'items_count':
@@ -628,4 +653,110 @@ if __name__ == "__main__":
     }
     for shopee_field, unified_field in shopee_order_mappings.items():
         print(f"   {shopee_field} → {unified_field}")
+
+def validate_price_mapping():
+    """
+    Integrated price mapping validation with comprehensive analysis
+    Validates price completeness for both Lazada and Shopee orders
+    """
+    print(f"\n🔍 VALIDATING PRICE MAPPING COMPLETENESS...")
+    
+    try:
+        # Re-read the saved data for validation
+        transformed_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Transformed')
+        dim_order_path = os.path.join(transformed_dir, 'dim_order.csv')
+        if not os.path.exists(dim_order_path):
+            print(f"❌ dim_order.csv not found at {dim_order_path}")
+            return False
+            
+        validation_df = pd.read_csv(dim_order_path)
+        
+        # Overall price statistics
+        total_orders = len(validation_df)
+        valid_prices = validation_df['price_total'].notna().sum()
+        missing_prices = validation_df['price_total'].isna().sum()
+        
+        print(f"📊 Price Mapping Results:")
+        print(f"  Total orders: {total_orders:,}")
+        print(f"  Orders with valid prices: {valid_prices:,}")
+        print(f"  Orders with missing prices: {missing_prices:,}")
+        
+        completion_rate = (valid_prices / total_orders * 100) if total_orders > 0 else 0
+        print(f"  Price mapping completion rate: {completion_rate:.1f}%")
+        
+        # Platform-specific validation
+        print(f"\n📊 Price Mapping by Platform:")
+        platform_results = {}
+        
+        for platform_key, platform_name in [(1, 'Lazada'), (2, 'Shopee')]:
+            platform_orders = validation_df[validation_df['platform_key'] == platform_key]
+            
+            if len(platform_orders) > 0:
+                platform_total = len(platform_orders)
+                platform_valid = platform_orders['price_total'].notna().sum()
+                platform_rate = (platform_valid / platform_total * 100)
+                platform_results[platform_name] = platform_rate
+                
+                print(f"  {platform_name}: {platform_valid:,}/{platform_total:,} ({platform_rate:.1f}%)")
+                
+                if platform_rate < 95.0:
+                    print(f"    ⚠️  {platform_name} price mapping below threshold")
+        
+        # Validation thresholds and results
+        if completion_rate >= 98.0:
+            print(f"✅ PASS: Price mapping meets quality threshold (≥98%)")
+            return True
+        elif completion_rate >= 95.0:
+            print(f"⚠️  WARNING: Price mapping below optimal threshold (95-98%)")
+            return True
+        else:
+            print(f"❌ FAIL: Price mapping below acceptable threshold (<95%)")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error during price validation: {e}")
+        return False
+
+if __name__ == "__main__":
+    # Run the harmonization process
+    harmonized_df = harmonize_dim_order()
+    
+    if not harmonized_df.empty:
+        output_file = save_harmonized_orders(harmonized_df)
+        print(f"\n🎉 Order dimension harmonization completed successfully!")
+        print(f"📁 Output file: {output_file}")
+        
+        # Run integrated price validation
+        validate_price_mapping()
+    else:
+        print("❌ No data was harmonized. Please check your source files.")
+        
+    # Display mappings used
+    print(f"\n🔗 Field mappings used:")
+    
+    print(f"\nLazada mappings:")
+    lazada_order_mappings = {
+        'order_id': 'platform_order_id',
+        'statuses[0]': 'order_status',
+        'created_at': 'order_date', 
+        'updated_at': 'updated_at',
+        'price': 'price_total',
+        'items_count': 'total_item_count',
+        'payment_method': 'payment_method',
+        'address_shipping.city': 'shipping_city'
+    }
+    for lazada_field, unified_field in lazada_order_mappings.items():
+        print(f"   {lazada_field} → {unified_field}")
+    
+    print(f"\nShopee mappings:")
+    shopee_order_mappings = {
+        'order_sn': 'platform_order_id',
+        'order_status': 'order_status',
+        'create_time': 'order_date', 
+        'update_time': 'updated_at',
+        'total_amount': 'price_total',
+        'len(item_list)': 'total_item_count',
+        'payment_method': 'payment_method',
+        'recipient_address.city': 'shipping_city'
+    }
 
