@@ -626,6 +626,234 @@ def extract_shopee_product_variants(variant_data, product_key, item_id, variant_
     
     return variants
 
+def find_and_add_missing_items(product_df, variant_df, variant_key_counter):
+    """
+    Find item_ids from raw data that are missing from dimension tables and add them as 'Pulled Out Items'
+    
+    Args:
+        product_df (pd.DataFrame): Current product dimension table
+        variant_df (pd.DataFrame): Current variant dimension table
+        variant_key_counter (dict): Global variant counter with 'current' key
+        
+    Returns:
+        tuple: (updated_product_df, updated_variant_df)
+    """
+    print("\n🔍 Finding missing items from raw data...")
+    
+    # Get existing item_ids and sku_ids from dimension tables
+    existing_products = set(product_df['product_item_id'].astype(str))
+    existing_variants = set(variant_df['platform_sku_id'].astype(str))
+    
+    print(f"📊 Current dimension coverage:")
+    print(f"   - Products: {len(existing_products)}")
+    print(f"   - Variants: {len(existing_variants)}")
+    
+    # Collect all item_ids from raw files
+    staging_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Staging')
+    all_items = {
+        'lazada_products': set(),
+        'lazada_order_items': set(),
+        'shopee_products': set(),
+        'shopee_order_items': set()
+    }
+    
+    # Load Lazada Products
+    try:
+        products_file = os.path.join(staging_dir, 'lazada_products_raw.json')
+        if os.path.exists(products_file):
+            with open(products_file, 'r', encoding='utf-8') as f:
+                products = json.load(f)
+            for product in products:
+                if 'item_id' in product and product['item_id']:
+                    all_items['lazada_products'].add(str(product['item_id']))
+            print(f"📊 Lazada products in raw: {len(all_items['lazada_products'])}")
+    except Exception as e:
+        print(f"⚠️ Error reading lazada_products_raw.json: {e}")
+    
+    # Load Lazada Order Items
+    try:
+        order_items_file = os.path.join(staging_dir, 'lazada_multiple_order_items_raw.json')
+        if os.path.exists(order_items_file):
+            with open(order_items_file, 'r', encoding='utf-8') as f:
+                items = json.load(f)
+            for item in items:
+                if 'product_id' in item and item['product_id']:
+                    all_items['lazada_order_items'].add(str(item['product_id']))
+                if 'sku' in item and item['sku']:
+                    all_items['lazada_order_items'].add(str(item['sku']))
+            print(f"📊 Lazada order items in raw: {len(all_items['lazada_order_items'])}")
+    except Exception as e:
+        print(f"⚠️ Error reading lazada_multiple_order_items_raw.json: {e}")
+    
+    # Load Shopee Products
+    try:
+        products_file = os.path.join(staging_dir, 'shopee_products_raw.json')
+        if os.path.exists(products_file):
+            with open(products_file, 'r', encoding='utf-8') as f:
+                products = json.load(f)
+            for product in products:
+                if 'item_id' in product and product['item_id']:
+                    all_items['shopee_products'].add(str(product['item_id']))
+            print(f"📊 Shopee products in raw: {len(all_items['shopee_products'])}")
+    except Exception as e:
+        print(f"⚠️ Error reading shopee_products_raw.json: {e}")
+    
+    # Load Shopee Orders (for item_ids in order items)
+    try:
+        orders_file = os.path.join(staging_dir, 'shopee_orders_raw.json')
+        if os.path.exists(orders_file):
+            with open(orders_file, 'r', encoding='utf-8') as f:
+                orders = json.load(f)
+            for order in orders:
+                if 'item_list' in order:
+                    for item in order['item_list']:
+                        if 'item_id' in item and item['item_id']:
+                            all_items['shopee_order_items'].add(str(item['item_id']))
+                        if 'model_id' in item and item['model_id']:
+                            all_items['shopee_order_items'].add(str(item['model_id']))
+            print(f"📊 Shopee order items in raw: {len(all_items['shopee_order_items'])}")
+    except Exception as e:
+        print(f"⚠️ Error reading shopee_orders_raw.json: {e}")
+    
+    # Combine and find missing items
+    all_lazada_items = all_items['lazada_products'] | all_items['lazada_order_items']
+    all_shopee_items = all_items['shopee_products'] | all_items['shopee_order_items']
+    
+    missing_lazada = all_lazada_items - existing_products - existing_variants
+    missing_shopee = all_shopee_items - existing_products - existing_variants
+    
+    print(f"\n🔍 Missing item analysis:")
+    print(f"   - Missing Lazada items: {len(missing_lazada)}")
+    if missing_lazada and len(missing_lazada) <= 10:
+        print(f"     Items: {sorted(list(missing_lazada))}")
+    elif missing_lazada:
+        print(f"     Sample: {sorted(list(missing_lazada))[:10]}")
+    
+    print(f"   - Missing Shopee items: {len(missing_shopee)}")
+    if missing_shopee and len(missing_shopee) <= 10:
+        print(f"     Items: {sorted(list(missing_shopee))}")
+    elif missing_shopee:
+        print(f"     Sample: {sorted(list(missing_shopee))[:10]}")
+    
+    # If no missing items, return unchanged dataframes
+    if not missing_lazada and not missing_shopee:
+        print("✅ No missing items found! All raw data items are covered.")
+        return product_df, variant_df
+    
+    # Create 'Pulled Out Item' entries for missing items
+    print(f"\n🔧 Creating 'Pulled Out Item' entries...")
+    
+    current_timestamp = datetime.now()
+    new_products = []
+    new_variants = []
+    
+    # Get next available product keys
+    max_product_key_lazada = product_df[product_df['platform_key'] == 1]['product_key'].max()
+    max_product_key_shopee = product_df[product_df['platform_key'] == 2]['product_key'].max()
+    
+    # Handle case where no products exist for a platform
+    if pd.isna(max_product_key_lazada):
+        max_product_key_lazada = 0
+    if pd.isna(max_product_key_shopee):
+        max_product_key_shopee = 0
+    
+    # Process missing Lazada items
+    if missing_lazada:
+        print(f"🔧 Processing {len(missing_lazada)} missing Lazada items...")
+        
+        for i, item_id in enumerate(sorted(missing_lazada)):
+            # Extract integer part and increment for new Lazada product key
+            base_key = int(max_product_key_lazada) + i + 1
+            product_key = float(f"{base_key}.1")
+            variant_key = float(f"{variant_key_counter['current']}.1")
+            variant_key_counter['current'] += 1
+            
+            # Create product entry
+            new_product = {
+                'product_key': product_key,
+                'product_item_id': item_id,
+                'product_name': 'Pulled Out Item',
+                'product_category': None,
+                'product_status': None,
+                'product_rating': None,
+                'platform_key': 1
+            }
+            new_products.append(new_product)
+            
+            # Create variant entry
+            new_variant = {
+                'product_variant_key': variant_key,
+                'product_key': product_key,
+                'platform_sku_id': item_id,
+                'canonical_sku': item_id,
+                'scent': 'Base Product',
+                'volume': 'N/A',
+                'current_price': None,
+                'original_price': None,
+                'created_at': current_timestamp,
+                'last_updated': current_timestamp,
+                'platform_key': 1
+            }
+            new_variants.append(new_variant)
+    
+    # Process missing Shopee items
+    if missing_shopee:
+        print(f"🔧 Processing {len(missing_shopee)} missing Shopee items...")
+        
+        for i, item_id in enumerate(sorted(missing_shopee)):
+            # Extract integer part and increment for new Shopee product key
+            base_key = int(max_product_key_shopee) + i + 1
+            product_key = float(f"{base_key}.2")
+            variant_key = float(f"{variant_key_counter['current']}.2")
+            variant_key_counter['current'] += 1
+            
+            # Create product entry
+            new_product = {
+                'product_key': product_key,
+                'product_item_id': item_id,
+                'product_name': 'Pulled Out Item',
+                'product_category': None,
+                'product_status': None,
+                'product_rating': None,
+                'platform_key': 2
+            }
+            new_products.append(new_product)
+            
+            # Create variant entry
+            new_variant = {
+                'product_variant_key': variant_key,
+                'product_key': product_key,
+                'platform_sku_id': item_id,
+                'canonical_sku': item_id,
+                'scent': 'Base Product',
+                'volume': 'N/A',
+                'current_price': None,
+                'original_price': None,
+                'created_at': current_timestamp,
+                'last_updated': current_timestamp,
+                'platform_key': 2
+            }
+            new_variants.append(new_variant)
+    
+    # Add new entries to dataframes
+    if new_products:
+        print(f"📊 Adding {len(new_products)} new 'Pulled Out Item' products...")
+        new_products_df = pd.DataFrame(new_products)
+        product_df = pd.concat([product_df, new_products_df], ignore_index=True)
+    
+    if new_variants:
+        print(f"📊 Adding {len(new_variants)} new 'Pulled Out Item' variants...")
+        new_variants_df = pd.DataFrame(new_variants)
+        variant_df = pd.concat([variant_df, new_variants_df], ignore_index=True)
+    
+    print(f"\n✅ Pulled Out Items Summary:")
+    print(f"   - Lazada pulled out items: {len([p for p in new_products if p['platform_key'] == 1])}")
+    print(f"   - Shopee pulled out items: {len([p for p in new_products if p['platform_key'] == 2])}")
+    print(f"   - Total new products: {len(new_products)}")
+    print(f"   - Total new variants: {len(new_variants)}")
+    
+    return product_df, variant_df
+
 def harmonize_lazada_product_record(product_data, product_key, average_ratings=None, overall_average_rating=None):
     """
     Harmonize a single Lazada product record to dimensional model
@@ -814,6 +1042,9 @@ def harmonize_dim_product():
     shopee_count = len(shopee_products)
     print(f"✅ Processed {shopee_count} Shopee products")
     
+    # Find and add missing items from all raw data sources
+    product_df, variant_df = find_and_add_missing_items(product_df, variant_df, variant_key_counter)
+    
     # Create default variants for all products (to use when SKU/model_id lookup fails)
     print("\n🔄 Creating default variants for all products...")
     default_variants_created = 0
@@ -954,6 +1185,8 @@ if __name__ == "__main__":
         print(f"✅ Calculated Lazada and Shopee product ratings from review data")
         print(f"✅ Enhanced Shopee price extraction (fallback to variant data for multi-model products)")
         print(f"✅ Created default variants for all products (fallback for missing SKU/model_id lookups)")
+        print(f"✅ Integrated missing item detection from all raw data sources")
+        print(f"✅ Automated 'Pulled Out Item' creation for orphaned references")
                 
     except Exception as e:
         print(f"❌ Error during harmonization: {e}")

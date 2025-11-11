@@ -297,7 +297,7 @@ def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, pho
 def extract_customers_from_lazada_orders(orders_data):
     """
     Extract unique customers from Lazada orders and calculate metrics
-    Uses buyer_id directly as platform_customer_id for better accuracy
+    Uses comprehensive approach: buyer_id from order items + generated IDs from orders
     
     Args:
         orders_data (list): Raw Lazada orders from API
@@ -311,6 +311,8 @@ def extract_customers_from_lazada_orders(orders_data):
     order_items_file = os.path.join(staging_dir, 'lazada_multiple_order_items_raw.json')
     
     buyer_id_lookup = {}
+    all_buyer_ids = set()
+    
     if os.path.exists(order_items_file):
         with open(order_items_file, 'r', encoding='utf-8') as f:
             order_items_data = json.load(f)
@@ -322,29 +324,38 @@ def extract_customers_from_lazada_orders(orders_data):
                 buyer_id = order_items[0].get('buyer_id')
                 if buyer_id:
                     buyer_id_lookup[order_id] = str(buyer_id)
+                    all_buyer_ids.add(str(buyer_id))
         
         print(f"   ✓ Built lookup for {len(buyer_id_lookup)} orders with buyer_id")
+        print(f"   ✓ Found {len(all_buyer_ids)} unique buyer_ids in order items")
     
     customer_records = []
     customer_order_tracking = {}  # Track orders per customer for analytics
+    generated_customer_ids = set()  # Track generated IDs to avoid duplicates
+    processed_orders = set()  # Track processed orders to avoid duplicates
     
+    # Process orders and extract customers using multiple methods
     for order in orders_data:
         try:
+            # Skip if already processed
+            order_id = str(order.get('order_id', ''))
+            if order_id in processed_orders:
+                continue
+            processed_orders.add(order_id)
+            
             # Extract customer information from shipping address
             shipping_address = order.get('address_shipping', {})
             first_name = order.get('customer_first_name', '')
             phone = shipping_address.get('phone', '')
             city = shipping_address.get('city', '')
             
-            # Get buyer_id from lookup, fallback to generated ID
-            order_id = str(order.get('order_id', ''))
+            # Method 1: Get buyer_id from order items lookup (preferred)
             buyer_id = buyer_id_lookup.get(order_id)
             
-            # Use buyer_id directly as platform_customer_id if available
-            if buyer_id:
-                platform_customer_id = buyer_id
-            else:
-                platform_customer_id = generate_platform_customer_id(first_name, phone)
+            # Method 2: Generate customer ID from order data (always generate as comprehensive approach)
+            generated_customer_id = generate_platform_customer_id(first_name, phone)
+            generated_customer_id = clean_text_data(str(generated_customer_id))
+            generated_customer_ids.add(generated_customer_id)
             
             # Extract order date for customer analytics
             created_at = order.get('created_at', '')
@@ -355,23 +366,60 @@ def extract_customers_from_lazada_orders(orders_data):
                 except ValueError:
                     order_date = None
             
-            # Track customer orders for analytics
-            if platform_customer_id not in customer_order_tracking:
-                customer_order_tracking[platform_customer_id] = {
-                    'first_name': first_name,
-                    'city': city,
-                    'phone': phone,
-                    'order_dates': [],
-                    'order_count': 0
-                }
+            # Process BOTH customer IDs if they're different (comprehensive approach)
+            customer_ids_to_process = []
             
-            if order_date:
-                customer_order_tracking[platform_customer_id]['order_dates'].append(order_date)
-            customer_order_tracking[platform_customer_id]['order_count'] += 1
+            # Add buyer_id if available
+            if buyer_id:
+                customer_ids_to_process.append(buyer_id)
+            
+            # Always add generated ID to ensure comprehensive coverage
+            if generated_customer_id and generated_customer_id != buyer_id:
+                customer_ids_to_process.append(generated_customer_id)
+            
+            # If no IDs available, use a fallback
+            if not customer_ids_to_process:
+                customer_ids_to_process.append(f"UNKNOWN_{order_id}")
+            
+            # Process each customer ID
+            for platform_customer_id in customer_ids_to_process:
+                # Track customer orders for analytics
+                if platform_customer_id not in customer_order_tracking:
+                    customer_order_tracking[platform_customer_id] = {
+                        'first_name': first_name,
+                        'city': city,
+                        'phone': phone,
+                        'order_dates': [],
+                        'order_count': 0
+                    }
+                
+                if order_date:
+                    customer_order_tracking[platform_customer_id]['order_dates'].append(order_date)
+                customer_order_tracking[platform_customer_id]['order_count'] += 1
             
         except Exception as e:
             print(f"⚠️ Error processing order {order.get('order_id', 'unknown')}: {e}")
             continue
+    
+    # Also add any buyer_ids that don't appear in orders (orphaned buyer_ids)
+    processed_customer_ids = set(customer_order_tracking.keys())
+    orphaned_buyer_ids = all_buyer_ids - processed_customer_ids
+    if orphaned_buyer_ids:
+        print(f"📋 Found {len(orphaned_buyer_ids)} orphaned buyer_ids in order items...")
+        for buyer_id in orphaned_buyer_ids:
+            customer_order_tracking[buyer_id] = {
+                'first_name': 'Unknown',
+                'city': 'Unknown', 
+                'phone': 'Unknown',
+                'order_dates': [datetime(2020, 1, 1).date()],  # Default date
+                'order_count': 1  # Assume at least 1 order
+            }
+    
+    print(f"📊 Customer extraction summary:")
+    print(f"   - Total customer IDs tracked: {len(customer_order_tracking)}")
+    print(f"   - Generated customer IDs from orders: {len(generated_customer_ids)}")
+    print(f"   - Orders with buyer_id lookup: {len(buyer_id_lookup)}")
+    print(f"   - Orphaned buyer_ids added: {len(orphaned_buyer_ids) if orphaned_buyer_ids else 0}")
     
     # Generate customer dimension records
     for platform_customer_id, customer_info in customer_order_tracking.items():
@@ -747,17 +795,18 @@ def find_and_add_missing_customers(customers_df):
                 orders = json.load(f)
             
             for order in orders:
-                # Generate platform_customer_id as done in extraction
+                # Method 1: Generate platform_customer_id from order data (like in extraction)
                 first_name = order.get('customer_first_name', '')
                 shipping_address = order.get('address_shipping', {})
                 phone = shipping_address.get('phone', '')
-                customer_id = generate_platform_customer_id(first_name, phone)
+                generated_customer_id = generate_platform_customer_id(first_name, phone)
+                
                 # Clean the generated customer ID
-                if customer_id:
-                    customer_id = clean_text_data(str(customer_id))
-                    raw_customers['lazada_orders'].add(str(customer_id))
+                if generated_customer_id:
+                    generated_customer_id = clean_text_data(str(generated_customer_id))
+                    raw_customers['lazada_orders'].add(str(generated_customer_id))
             
-            print(f"📊 Lazada order customers in raw: {len(raw_customers['lazada_orders'])}")
+            print(f"📊 Lazada order customers (generated IDs) in raw: {len(raw_customers['lazada_orders'])}")
     except Exception as e:
         print(f"⚠️ Error reading lazada_orders_raw.json: {e}")
     
