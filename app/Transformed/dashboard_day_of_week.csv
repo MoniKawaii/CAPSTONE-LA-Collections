@@ -1,0 +1,15 @@
+platform_name,platform_key,day_of_week,day_name,total_orders,unique_dates,total_revenue,avg_order_value,total_items,avg_orders_per_occurrence
+Lazada,1,0,Monday,1223.0,151.0,0.0,,1802.0,8.1
+Lazada,1,1,Tuesday,1288.0,152.0,0.0,,1885.0,8.5
+Lazada,1,2,Wednesday,1113.0,154.0,0.0,,1633.0,7.2
+Lazada,1,3,Thursday,1292.0,151.0,0.0,,1906.0,8.6
+Lazada,1,4,Friday,1142.0,150.0,0.0,,1648.0,7.6
+Lazada,1,5,Saturday,1203.0,152.0,0.0,,1658.0,7.9
+Lazada,1,6,Sunday,1178.0,153.0,0.0,,1692.0,7.7
+Shopee,2,0,Monday,2848.0,112.0,1559195.0,547.47,3632.0,25.4
+Shopee,2,1,Tuesday,3907.0,129.0,2048978.0,524.44,5040.0,30.3
+Shopee,2,2,Wednesday,3313.0,127.0,1809967.0,546.32,4269.0,26.1
+Shopee,2,3,Thursday,3275.0,118.0,1739523.0,531.15,4173.0,27.8
+Shopee,2,4,Friday,3281.0,113.0,1721103.0,524.57,4285.0,29.0
+Shopee,2,5,Saturday,3078.0,118.0,1638302.0,532.26,3957.0,26.1
+Shopee,2,6,Sunday,3149.0,117.0,1627515.0,516.84,4050.0,26.9

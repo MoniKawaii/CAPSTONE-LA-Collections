@@ -1,0 +1,3 @@
+platform_name,platform_key,total_orders,unique_order_dates,first_order_date,latest_order_date,total_possible_days,date_coverage_percentage,avg_orders_per_day,total_revenue,avg_order_value
+Lazada,1,8439,1063,2022-10-05,2025-10-29,1121,94.83,7.94,0.0,
+Shopee,2,22851,834,2020-09-19,2025-10-30,1868,44.65,27.4,12144583.0,531.47
