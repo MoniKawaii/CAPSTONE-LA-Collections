@@ -28,6 +28,7 @@ Field Mappings for Fact_Orders:
 """
 
 import pandas as pd
+import json
 import numpy as np
 from datetime import datetime, date
 import json
@@ -82,13 +83,13 @@ def load_lazada_order_items_raw():
 
 
 def load_shopee_orders_raw():
-    """Load raw Shopee orders from JSON file"""
-    json_path = os.path.join(os.path.dirname(__file__), '..', 'Staging', 'shopee_orders_raw.json')
+    """Load raw Shopee order items from multiple order items JSON file"""
+    json_path = os.path.join(os.path.dirname(__file__), '..', 'Staging', 'shopee_multiple_order_items_raw.json')
     
     try:
         with open(json_path, 'r', encoding='utf-8') as f:
             orders_data = json.load(f)
-        print(f"✓ Loaded {len(orders_data)} raw Shopee orders")
+        print(f"✓ Loaded {len(orders_data)} raw Shopee order items from multiple order items file")
         return orders_data
     except FileNotFoundError:
         print(f"❌ File not found: {json_path}")
@@ -98,51 +99,47 @@ def load_shopee_orders_raw():
         return []
 
 
-def load_shopee_payment_details_raw():
-    """Load Shopee payment details from existing split files"""
-    staging_dir = os.path.join(os.path.dirname(__file__), '..', 'Staging')
+def load_shopee_payment_details():
+    """Load raw Shopee payment details from JSON files and create order_sn lookup"""
+    payment_details = {}
     
-    # Load from the two existing files as requested
-    file1_path = os.path.join(staging_dir, 'shopee_paymentdetail_raw.json')
-    file2_path = os.path.join(staging_dir, 'shopee_paymentdetail_2_raw.json')
+    json_files = [
+        'shopee_paymentdetail_raw.json',
+        'shopee_paymentdetail_2_raw.json'
+    ]
     
-    payment_details = []
+    total_loaded = 0
+    for filename in json_files:
+        json_path = os.path.join(os.path.dirname(__file__), '..', 'Staging', filename)
+        
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                
+            for record in data:
+                order_sn = record.get('order_sn')
+                if order_sn:
+                    # Store the entire payment detail record indexed by order_sn
+                    payment_details[order_sn] = record
+                    total_loaded += 1
+                    
+        except FileNotFoundError:
+            print(f"⚠️ Payment detail file not found: {filename}")
+            continue
+        except json.JSONDecodeError as e:
+            print(f"❌ Error parsing {filename}: {e}")
+            continue
     
-    # Load from both files
-    for file_path in [file1_path, file2_path]:
-        if os.path.exists(file_path):
-            print(f"✓ Loading {os.path.basename(file_path)}")
-            try:
-                with open(file_path, 'r', encoding='utf-8') as file:
-                    data = json.load(file)
-                    if isinstance(data, list):
-                        payment_details.extend(data)
-                        print(f"  - Loaded {len(data)} records from list format")
-                    elif 'data' in data:
-                        payment_details.extend(data['data'])
-                        print(f"  - Loaded {len(data['data'])} records from data wrapper")
-                    else:
-                        print(f"⚠️ Unexpected data structure in {file_path}")
-            except Exception as e:
-                print(f"❌ Error loading {file_path}: {e}")
-        else:
-            print(f"⚠️ File not found: {file_path}")
+    if total_loaded > 0:
+        print(f"✓ Loaded {total_loaded} payment detail records for voucher data")
+    else:
+        print(f"⚠️ No payment details found - vouchers will be ₱0")
     
-    print(f"✓ Loaded {len(payment_details)} total payment detail records")
-    
-    # Create lookup dictionary by order_sn
-    payment_lookup = {}
-    for detail in payment_details:
-        order_sn = detail.get('order_sn')
-        if order_sn:
-            payment_lookup[order_sn] = detail
-    
-    print(f"✓ Created payment lookup for {len(payment_lookup)} unique orders")
-    return payment_lookup
+    return payment_details
 
 
 def load_dimension_lookups():
-    """Load dimension tables from CSV files for key lookups - ONLY COMPLETED ORDERS"""
+    """Load dimension tables from CSV files for key lookups - PROCESS ALL ORDERS"""
     transformed_dir = os.path.join(os.path.dirname(__file__), '..', 'Transformed')
     dim_lookups = {}
     
@@ -154,24 +151,25 @@ def load_dimension_lookups():
     product_df = pd.read_csv(os.path.join(transformed_dir, 'dim_product.csv'))
     dim_lookups['product'] = dict(zip(product_df['product_item_id'].astype(str), product_df['product_key']))
     
-    # Load order lookup - FILTER TO ONLY COMPLETED ORDERS
+    # Load order lookup - PROCESS ALL ORDERS (not just completed)
     order_df = pd.read_csv(os.path.join(transformed_dir, 'dim_order.csv'))
-    completed_orders_df = order_df[order_df['order_status'] == 'COMPLETED'].copy()
-    dim_lookups['order'] = dict(zip(completed_orders_df['platform_order_id'].astype(str), completed_orders_df['orders_key']))
+    dim_lookups['order'] = dict(zip(order_df['platform_order_id'].astype(str), order_df['orders_key']))
     
-    # Also create a price lookup for COMPLETED orders to ensure price consistency
-    dim_lookups['order_prices'] = dict(zip(completed_orders_df['platform_order_id'].astype(str), completed_orders_df['price_total']))
+    # Create a price lookup for ALL orders to ensure price consistency
+    dim_lookups['order_prices'] = dict(zip(order_df['platform_order_id'].astype(str), order_df['price_total']))
     
     # Load product variant lookup
     variant_df = pd.read_csv(os.path.join(transformed_dir, 'dim_product_variant.csv'))
     # Use platform_sku_id for variant lookup
     dim_lookups['product_variant'] = dict(zip(variant_df['platform_sku_id'].astype(str), variant_df['product_variant_key']))
     
-    print(f"✓ Loaded dimension lookups (COMPLETED ORDERS ONLY):")
+    print(f"✓ Loaded dimension lookups (ALL ORDERS):")
     print(f"  - Customers: {len(dim_lookups['customer'])}")
     print(f"  - Products: {len(dim_lookups['product'])}")
-    print(f"  - Orders (COMPLETED): {len(dim_lookups['order'])} of {len(order_df)} total")
+    print(f"  - Orders (ALL): {len(dim_lookups['order'])}")
     print(f"  - Product Variants: {len(dim_lookups['product_variant'])}")
+    
+    return dim_lookups, variant_df
     
     return dim_lookups, variant_df
 
@@ -501,8 +499,8 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_lookups, 
                         'item_quantity': 1,  # Always 1 for individual line items
                         'paid_price': float(item.get('paid_price', 0.0)),  # Individual item price
                         'original_unit_price': float(item.get('item_price', 0.0)),
-                        'voucher_platform_amount': float(item.get('voucher_platform', 0.0)),
-                        'voucher_seller_amount': float(item.get('voucher_seller', 0.0)),
+                        'voucher_platform_amount': abs(float(item.get('voucher_platform', 0.0))),
+                        'voucher_seller_amount': abs(float(item.get('voucher_seller', 0.0))),
                         'shipping_fee_paid_by_buyer': float(item.get('shipping_amount', 0.0))
                     }
                     
@@ -640,8 +638,8 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_lookups, 
                         'item_quantity': 1,  # Always 1 for individual line items
                         'paid_price': float(item.get('paid_price', 0.0)),  # Individual item price
                         'original_unit_price': float(item.get('item_price', 0.0)),
-                        'voucher_platform_amount': float(item.get('voucher_platform', 0.0)),
-                        'voucher_seller_amount': float(item.get('voucher_seller', 0.0)),
+                        'voucher_platform_amount': abs(float(item.get('voucher_platform', 0.0))),
+                        'voucher_seller_amount': abs(float(item.get('voucher_seller', 0.0))),
                         'shipping_fee_paid_by_buyer': float(item.get('shipping_amount', 0.0))
                     }
                     
@@ -683,7 +681,7 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
     """
     Extract and harmonize fact order records from Shopee orders with payment details
     Creates one record per individual order item (no aggregation)
-    ONLY PROCESSES COMPLETED ORDERS from dim_order
+    PROCESSES ALL ORDERS from dim_order (not just completed)
     
     Args:
         orders_data (list): Raw Shopee orders from API (includes item_list)
@@ -723,10 +721,10 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
             platform_order_id = str(order.get('order_sn', ''))
             item_list = order.get('item_list', [])
             
-            # Get orders_key from dimension table (only COMPLETED orders are in lookup)
+            # Get orders_key from dimension table (all orders are now in lookup)
             orders_key = order_key_lookup.get(platform_order_id)
             if orders_key is None:
-                # Skip non-COMPLETED orders - they're not in the lookup
+                # Skip orders not in dimension table
                 continue
             
             # Get customer info from order
@@ -887,32 +885,97 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
                         original_unit_price = float(payment_item.get('selling_price', 0.0))  # Total line revenue before any discounts
                         
                         # Get ALL discount components from payment item level
-                        coin_discount = float(payment_item.get('discount_from_coin', 0.0))  # Shopee coins discount
-                        voucher_shopee = float(payment_item.get('discount_from_voucher_shopee', 0.0))  # Platform voucher discount
-                        voucher_seller_amount = float(payment_item.get('discount_from_voucher_seller', 0.0))    # Seller voucher discount
-                        seller_discount = float(payment_item.get('seller_discount', 0.0))  # Direct seller discount
-                        shopee_discount = float(payment_item.get('shopee_discount', 0.0))  # Shopee platform discount
+                        coin_discount = abs(float(payment_item.get('discount_from_coin', 0.0)))  # Shopee coins discount
+                        voucher_shopee = abs(float(payment_item.get('discount_from_voucher_shopee', 0.0)))  # Platform voucher discount
+                        voucher_seller_amount = abs(float(payment_item.get('discount_from_voucher_seller', 0.0)))    # Seller voucher discount
+                        seller_discount = abs(float(payment_item.get('seller_discount', 0.0)))  # Direct seller discount
+                        shopee_discount = abs(float(payment_item.get('shopee_discount', 0.0)))  # Shopee platform discount
                         
                         # Get order-level discounts from buyer_payment_info if available
                         buyer_payment_info = payment_detail.get('buyer_payment_info', {})
                         shopee_coins_redeemed = abs(float(buyer_payment_info.get('shopee_coins_redeemed', 0.0)))  # abs() to handle negative values
-                        shopee_voucher_order = float(buyer_payment_info.get('shopee_voucher', 0.0))  # Order-level Shopee voucher
-                        seller_voucher_order = float(buyer_payment_info.get('seller_voucher', 0.0))  # Order-level seller voucher
-                        credit_card_promotion = float(buyer_payment_info.get('credit_card_promotion', 0.0))  # Credit card promotions
-                        trade_in_discount_order = float(buyer_payment_info.get('trade_in_discount', 0.0))  # Trade-in discounts
+                        shopee_voucher_order = abs(float(buyer_payment_info.get('shopee_voucher', 0.0)))  # Order-level Shopee voucher
+                        seller_voucher_order = abs(float(buyer_payment_info.get('seller_voucher', 0.0)))  # Order-level seller voucher
+                        credit_card_promotion = abs(float(buyer_payment_info.get('credit_card_promotion', 0.0)))  # Credit card promotions
+                        trade_in_discount_order = abs(float(buyer_payment_info.get('trade_in_discount', 0.0)))  # Trade-in discounts
+                        
+                        # Additional comprehensive voucher processing from payment details
+                        voucher_info = payment_detail.get('voucher_info', {})
+                        voucher_info_list = payment_detail.get('voucher_info_list', [])
+                        
+                        # Extract platform and shop vouchers from voucher_info structure
+                        platform_vouchers = voucher_info.get('platform_vouchers', []) if voucher_info else []
+                        shop_vouchers = voucher_info.get('shop_vouchers', []) if voucher_info else []
+                        
+                        # Calculate additional platform vouchers (use abs for negative values)
+                        additional_platform_voucher = abs(sum(
+                            voucher.get('voucher_value_reduced', 0) 
+                            for voucher in platform_vouchers 
+                            if voucher and isinstance(voucher.get('voucher_value_reduced'), (int, float))
+                        ))
+                        
+                        # Calculate additional shop vouchers (use abs for negative values)
+                        additional_shop_voucher = abs(sum(
+                            voucher.get('voucher_value_reduced', 0) 
+                            for voucher in shop_vouchers 
+                            if voucher and isinstance(voucher.get('voucher_value_reduced'), (int, float))
+                        ))
+                        
+                        # Process voucher_info_list for additional vouchers
+                        for voucher in voucher_info_list:
+                            if not voucher:
+                                continue
+                            voucher_type = voucher.get('voucher_type', 0)
+                            voucher_value = voucher.get('voucher_value_reduced', 0)
+                            
+                            if not isinstance(voucher_value, (int, float)):
+                                continue
+                                
+                            if voucher_type == 0:  # Platform voucher
+                                additional_platform_voucher += abs(voucher_value)
+                            elif voucher_type == 1:  # Shop voucher
+                                additional_shop_voucher += abs(voucher_value)
+                        
+                        # Get additional discounts (use abs for negative values)
+                        shop_cashback_info = payment_detail.get('shopee_cashback_coin', {})
+                        shop_cashback = abs(shop_cashback_info.get('shopee_cashback', 0)) if shop_cashback_info else 0
+                        
+                        coin_info = payment_detail.get('coin_info', {})
+                        coin_used = abs(coin_info.get('coin_used', 0)) if coin_info else 0
+                        
+                        card_promotion_discount = abs(payment_detail.get('card_promotion_id', 0) or 0)
+                        
+                        # Distribute order-level vouchers proportionally to items
+                        total_order_value = sum(
+                            float(payment_item_lookup.get(f"{i.get('item_id', '')}_{i.get('model_id', '')}", {}).get('selling_price', 0.0))
+                            for i in item_list
+                        )
+                        
+                        item_proportion = original_unit_price / total_order_value if total_order_value > 0 else 1.0 / len(item_list)
+                        
+                        # Distribute additional vouchers based on item proportion
+                        distributed_platform_voucher = additional_platform_voucher * item_proportion
+                        distributed_shop_voucher = additional_shop_voucher * item_proportion
+                        distributed_cashback = shop_cashback * item_proportion  
+                        distributed_coin_used = coin_used * item_proportion
+                        distributed_card_promotion = card_promotion_discount * item_proportion
                         
                         # Consolidate all platform-related discounts into voucher_platform_amount
-                        # Item-level platform discounts
                         voucher_platform_amount = (voucher_shopee + coin_discount + seller_discount + 
                                                  shopee_discount + shopee_coins_redeemed + 
                                                  shopee_voucher_order + credit_card_promotion + 
-                                                 trade_in_discount_order)
+                                                 trade_in_discount_order + distributed_platform_voucher +
+                                                 distributed_cashback + distributed_coin_used + 
+                                                 distributed_card_promotion)
                         
-                        # Consolidate seller discounts (item + order level)
-                        voucher_seller_amount = voucher_seller_amount + seller_voucher_order
+                        # Consolidate seller discounts (item + order level + distributed)
+                        voucher_seller_amount = voucher_seller_amount + seller_voucher_order + distributed_shop_voucher
+                        
+                        # Ensure voucher amounts are positive (absolute values for reporting)
+                        voucher_platform_amount = abs(voucher_platform_amount)
+                        voucher_seller_amount = abs(voucher_seller_amount)
                         
                         # Calculate paid price as original price minus all discounts
-                        # This ensures the formula: paid_price + voucher_platform_amount + voucher_seller_amount = original_unit_price
                         paid_price = original_unit_price - voucher_platform_amount - voucher_seller_amount
                     else:
                         # Fallback to basic order data - convert to line totals
@@ -920,8 +983,8 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
                         unit_discounted = float(item.get('model_discounted_price', 0.0))
                         original_unit_price = unit_original * item_quantity  # Convert to line total
                         paid_price = unit_discounted * item_quantity         # Convert to line total
-                        voucher_platform_amount = float(item.get('voucher_absorbed_by_shopee', 0.0))
-                        voucher_seller_amount = float(item.get('voucher_absorbed_by_seller', 0.0))
+                        voucher_platform_amount = abs(float(item.get('voucher_absorbed_by_shopee', 0.0)))
+                        voucher_seller_amount = abs(float(item.get('voucher_absorbed_by_seller', 0.0)))
                     
                     # Calculate weighted shipping fee based on paid_price proportion
                     # Formula: (order_shipping_fee / sum_of_all_paid_prices) * current_item_paid_price
@@ -985,6 +1048,194 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
     return fact_orders_df
 
 
+def extract_order_items_from_shopee_multiple_items(order_items_data, payment_details_data, dim_lookups, variant_df):
+    """
+    Extract and harmonize fact order records from Shopee multiple order items data (flattened format)
+    Each record is already an order item, not an order with item_list
+    
+    Args:
+        order_items_data (list): Raw Shopee order items from multiple order items API
+        payment_details_data (dict): Payment details lookup by order_sn
+        dim_lookups (dict): Dictionary of dimension key lookups
+        variant_df (DataFrame): Harmonized dimension product variant table
+        
+    Returns:
+        DataFrame: Harmonized fact orders records
+    """
+    fact_orders_records = []
+    
+    # Get lookup dictionaries
+    order_key_lookup = dim_lookups.get('order', {})
+    customer_key_lookup = dim_lookups.get('customer', {})
+    product_key_lookup = dim_lookups.get('product', {})
+    variant_key_lookup = dim_lookups.get('product_variant', {})
+    
+    print(f"📊 Processing {len(order_items_data)} Shopee order items (flattened format)...")
+    
+    processed_count = 0
+    skipped_count = 0
+    
+    for item in order_items_data:
+        try:
+            order_sn = str(item.get('order_sn', ''))
+            
+            # Get orders_key from dimension table
+            orders_key = order_key_lookup.get(order_sn)
+            if orders_key is None:
+                skipped_count += 1
+                continue
+            
+            # Get product information
+            item_id = str(item.get('item_id', ''))
+            model_id = str(item.get('model_id', ''))
+            
+            # Look up product_key
+            product_key = product_key_lookup.get(item_id)
+            if product_key is None:
+                skipped_count += 1
+                continue
+            
+            # Get product_variant_key
+            if model_id == '0' or not model_id:
+                product_variant_key = variant_key_lookup.get(item_id)
+            else:
+                product_variant_key = variant_key_lookup.get(model_id)
+                
+            # Fallback variant logic
+            if not product_variant_key:
+                product_variants = variant_df[variant_df['product_key'] == product_key]
+                if len(product_variants) == 1:
+                    product_variant_key = product_variants.iloc[0]['product_variant_key']
+                else:
+                    default_variant = variant_df[
+                        (variant_df['product_key'] == product_key) & 
+                        (variant_df['platform_sku_id'].str.startswith('DEFAULT_', na=False))
+                    ]
+                    if not default_variant.empty:
+                        product_variant_key = default_variant.iloc[0]['product_variant_key']
+            
+            if not product_variant_key:
+                product_variant_key = 0.0
+            
+            # Get pricing
+            quantity = item.get('model_quantity_purchased', 1)
+            unit_original = float(item.get('model_original_price', 0.0))
+            unit_discounted = float(item.get('model_discounted_price', 0.0))
+            
+            # Convert to line totals
+            original_unit_price = unit_original * quantity
+            paid_price = unit_discounted * quantity
+            
+            # Get payment details for voucher information
+            payment_detail = payment_details_data.get(order_sn, {})
+            
+            # Extract comprehensive voucher information
+            voucher_info = payment_detail.get('voucher_info', {}) or {}
+            voucher_info_list = payment_detail.get('voucher_info_list', [])
+            
+            # Platform vouchers
+            platform_vouchers = voucher_info.get('platform_vouchers', []) if voucher_info else []
+            platform_discount = sum(
+                voucher.get('voucher_value_reduced', 0) 
+                for voucher in platform_vouchers 
+                if voucher and isinstance(voucher.get('voucher_value_reduced'), (int, float))
+            )
+            
+            # Shop vouchers
+            shop_vouchers = voucher_info.get('shop_vouchers', []) if voucher_info else []
+            shop_discount = sum(
+                voucher.get('voucher_value_reduced', 0) 
+                for voucher in shop_vouchers 
+                if voucher and isinstance(voucher.get('voucher_value_reduced'), (int, float))
+            )
+            
+            # Additional vouchers from voucher_info_list
+            for voucher in voucher_info_list:
+                if not voucher:
+                    continue
+                voucher_type = voucher.get('voucher_type', 0)
+                voucher_value = voucher.get('voucher_value_reduced', 0)
+                
+                if not isinstance(voucher_value, (int, float)):
+                    continue
+                    
+                if voucher_type == 0:  # Platform voucher
+                    platform_discount += voucher_value
+                elif voucher_type == 1:  # Shop voucher
+                    shop_discount += voucher_value
+            
+            # Additional discounts
+            shop_cashback_info = payment_detail.get('shopee_cashback_coin', {})
+            shop_cashback = shop_cashback_info.get('shopee_cashback', 0) if shop_cashback_info else 0
+            
+            coin_info = payment_detail.get('coin_info', {})
+            coin_used = coin_info.get('coin_used', 0) if coin_info else 0
+            
+            card_promotion = payment_detail.get('card_promotion_id', 0) or 0
+            
+            # For now, assign all discounts at item level (more accurate distribution would require order-level grouping)
+            voucher_platform_amount = abs(platform_discount + shop_cashback + coin_used + card_promotion)
+            voucher_seller_amount = abs(shop_discount)
+            
+            # Adjust paid price based on vouchers
+            final_paid_price = max(0, paid_price - voucher_platform_amount - voucher_seller_amount)
+            
+            # Get time_key
+            create_time = item.get('create_time')
+            time_key = generate_time_key_from_timestamp(create_time) if create_time else 20220101
+            
+            # Use default customer for now (need proper customer mapping)
+            customer_key = 99999.2
+            
+            # Create fact record
+            fact_record = {
+                'order_item_key': None,  # Will be generated after sorting
+                'orders_key': orders_key,
+                'product_key': product_key,
+                'product_variant_key': product_variant_key,
+                'time_key': time_key,
+                'customer_key': customer_key,
+                'platform_key': 2,  # Always 2 for Shopee
+                'item_quantity': quantity,
+                'paid_price': final_paid_price,
+                'original_unit_price': original_unit_price,
+                'voucher_platform_amount': voucher_platform_amount,
+                'voucher_seller_amount': voucher_seller_amount,
+                'shipping_fee_paid_by_buyer': 0.0  # Calculate if needed
+            }
+            
+            fact_orders_records.append(fact_record)
+            processed_count += 1
+            
+        except Exception as e:
+            if processed_count <= 3:
+                print(f"⚠️ Error processing order item {item.get('order_sn', 'unknown')}: {e}")
+            skipped_count += 1
+            continue
+    
+    print(f"✅ Processed {processed_count} Shopee order items, skipped {skipped_count}")
+    
+    # Create DataFrame 
+    fact_orders_df = pd.DataFrame(fact_orders_records, columns=FACT_ORDERS_COLUMNS)
+    
+    # Apply data type conversions
+    if len(fact_orders_df) > 0:
+        data_types = COLUMN_DATA_TYPES.get('fact_orders', {})
+        for column, dtype in data_types.items():
+            if column in fact_orders_df.columns:
+                try:
+                    if dtype == 'float64':
+                        fact_orders_df[column] = pd.to_numeric(fact_orders_df[column], errors='coerce').fillna(0.0)
+                    elif dtype == 'int':
+                        fact_orders_df[column] = pd.to_numeric(fact_orders_df[column], errors='coerce').fillna(0).astype('int')
+                    else:
+                        fact_orders_df[column] = fact_orders_df[column].astype(dtype)
+                except Exception as e:
+                    print(f"⚠️ Warning: Could not convert {column} to {dtype}: {e}")
+    
+    return fact_orders_df
+
+
 def harmonize_fact_orders():
     """
     Main function to harmonize Fact Orders from Lazada and Shopee API response
@@ -1005,8 +1256,17 @@ def harmonize_fact_orders():
     
     # Load Shopee source data
     print("\n📥 Loading Shopee data...")
-    shopee_orders_data = load_shopee_orders_raw()
-    shopee_payment_details_data = load_shopee_payment_details_raw()
+    shopee_orders_data = load_shopee_orders_raw()  # Now loads multiple_order_items
+    shopee_payment_details_data = load_shopee_payment_details()
+    
+    # ALSO load original nested orders for additional coverage
+    shopee_nested_orders_data = []
+    try:
+        with open('app/Staging/shopee_orders_raw.json', 'r', encoding='utf-8') as f:
+            shopee_nested_orders_data = json.load(f)
+        print(f"📥 Also loaded {len(shopee_nested_orders_data)} nested Shopee orders")
+    except Exception as e:
+        print(f"⚠️ Could not load nested shopee orders: {e}")
     
     # Process Lazada orders
     print("\n🔄 Processing Lazada order items...")
@@ -1019,16 +1279,52 @@ def harmonize_fact_orders():
     else:
         print("⚠️ No Lazada order data available")
     
-    # Process Shopee orders
-    print("\n🔄 Processing Shopee order items...")
+    # Process Shopee orders from BOTH sources for maximum coverage
+    print("\n🔄 Processing Shopee order items from multiple sources...")
     shopee_fact_df = pd.DataFrame()
+    
+    # Process flattened multiple order items
     if shopee_orders_data:
-        shopee_fact_df = extract_order_items_from_shopee(
+        shopee_multiple_df = extract_order_items_from_shopee_multiple_items(
             shopee_orders_data, shopee_payment_details_data, dim_lookups, variant_df
         )
-        print(f"✅ Processed {len(shopee_fact_df)} Shopee fact order records")
+        print(f"✅ Processed {len(shopee_multiple_df)} Shopee multiple order items")
     else:
-        print("⚠️ No Shopee order data available")
+        shopee_multiple_df = pd.DataFrame()
+        print("⚠️ No Shopee multiple order items data available")
+    
+    # Process nested orders for additional coverage
+    if shopee_nested_orders_data:
+        shopee_nested_df = extract_order_items_from_shopee(
+            shopee_nested_orders_data, shopee_payment_details_data, dim_lookups, variant_df
+        )
+        print(f"✅ Processed {len(shopee_nested_df)} Shopee nested order items")
+    else:
+        shopee_nested_df = pd.DataFrame()
+        print("⚠️ No Shopee nested orders data available")
+    
+    # Combine both Shopee sources and remove duplicates
+    if len(shopee_multiple_df) > 0 and len(shopee_nested_df) > 0:
+        shopee_combined = pd.concat([shopee_multiple_df, shopee_nested_df], ignore_index=True)
+        
+        # Remove duplicates based on orders_key and product info
+        initial_count = len(shopee_combined)
+        shopee_fact_df = shopee_combined.drop_duplicates(
+            subset=['orders_key', 'product_key', 'product_variant_key'], 
+            keep='first'
+        ).reset_index(drop=True)
+        
+        duplicates_removed = initial_count - len(shopee_fact_df)
+        print(f"🔄 Combined Shopee sources: {initial_count} total, removed {duplicates_removed} duplicates = {len(shopee_fact_df)} unique records")
+    elif len(shopee_multiple_df) > 0:
+        shopee_fact_df = shopee_multiple_df
+        print(f"📊 Using only multiple order items: {len(shopee_fact_df)} records")
+    elif len(shopee_nested_df) > 0:
+        shopee_fact_df = shopee_nested_df
+        print(f"📊 Using only nested orders: {len(shopee_fact_df)} records")
+    else:
+        shopee_fact_df = pd.DataFrame()
+        print("⚠️ No Shopee order data available from any source")
     
     # Combine both platforms
     fact_orders_df = pd.concat([lazada_fact_df, shopee_fact_df], ignore_index=True)
