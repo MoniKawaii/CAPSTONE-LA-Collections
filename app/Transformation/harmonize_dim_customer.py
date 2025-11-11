@@ -604,6 +604,200 @@ def harmonize_dim_customer():
     # Apply data types again for the new records
     customers_df = apply_data_types(customers_df, 'dim_customer')
     
+    # Find and add any missing customers from raw data
+    customers_df = find_and_add_missing_customers(customers_df)
+    
+    return customers_df
+
+
+def find_and_add_missing_customers(customers_df):
+    """
+    Find customer references from raw data that are missing from the current customer dimension
+    and add them as placeholder customers
+    
+    Args:
+        customers_df (pd.DataFrame): Current customer dimension table
+        
+    Returns:
+        pd.DataFrame: Updated customer dimension table with missing customers added
+    """
+    print("\n🔍 Finding missing customers from raw data...")
+    
+    # Get existing platform_customer_ids from dimension table
+    existing_lazada_customers = set(customers_df[customers_df['platform_key'] == 1]['platform_customer_id'].astype(str))
+    existing_shopee_customers = set(customers_df[customers_df['platform_key'] == 2]['platform_customer_id'].astype(str))
+    
+    print(f"📊 Current dimension coverage:")
+    print(f"   - Lazada customers: {len(existing_lazada_customers)}")
+    print(f"   - Shopee customers: {len(existing_shopee_customers)}")
+    
+    # Collect all customer references from raw files
+    staging_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Staging')
+    
+    # Track customer references from raw data
+    raw_customers = {
+        'lazada_orders': set(),
+        'lazada_order_items': set(),
+        'shopee_orders': set(),
+    }
+    
+    # Check Lazada orders
+    try:
+        orders_file = os.path.join(staging_dir, 'lazada_orders_raw.json')
+        if os.path.exists(orders_file):
+            with open(orders_file, 'r', encoding='utf-8') as f:
+                orders = json.load(f)
+            
+            for order in orders:
+                # Generate platform_customer_id as done in extraction
+                first_name = order.get('customer_first_name', '')
+                shipping_address = order.get('address_shipping', {})
+                phone = shipping_address.get('phone', '')
+                customer_id = generate_platform_customer_id(first_name, phone)
+                if customer_id:
+                    raw_customers['lazada_orders'].add(str(customer_id))
+            
+            print(f"📊 Lazada order customers in raw: {len(raw_customers['lazada_orders'])}")
+    except Exception as e:
+        print(f"⚠️ Error reading lazada_orders_raw.json: {e}")
+    
+    # Check Lazada order items for buyer_id
+    try:
+        order_items_file = os.path.join(staging_dir, 'lazada_multiple_order_items_raw.json')
+        if os.path.exists(order_items_file):
+            with open(order_items_file, 'r', encoding='utf-8') as f:
+                items = json.load(f)
+            
+            for order in items:
+                order_items = order.get('order_items', [])
+                for item in order_items:
+                    buyer_id = item.get('buyer_id')
+                    if buyer_id:
+                        raw_customers['lazada_order_items'].add(str(buyer_id))
+            
+            print(f"📊 Lazada order item buyer_ids in raw: {len(raw_customers['lazada_order_items'])}")
+    except Exception as e:
+        print(f"⚠️ Error reading lazada_multiple_order_items_raw.json: {e}")
+    
+    # Check Shopee orders
+    try:
+        orders_file = os.path.join(staging_dir, 'shopee_orders_raw.json')
+        if os.path.exists(orders_file):
+            with open(orders_file, 'r', encoding='utf-8') as f:
+                orders = json.load(f)
+            
+            for order in orders:
+                buyer_user_id = order.get('buyer_user_id')
+                buyer_username = order.get('buyer_username', '')
+                recipient_address = order.get('recipient_address', {})
+                phone = recipient_address.get('phone', '')
+                order_sn = order.get('order_sn', '')
+                create_time = order.get('create_time')
+                
+                # Generate platform_customer_id as done in extraction
+                customer_id = generate_shopee_platform_customer_id(
+                    buyer_user_id=buyer_user_id,
+                    buyer_username=buyer_username,
+                    phone=phone,
+                    order_sn=order_sn,
+                    create_time=create_time
+                )
+                if customer_id:
+                    raw_customers['shopee_orders'].add(str(customer_id))
+            
+            print(f"📊 Shopee order customers in raw: {len(raw_customers['shopee_orders'])}")
+    except Exception as e:
+        print(f"⚠️ Error reading shopee_orders_raw.json: {e}")
+    
+    # Find missing customers
+    all_lazada_customers = raw_customers['lazada_orders'] | raw_customers['lazada_order_items']
+    all_shopee_customers = raw_customers['shopee_orders']
+    
+    missing_lazada = all_lazada_customers - existing_lazada_customers
+    missing_shopee = all_shopee_customers - existing_shopee_customers
+    
+    print(f"\n🔍 Missing customer analysis:")
+    print(f"   - Missing Lazada customers: {len(missing_lazada)}")
+    if missing_lazada and len(missing_lazada) <= 10:
+        print(f"     Customers: {sorted(list(missing_lazada))}")
+    elif missing_lazada:
+        print(f"     Sample: {sorted(list(missing_lazada))[:10]}")
+    
+    print(f"   - Missing Shopee customers: {len(missing_shopee)}")
+    if missing_shopee and len(missing_shopee) <= 10:
+        print(f"     Customers: {sorted(list(missing_shopee))}")
+    elif missing_shopee:
+        print(f"     Sample: {sorted(list(missing_shopee))[:10]}")
+    
+    # If no missing customers, return unchanged dataframe
+    if not missing_lazada and not missing_shopee:
+        print("✅ No missing customers found! All raw data customers are covered.")
+        return customers_df
+    
+    # Create placeholder entries for missing customers
+    print(f"\n🔧 Creating placeholder entries for missing customers...")
+    
+    new_customers = []
+    
+    # Get next available customer keys
+    if not customers_df.empty:
+        max_customer_key = customers_df['customer_key'].max()
+        next_key_counter = int(max_customer_key) + 1
+    else:
+        next_key_counter = 10001
+    
+    # Process missing Lazada customers
+    if missing_lazada:
+        print(f"🔧 Processing {len(missing_lazada)} missing Lazada customers...")
+        
+        for customer_id in sorted(missing_lazada):
+            customer_key = float(f"{next_key_counter}.1")
+            
+            new_customer = {
+                'customer_key': customer_key,
+                'platform_customer_id': customer_id,
+                'buyer_segment': 'Unknown',
+                'total_orders': 0,  # Unknown order count
+                'customer_since': datetime(2020, 1, 1).date(),  # Default date
+                'last_order_date': datetime(2025, 12, 31).date(),  # Default date
+                'platform_key': 1
+            }
+            new_customers.append(new_customer)
+            next_key_counter += 1
+    
+    # Process missing Shopee customers
+    if missing_shopee:
+        print(f"🔧 Processing {len(missing_shopee)} missing Shopee customers...")
+        
+        for customer_id in sorted(missing_shopee):
+            customer_key = float(f"{next_key_counter}.2")
+            
+            new_customer = {
+                'customer_key': customer_key,
+                'platform_customer_id': customer_id,
+                'buyer_segment': 'Unknown',
+                'total_orders': 0,  # Unknown order count
+                'customer_since': datetime(2020, 1, 1).date(),  # Default date
+                'last_order_date': datetime(2025, 12, 31).date(),  # Default date
+                'platform_key': 2
+            }
+            new_customers.append(new_customer)
+            next_key_counter += 1
+    
+    # Add new customers to dataframe
+    if new_customers:
+        print(f"📊 Adding {len(new_customers)} missing customers...")
+        new_customers_df = pd.DataFrame(new_customers)
+        customers_df = pd.concat([customers_df, new_customers_df], ignore_index=True)
+        
+        # Apply data types to new records
+        customers_df = apply_data_types(customers_df, 'dim_customer')
+    
+    print(f"\n✅ Missing Customers Summary:")
+    print(f"   - Lazada missing customers: {len([c for c in new_customers if c['platform_key'] == 1])}")
+    print(f"   - Shopee missing customers: {len([c for c in new_customers if c['platform_key'] == 2])}")
+    print(f"   - Total new customers: {len(new_customers)}")
+    
     return customers_df
 
 

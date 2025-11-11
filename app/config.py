@@ -410,7 +410,7 @@ LAZADA_TO_UNIFIED_MAPPING = {
     "item_id": "product_item_id",
     "sku_id": "product_variant_id",
     "quantity": "item_quantity",
-    "price": "original_unit_price",  # The line total price before seller discounts or platform vouchers
+    "item_price": "original_unit_price",  # The line total price before seller discounts or platform vouchers (renamed from "price" to avoid conflict)
     "final_price": "paid_price",  # The line total price after seller discounts/bundle deals
     "voucher_absorbed_by_seller": "voucher_seller_amount",  # The total seller voucher value attributed to this line
     "voucher_absorbed_by_shopee": "voucher_platform_amount",  # The total Shopee voucher value attributed to this line

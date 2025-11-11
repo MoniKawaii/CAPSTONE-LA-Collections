@@ -962,5 +962,42 @@ if __name__ == "__main__":
     # Save results
     if not fact_orders_df.empty:
         save_fact_orders(fact_orders_df)
+        
+        # Integrated validation
+        print(f"\n🔍 VALIDATING FACT ORDERS...")
+        total_records = len(fact_orders_df)
+        total_revenue = fact_orders_df['paid_price'].sum()
+        
+        platform_stats = fact_orders_df.groupby('platform_key').agg({
+            'order_item_key': 'count',
+            'paid_price': 'sum'
+        }).round(2)
+        
+        print(f"📊 Fact Orders Validation:")
+        print(f"  Total records: {total_records:,}")
+        print(f"  Total revenue: ${total_revenue:,.2f}")
+        print(f"  Platform breakdown:")
+        
+        for platform_key, stats in platform_stats.iterrows():
+            platform_name = "Lazada" if platform_key == 1 else "Shopee"
+            print(f"    {platform_name}: {int(stats['order_item_key']):,} records, ${stats['paid_price']:,.2f}")
+            
+        # Check for missing foreign keys
+        null_checks = {
+            'orders_key': fact_orders_df['orders_key'].isna().sum(),
+            'customer_key': fact_orders_df['customer_key'].isna().sum(),
+            'product_key': fact_orders_df['product_key'].isna().sum(),
+            'product_variant_key': fact_orders_df['product_variant_key'].isna().sum()
+        }
+        
+        print(f"🔗 Foreign Key Validation:")
+        for key, null_count in null_checks.items():
+            status = "✅" if null_count == 0 else f"❌ {null_count:,} missing"
+            print(f"  {key}: {status}")
+            
+        if all(count == 0 for count in null_checks.values()):
+            print(f"✅ All foreign key relationships intact")
+        else:
+            print(f"⚠️  Some foreign key issues detected")
     else:
         print("❌ No data to save")
