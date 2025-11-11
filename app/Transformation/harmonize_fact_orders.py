@@ -886,21 +886,34 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
                         # Use payment detail pricing (more accurate) - LINE TOTALS (price × quantity)
                         original_unit_price = float(payment_item.get('selling_price', 0.0))  # Total line revenue before any discounts
                         
-                        # Get all discount components
+                        # Get ALL discount components from payment item level
                         coin_discount = float(payment_item.get('discount_from_coin', 0.0))  # Shopee coins discount
-                        voucher_platform_amount = float(payment_item.get('discount_from_voucher_shopee', 0.0))  # Platform voucher discount
+                        voucher_shopee = float(payment_item.get('discount_from_voucher_shopee', 0.0))  # Platform voucher discount
                         voucher_seller_amount = float(payment_item.get('discount_from_voucher_seller', 0.0))    # Seller voucher discount
                         seller_discount = float(payment_item.get('seller_discount', 0.0))  # Direct seller discount
                         shopee_discount = float(payment_item.get('shopee_discount', 0.0))  # Shopee platform discount
                         
-                        # Final paid price = original - all discounts
-                        # discounted_price already has some discounts applied, but we need the final customer-paid amount
-                        discounted_price = float(payment_item.get('discounted_price', 0.0))
+                        # Get order-level discounts from buyer_payment_info if available
+                        buyer_payment_info = payment_detail.get('buyer_payment_info', {})
+                        shopee_coins_redeemed = abs(float(buyer_payment_info.get('shopee_coins_redeemed', 0.0)))  # abs() to handle negative values
+                        shopee_voucher_order = float(buyer_payment_info.get('shopee_voucher', 0.0))  # Order-level Shopee voucher
+                        seller_voucher_order = float(buyer_payment_info.get('seller_voucher', 0.0))  # Order-level seller voucher
+                        credit_card_promotion = float(buyer_payment_info.get('credit_card_promotion', 0.0))  # Credit card promotions
+                        trade_in_discount_order = float(buyer_payment_info.get('trade_in_discount', 0.0))  # Trade-in discounts
                         
-                        # Calculate final customer paid amount by subtracting all remaining discounts from discounted_price
-                        # Note: discounted_price typically has seller/shopee discounts already applied
-                        # We need to subtract coin discounts and voucher discounts that are applied at checkout
-                        paid_price = discounted_price - coin_discount - voucher_platform_amount - voucher_seller_amount
+                        # Consolidate all platform-related discounts into voucher_platform_amount
+                        # Item-level platform discounts
+                        voucher_platform_amount = (voucher_shopee + coin_discount + seller_discount + 
+                                                 shopee_discount + shopee_coins_redeemed + 
+                                                 shopee_voucher_order + credit_card_promotion + 
+                                                 trade_in_discount_order)
+                        
+                        # Consolidate seller discounts (item + order level)
+                        voucher_seller_amount = voucher_seller_amount + seller_voucher_order
+                        
+                        # Calculate paid price as original price minus all discounts
+                        # This ensures the formula: paid_price + voucher_platform_amount + voucher_seller_amount = original_unit_price
+                        paid_price = original_unit_price - voucher_platform_amount - voucher_seller_amount
                     else:
                         # Fallback to basic order data - convert to line totals
                         unit_original = float(item.get('model_original_price', 0.0))
