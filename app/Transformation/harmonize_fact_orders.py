@@ -98,6 +98,45 @@ def load_shopee_orders_raw():
         return []
 
 
+def load_shopee_payment_details():
+    """Load raw Shopee payment details from JSON files and create order_sn lookup"""
+    payment_details = {}
+    
+    json_files = [
+        'shopee_paymentdetail_raw.json',
+        'shopee_paymentdetail_2_raw.json'
+    ]
+    
+    total_loaded = 0
+    for filename in json_files:
+        json_path = os.path.join(os.path.dirname(__file__), '..', 'Staging', filename)
+        
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                
+            for record in data:
+                order_sn = record.get('order_sn')
+                if order_sn:
+                    # Store the entire payment detail record indexed by order_sn
+                    payment_details[order_sn] = record
+                    total_loaded += 1
+                    
+        except FileNotFoundError:
+            print(f"⚠️ Payment detail file not found: {filename}")
+            continue
+        except json.JSONDecodeError as e:
+            print(f"❌ Error parsing {filename}: {e}")
+            continue
+    
+    if total_loaded > 0:
+        print(f"✓ Loaded {total_loaded} payment detail records for voucher data")
+    else:
+        print(f"⚠️ No payment details found - vouchers will be ₱0")
+    
+    return payment_details
+
+
 def load_dim_order():
     """Load the harmonized Dim_Order table to get orders_key mappings"""
     csv_path = os.path.join(os.path.dirname(__file__), '..', 'Transformed', 'dim_order.csv')
@@ -212,17 +251,39 @@ def generate_platform_customer_id(first_name, phone):
     return platform_customer_id
 
 
-def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, phone=None):
+def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, phone=None, order_sn=None, create_time=None):
     """
-    Generate platform_customer_id for Shopee using buyer_user_id from API
+    Generate platform_customer_id using Shopee buyer_user_id from API
+    For buyer_user_id=0, generates unique synthetic ID based on order_sn + timestamp
     Falls back to username+phone format if buyer_user_id is not available
-    Must match logic in harmonize_dim_customer.py for foreign key relationship
+    MUST MATCH harmonize_dim_customer.py for foreign key relationship
+    
+    Args:
+        buyer_user_id (int/str): Shopee buyer_user_id from API (preferred)
+        buyer_username (str): Shopee buyer username (fallback)
+        phone (str): Customer phone number (fallback)
+        order_sn (str): Order number for generating unique ID when buyer_user_id=0
+        create_time (int): Unix timestamp for generating unique ID when buyer_user_id=0
+        
+    Returns:
+        str: platform_customer_id - raw buyer_user_id or synthetic format
     """
     import re
     
-    # Use buyer_user_id if available (preferred method - raw value)
-    if buyer_user_id:
+    # Use buyer_user_id if available AND not 0 (preferred method - raw value)
+    # buyer_user_id=0 indicates missing/anonymous customer data
+    if buyer_user_id is not None and buyer_user_id != 0:
         return str(buyer_user_id)
+    
+    # Special handling for buyer_user_id=0: Generate unique synthetic ID
+    # This prevents aggregating all anonymous orders into a single customer
+    if buyer_user_id == 0 and order_sn and create_time:
+        # Create unique ID using: last 6 digits of order_sn + last 6 digits of timestamp
+        # Extract only numeric characters to avoid letters
+        order_digits = ''.join(filter(str.isdigit, str(order_sn)))
+        order_suffix = order_digits[-6:] if len(order_digits) >= 6 else order_digits.zfill(6)
+        time_suffix = str(create_time)[-6:] if create_time else "000000"
+        return f"{order_suffix}{time_suffix}"
     
     # Fallback helper functions
     def clean_username(username):
@@ -254,7 +315,7 @@ def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, pho
         return f"SP{username_chars}{first_2}{last_2}"
     
     # Last resort fallback
-    return f"SP_UNKNOWN_{hash(str(buyer_username or '') + str(phone or ''))}"
+    return f"SP_UNKNOWN_{hash(str(buyer_username or '') + str(phone or '') + str(order_sn or ''))}"
 
 
 def generate_time_key_from_timestamp(timestamp):
@@ -315,7 +376,20 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_order_df,
         dim_variant_df['product_variant_key']
     )) if not dim_variant_df.empty else {}
     
-    # Create orders lookup for customer info (order_id -> customer info)
+    # Create buyer_id lookup from order_items (same logic as dim_customer)
+    # This ensures we use the same customer IDs for foreign key matching
+    buyer_id_lookup = {}
+    for order_record in order_items_data:
+        order_id = str(order_record.get('order_id', ''))
+        order_items = order_record.get('order_items', [])
+        if order_items and len(order_items) > 0:
+            buyer_id = order_items[0].get('buyer_id')
+            if buyer_id:
+                buyer_id_lookup[order_id] = str(buyer_id)
+    
+    print(f"📊 Created buyer_id lookup for {len(buyer_id_lookup)} orders with buyer_id")
+    
+    # Also create orders lookup for fallback customer info (order_id -> customer info)
     orders_customer_lookup = {}
     for order in orders_data:
         order_id = str(order.get('order_id', ''))
@@ -325,7 +399,7 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_order_df,
             'phone': address_shipping.get('phone', '')
         }
     
-    print(f"📊 Created customer lookup for {len(orders_customer_lookup)} orders")
+    print(f"📊 Created fallback customer lookup for {len(orders_customer_lookup)} orders")
     
     order_item_key_counter = 1
     
@@ -340,19 +414,24 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_order_df,
                 print(f"⚠️ Warning: Could not find orders_key for order_id {platform_order_id}")
                 continue
             
-            # Get customer info from orders lookup
-            customer_info = orders_customer_lookup.get(platform_order_id, {})
-            first_name = customer_info.get('first_name', '')
-            phone = customer_info.get('phone', '')
-            platform_customer_id = generate_platform_customer_id(first_name, phone)
+            # Get platform_customer_id using SAME logic as dim_customer:
+            # First try buyer_id from order_items, then fall back to synthetic ID
+            platform_customer_id = buyer_id_lookup.get(platform_order_id)
+            
+            if not platform_customer_id:
+                # Fall back to synthetic ID if buyer_id not found
+                customer_info = orders_customer_lookup.get(platform_order_id, {})
+                first_name = customer_info.get('first_name', '')
+                phone = customer_info.get('phone', '')
+                platform_customer_id = generate_platform_customer_id(first_name, phone)
+            
+            # Look up customer_key from dim_customer
             customer_key = customer_key_lookup.get(platform_customer_id)
             
             # Debug customer key lookup for the first few records
             if order_item_key_counter <= 3:
                 print(f"🔍 Debug order {platform_order_id}:")
-                print(f"   - first_name: '{first_name}'")
-                print(f"   - phone: '{phone}'")
-                print(f"   - generated platform_customer_id: '{platform_customer_id}'")
+                print(f"   - platform_customer_id: '{platform_customer_id}'")
                 print(f"   - found customer_key: {customer_key}")
                 if customer_key is None:
                     # Show some sample customer IDs to help debug
@@ -360,7 +439,8 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_order_df,
                     print(f"   - Sample customer IDs in lookup: {sample_customers}")
             
             if customer_key is None:
-                print(f"⚠️ Warning: Could not find customer_key for platform_customer_id '{platform_customer_id}' in order {platform_order_id}")
+                if order_item_key_counter <= 10:  # Only show first 10 warnings
+                    print(f"⚠️ Warning: Could not find customer_key for platform_customer_id '{platform_customer_id}' in order {platform_order_id}")
                 continue  # Skip records where we can't find the customer
             
             # Create one fact record per individual order item (no grouping/aggregation)
@@ -447,7 +527,7 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_order_df,
     return fact_orders_df
 
 
-def extract_order_items_from_shopee(orders_data, dim_order_df, dim_customer_df, dim_product_df, dim_variant_df, order_item_key_counter_start=1):
+def extract_order_items_from_shopee(orders_data, dim_order_df, dim_customer_df, dim_product_df, dim_variant_df, payment_details_dict=None, order_item_key_counter_start=1):
     """
     Extract and harmonize fact order records from Shopee orders
     Creates one record per individual order item (no aggregation)
@@ -458,6 +538,7 @@ def extract_order_items_from_shopee(orders_data, dim_order_df, dim_customer_df, 
         dim_customer_df (DataFrame): Harmonized dimension customer table
         dim_product_df (DataFrame): Harmonized dimension product table
         dim_variant_df (DataFrame): Harmonized dimension product variant table
+        payment_details_dict (dict): Payment details indexed by order_sn for voucher data
         order_item_key_counter_start (int): Starting counter for order_item_key
         
     Returns:
@@ -486,7 +567,13 @@ def extract_order_items_from_shopee(orders_data, dim_order_df, dim_customer_df, 
         dim_variant_df['product_variant_key']
     )) if not dim_variant_df.empty else {}
     
+    # Use empty dict if no payment details provided
+    if payment_details_dict is None:
+        payment_details_dict = {}
+    
     print(f"📊 Processing Shopee orders with item lists...")
+    if payment_details_dict:
+        print(f"💰 Using payment details for {len(payment_details_dict)} orders")
     
     order_item_key_counter = order_item_key_counter_start
     
@@ -506,11 +593,15 @@ def extract_order_items_from_shopee(orders_data, dim_order_df, dim_customer_df, 
             buyer_username = order.get('buyer_username', '')
             recipient_address = order.get('recipient_address', {})
             phone = recipient_address.get('phone', '') if isinstance(recipient_address, dict) else ''
+            order_sn = order.get('order_sn', '')  # For unique ID generation when buyer_user_id=0
+            create_time = order.get('create_time')  # For unique ID generation when buyer_user_id=0
             
             platform_customer_id = generate_shopee_platform_customer_id(
                 buyer_user_id=buyer_user_id,
                 buyer_username=buyer_username,
-                phone=phone
+                phone=phone,
+                order_sn=order_sn,
+                create_time=create_time
             )
             customer_key = customer_key_lookup.get(platform_customer_id)
             
@@ -533,6 +624,40 @@ def extract_order_items_from_shopee(orders_data, dim_order_df, dim_customer_df, 
             # Get order creation time for time_key
             create_time = order.get('create_time')
             time_key = generate_time_key_from_timestamp(create_time) if create_time else 20220101
+            
+            # Get voucher amounts from payment details (ORDER LEVEL - calculate once per order)
+            order_sn = platform_order_id
+            payment_detail = payment_details_dict.get(order_sn, {})
+            
+            # Extract voucher data from payment details
+            order_income = payment_detail.get('order_income', {})
+            buyer_payment_info = payment_detail.get('buyer_payment_info', {})
+            
+            # Combine vouchers from different sources (ORDER TOTALS)
+            # Note: Use abs() because Shopee API returns negative values for deductions
+            # Shopee vouchers (from platform)
+            voucher_shopee = abs(float(order_income.get('voucher_from_shopee', 0.0)))
+            shopee_voucher_buyer = abs(float(buyer_payment_info.get('shopee_voucher', 0.0)))
+            shopee_discount = abs(float(order_income.get('shopee_discount', 0.0)))
+            coins = abs(float(order_income.get('coins', 0.0)))
+            shopee_coins_redeemed = abs(float(buyer_payment_info.get('shopee_coins_redeemed', 0.0)))
+            
+            # Seller vouchers
+            voucher_seller = abs(float(order_income.get('voucher_from_seller', 0.0)))
+            seller_voucher_buyer = abs(float(buyer_payment_info.get('seller_voucher', 0.0)))
+            seller_discount = abs(float(order_income.get('seller_discount', 0.0)))
+            
+            # Sum up all platform vouchers (ORDER TOTAL)
+            order_voucher_platform_total = (voucher_shopee + shopee_voucher_buyer + 
+                                          shopee_discount + coins + shopee_coins_redeemed)
+            
+            # Sum up all seller vouchers (ORDER TOTAL)
+            order_voucher_seller_total = (voucher_seller + seller_voucher_buyer + seller_discount)
+            
+            # Calculate total order value for proportional distribution
+            total_order_value = sum(float(i.get('model_original_price', 0.0)) * 
+                                  i.get('model_quantity_purchased', 1) 
+                                  for i in item_list)
             
             # Create one fact record per individual order item
             for item in item_list:
@@ -566,9 +691,13 @@ def extract_order_items_from_shopee(orders_data, dim_order_df, dim_customer_df, 
                     model_discounted_price = float(item.get('model_discounted_price', 0.0))
                     model_original_price = float(item.get('model_original_price', 0.0))
                     
-                    # Get voucher amounts
-                    voucher_absorbed_by_seller = float(item.get('voucher_absorbed_by_seller', 0.0))
-                    voucher_absorbed_by_shopee = float(item.get('voucher_absorbed_by_shopee', 0.0))
+                    # Distribute order-level vouchers proportionally to this item
+                    item_order_value = model_original_price * item_quantity
+                    proportion = item_order_value / total_order_value if total_order_value > 0 else 1.0 / len(item_list)
+                    
+                    # Calculate this item's share of vouchers
+                    voucher_absorbed_by_shopee = order_voucher_platform_total * proportion
+                    voucher_absorbed_by_seller = order_voucher_seller_total * proportion
                     
                     # Get shipping fee (at order level, distribute across items)
                     actual_shipping_fee = float(order.get('actual_shipping_fee', 0.0))
@@ -642,6 +771,7 @@ def harmonize_fact_orders():
     # Load Shopee source data
     print("\n📥 Loading Shopee data...")
     shopee_orders_data = load_shopee_orders_raw()
+    shopee_payment_details = load_shopee_payment_details()
     
     # Load all dimension tables for foreign key relationships
     dim_order_df = load_dim_order()
@@ -691,7 +821,8 @@ def harmonize_fact_orders():
         # Start Shopee counter after Lazada records
         shopee_start_counter = len(lazada_fact_df) + 1 if not lazada_fact_df.empty else 1
         shopee_fact_df = extract_order_items_from_shopee(
-            shopee_orders_data, dim_order_df, dim_customer_df, dim_product_df, dim_variant_df, shopee_start_counter
+            shopee_orders_data, dim_order_df, dim_customer_df, dim_product_df, dim_variant_df, 
+            shopee_payment_details, shopee_start_counter
         )
         print(f"✅ Processed {len(shopee_fact_df)} Shopee fact order records")
     else:
@@ -720,6 +851,9 @@ def harmonize_fact_orders():
         print(f"   • Total Revenue: ${fact_orders_df['paid_price'].sum():.2f}")
         print(f"   • Lazada Revenue: ${fact_orders_df[fact_orders_df['platform_key'] == 1]['paid_price'].sum():.2f}")
         print(f"   • Shopee Revenue: ${fact_orders_df[fact_orders_df['platform_key'] == 2]['paid_price'].sum():.2f}")
+        print(f"   • Platform Vouchers: ${fact_orders_df['voucher_platform_amount'].sum():.2f}")
+        print(f"   • Seller Vouchers: ${fact_orders_df['voucher_seller_amount'].sum():.2f}")
+        print(f"   • Total Discounts: ${(fact_orders_df['voucher_platform_amount'].sum() + fact_orders_df['voucher_seller_amount'].sum()):.2f}")
         print(f"   • Total Items: {fact_orders_df['item_quantity'].sum():,}")
         print(f"   • Average Item Quantity: {fact_orders_df['item_quantity'].mean():.1f}")
         print(f"   • Average Unit Price: ${fact_orders_df['original_unit_price'].mean():.2f}")

@@ -227,7 +227,7 @@ class ShopeeDataExtractor:
         filepath = os.path.join(self.staging_dir, filename)
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False, default=str)
-        print(f"💾 Saved {len(data) if isinstance(data, list) else 1} records to {filename}")
+        print(f"💾 Saved {len(data) if isinstance(data, list) else 1} records to Staging/{filename}")
     
     def _get_last_date_from_data(self, data, date_field='create_time'):
         """
@@ -464,12 +464,23 @@ class ShopeeDataExtractor:
         Saves to shopee_orders_raw.json
         
         Args:
-            start_date: Override start date (will be auto-detected if None)
-            end_date: End date (defaults to Oct 31, 2025)
+            start_date: Override start date (defaults to Jan 1, 2024 if None)
+            end_date: End date (defaults to Dec 31, 2025 if None)
             start_fresh: Force complete re-extraction
             incremental: Use incremental update logic
         """
         filename = 'shopee_orders_raw.json'
+        
+        # Set default dates if not provided (2020-2025 range to match Lazada)
+        if not start_date:
+            start_date = datetime(2020, 4, 1)  # Default start: April 1, 2020
+        elif isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        
+        if not end_date:
+            end_date = datetime(2025, 10, 31)  # Default to October 31, 2025 (matches Lazada)
+        elif isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
         
         # Load existing data first
         existing_data = self._load_from_json(filename)
@@ -492,42 +503,43 @@ class ShopeeDataExtractor:
         elif start_fresh:
             print("🔄 Force starting fresh extraction...")
             if not start_date:
-                start_date = datetime(2020, 4, 1)
-        
-        # Set default dates if not provided
-        if not start_date:
-            start_date = datetime(2020, 4, 1)
-        elif isinstance(start_date, str):
-            start_date = datetime.strptime(start_date, '%Y-%m-%d')
-        
-        if not end_date:
-            end_date = datetime(2025, 10, 31)  # Updated to Oct 31, 2025
-        elif isinstance(end_date, str):
-            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+                start_date = datetime(2024, 1, 1)  # Default to 2024-2025 data
         
         print(f"🔍 Extracting orders from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}...")
         
-        # Calculate total days and number of 15-day chunks needed
-        total_days = (end_date - start_date).days
-        chunk_days = 15  # Shopee API maximum
-        total_chunks = (total_days // chunk_days) + (1 if total_days % chunk_days > 0 else 0)
+        # Adaptive chunk sizing: smaller chunks for months with known issues
+        # Problem months (Feb, Mar, Apr, May, Jun, Jul, Aug, Oct) get 7-day chunks
+        # Other months get 14-day chunks (leaving 1-day overlap to prevent boundary gaps)
+        def get_chunk_size(current_date):
+            """Determine optimal chunk size based on month"""
+            problem_months = {2, 3, 4, 5, 6, 7, 8, 10}  # High-volume or problematic months
+            if current_date.month in problem_months:
+                return 7  # Smaller chunks for problem months
+            else:
+                return 14  # Standard chunks with safety margin (not 15 to prevent gaps)
         
+        # Calculate estimated chunks
+        total_days = (end_date - start_date).days
         print(f"📊 Total period: {total_days} days")
-        print(f"📦 Breaking into {total_chunks} chunks of {chunk_days} days each (API limit)")
+        print(f"📦 Using adaptive chunk sizing (7 days for problem months, 14 days otherwise)")
         
         new_orders = []
         current_start = start_date
         chunk_num = 0
         
-        while current_start < end_date:
+        while current_start <= end_date:  # Changed < to <= to include end_date
             chunk_num += 1
-            chunk_end = min(current_start + timedelta(days=chunk_days), end_date)
+            
+            # Get adaptive chunk size
+            chunk_days = get_chunk_size(current_start)
+            chunk_end = min(current_start + timedelta(days=chunk_days - 1), end_date)  # -1 to make it inclusive
             
             # Convert to Unix timestamp
-            time_from = int(current_start.timestamp())
-            time_to = int(chunk_end.timestamp())
+            # Add time to cover full day: start at 00:00:00, end at 23:59:59
+            time_from = int(current_start.replace(hour=0, minute=0, second=0).timestamp())
+            time_to = int(chunk_end.replace(hour=23, minute=59, second=59).timestamp())
             
-            print(f"\n📅 Chunk {chunk_num}/{total_chunks}: {current_start.strftime('%Y-%m-%d')} to {chunk_end.strftime('%Y-%m-%d')}")
+            print(f"\n📅 Chunk {chunk_num}: {current_start.strftime('%Y-%m-%d')} to {chunk_end.strftime('%Y-%m-%d')} ({chunk_days} days)")
             
             # Extract orders for this chunk with pagination
             chunk_orders = self._extract_orders_chunk(time_from, time_to, chunk_num)
@@ -542,7 +554,7 @@ class ShopeeDataExtractor:
                 print(f"⚠️ Daily API limit reached! Stopping at chunk {chunk_num}")
                 break
             
-            # Move to next chunk
+            # Move to next chunk - start the day AFTER chunk_end (no gap, no overlap)
             current_start = chunk_end + timedelta(days=1)
         
         # Merge with existing data, removing duplicates by order_sn
@@ -583,7 +595,12 @@ class ShopeeDataExtractor:
             data = self._make_api_call(query_path, method="GET", call_type=f"chunk-{chunk_num}-batch-{batch_count}")
             
             if not data or 'response' not in data:
-                break
+                print(f"  ⚠️ API call failed for chunk {chunk_num} batch {batch_count}. Retrying...")
+                time.sleep(2)  # Wait before retry
+                data = self._make_api_call(query_path, method="GET", call_type=f"chunk-{chunk_num}-batch-{batch_count}-retry")
+                if not data or 'response' not in data:
+                    print(f"  ❌ Retry failed for chunk {chunk_num} batch {batch_count}. Skipping this batch.")
+                    break
             
             response = data['response']
             orders = response.get('order_list', [])
@@ -595,12 +612,25 @@ class ShopeeDataExtractor:
                 # Get detailed order info for each order
                 order_sns = [order['order_sn'] for order in orders]
                 detailed_orders = self._get_order_details(order_sns, chunk_num, batch_count)
+                
+                # CRITICAL: Validate we got all order details
+                if len(detailed_orders) != len(order_sns):
+                    print(f"  ⚠️ WARNING: Got {len(detailed_orders)} details but expected {len(order_sns)} orders!")
+                    print(f"  ⚠️ Missing {len(order_sns) - len(detailed_orders)} orders in chunk {chunk_num} batch {batch_count}")
+                
                 chunk_orders.extend(detailed_orders)
                 
                 print(f"  └── Batch {batch_count}: +{len(detailed_orders)} orders (chunk total: {len(chunk_orders)})")
                 
-                # Check if there's more
-                has_more = response.get('more', False)
+                # Check if there's more - FIXED: Use 'more' existence check instead of defaulting to False
+                if 'more' in response:
+                    has_more = response['more']
+                else:
+                    # If 'more' field missing, check if we got a full page (likely more data)
+                    has_more = len(orders) >= page_size
+                    if has_more:
+                        print(f"  ⚠️ 'more' field missing, but got full page ({len(orders)} orders). Continuing pagination...")
+                
                 cursor = response.get('next_cursor', "")
                 
                 # Save progress every 500 orders
@@ -634,6 +664,10 @@ class ShopeeDataExtractor:
             if data and 'response' in data:
                 orders = data['response'].get('order_list', [])
                 all_details.extend(orders)
+            else:
+                # CRITICAL: Log when order details fail
+                print(f"    ❌ Failed to get order details for {len(batch)} orders (sub-batch {i//batch_size})")
+                print(f"    ❌ Missing order_sns: {batch[:3]}..." if len(batch) > 3 else f"    ❌ Missing order_sns: {batch}")
         
         return all_details
     
@@ -707,13 +741,24 @@ class ShopeeDataExtractor:
         Saves to shopee_reportoverview_raw.json
         
         Args:
-            start_date: Start date (YYYY-MM-DD or datetime object)
-            end_date: End date (YYYY-MM-DD or datetime object)
+            start_date: Start date (defaults to Jan 1, 2024 if None)
+            end_date: End date (defaults to Dec 31, 2025 if None)
             start_fresh: Whether to re-extract all data
             monthly_aggregate: Whether to extract monthly data (True) or single period (False)
             incremental: Use incremental update logic
         """
         filename = 'shopee_reportoverview_raw.json'
+        
+        # Set default dates if not provided (2020-2025 range to match Lazada)
+        if not start_date:
+            start_date = datetime(2020, 4, 1)  # Default start: April 1, 2020
+        elif isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        
+        if not end_date:
+            end_date = datetime(2025, 10, 31)  # Default to October 31, 2025 (matches Lazada)
+        elif isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
         
         # Load existing data first
         existing_data = self._load_from_json(filename)
@@ -730,17 +775,6 @@ class ShopeeDataExtractor:
                 last_traffic_date = last_dates['traffic']
                 start_date = self._get_month_start_date(last_traffic_date + relativedelta(months=1))
                 print(f"🔄 Incremental traffic extraction from: {start_date.strftime('%Y-%m-%d')}")
-            
-        # Set default dates if not provided
-        if not start_date:
-            start_date = datetime(2022, 10, 1)  # Start from when ads data is typically available
-        elif isinstance(start_date, str):
-            start_date = datetime.strptime(start_date, '%Y-%m-%d')
-        
-        if not end_date:
-            end_date = datetime(2025, 10, 31)  # Updated to Oct 31, 2025
-        elif isinstance(end_date, str):
-            end_date = datetime.strptime(end_date, '%Y-%m-%d')
         
         print(f"\n🔍 Extracting Shopee Ads data from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}")
         
@@ -2118,8 +2152,13 @@ if __name__ == "__main__":
     print("9. 💳 Payment details only")
     print("   - Extract payment escrow details using /api/v2/payment/get_escrow_detail")
     print("   - Saves to shopee_paymentdetail_raw.json")
+    print("")
+    print("10. 📅 Extract 2024-2025 data ONLY")
+    print("   - Extracts orders, items, traffic, and payment details from 2024-2025")
+    print("   - Saves to 'Staging' folder")
+    print("   - Perfect for complete 2024-2025 dataset")
     
-    choice = input("\nEnter choice (1-9): ").strip()
+    choice = input("\nEnter choice (1-10): ").strip()
     
     if choice == "1":
         print("\n🔄 Starting incremental extraction...")
@@ -2240,9 +2279,69 @@ if __name__ == "__main__":
                         break
         except Exception as e:
             print(f"❌ Error: {e}")
+    
+    elif choice == "10":
+        print("\n📅 Extracting 2024-2025 data to 'Staging' folder...")
+        print("=" * 60)
+        try:
+            extractor = ShopeeDataExtractor()
+            
+            # Extract orders (2024-2025)
+            print("\n📦 Step 1/4: Extracting orders (2024-01-01 to 2025-12-31)...")
+            orders = extractor.extract_all_orders(
+                start_date='2024-01-01',
+                end_date='2025-12-31',
+                start_fresh=True,
+                incremental=False
+            )
+            print(f"✅ Orders: {len(orders)} records")
+            
+            # Extract order items
+            print("\n📋 Step 2/4: Extracting order items...")
+            order_items = extractor.extract_all_order_items(
+                orders_data=orders,
+                start_fresh=True,
+                incremental=False
+            )
+            print(f"✅ Order items: {len(order_items)} records")
+            
+            # Extract traffic/ads data
+            print("\n📊 Step 3/4: Extracting traffic/ads data (2024-2025)...")
+            traffic = extractor.extract_traffic_metrics(
+                start_date='2024-01-01',
+                end_date='2025-12-31',
+                start_fresh=True,
+                monthly_aggregate=True,
+                incremental=False
+            )
+            print(f"✅ Traffic data: {len(traffic)} records")
+            
+            # Extract payment details
+            print("\n💳 Step 4/4: Extracting payment details...")
+            order_sns = [order.get('order_sn') for order in orders if order.get('order_sn')]
+            payment_details = extractor.extract_payment_details(
+                start_fresh=True,
+                order_sns_list=order_sns
+            )
+            print(f"✅ Payment details: {len(payment_details)} records")
+            
+            print("\n" + "=" * 60)
+            print("🎉 2024-2025 Data Extraction Complete!")
+            print(f"📁 All data saved to: app/Staging/")
+            print(f"\n📊 Summary:")
+            print(f"   - Orders: {len(orders):,}")
+            print(f"   - Order Items: {len(order_items):,}")
+            print(f"   - Traffic Records: {len(traffic):,}")
+            print(f"   - Payment Details: {len(payment_details):,}")
+            print(f"\n💡 Data is ready for transformation scripts")
+            
+        except Exception as e:
+            print(f"❌ Error during 2024-2025 extraction: {e}")
+            import traceback
+            traceback.print_exc()
         
     else:
-        print("❌ Invalid choice. Please run again and select 1-9.")
+        print("❌ Invalid choice. Please run again and select 1-10.")
     
     print(f"\n🎉 Extraction completed!")
     print(f"📁 Check the app/Staging/ directory for JSON files")
