@@ -1,0 +1,1923 @@
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 02:34:43
+Year: 2024
+================================================================================
+
+[2025-11-13 02:34:43] API Call #1 | Type: chunk-month-1-chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:34:48]   └─ Status: 200
+[2025-11-13 02:34:48]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:34:49] API Call #2 | Type: order-details-cmonth-1-chunk-1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:34:53]   └─ Status: 200
+[2025-11-13 02:34:53]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:34:55] API Call #3 | Type: order-details-cmonth-1-chunk-1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:35:04]   └─ Status: 200
+[2025-11-13 02:35:04]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:35:06] API Call #4 | Type: chunk-month-1-chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:35:09]   └─ Status: 200
+[2025-11-13 02:35:09]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:35:10] API Call #5 | Type: order-details-cmonth-1-chunk-1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:35:14]   └─ Status: 200
+[2025-11-13 02:35:14]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:35:16] API Call #6 | Type: order-details-cmonth-1-chunk-1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:35:21]   └─ Status: 200
+[2025-11-13 02:35:21]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:35:23] API Call #7 | Type: chunk-month-1-chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:35:26]   └─ Status: 200
+[2025-11-13 02:35:26]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:35:28] API Call #8 | Type: order-details-cmonth-1-chunk-1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:35:32]   └─ Status: 200
+[2025-11-13 02:35:32]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:35:34] API Call #9 | Type: order-details-cmonth-1-chunk-1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:35:38]   └─ Status: 200
+[2025-11-13 02:35:38]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:35:40] API Call #10 | Type: chunk-month-1-chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:35:43]   └─ Status: 200
+[2025-11-13 02:35:43]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:35:45] API Call #11 | Type: order-details-cmonth-1-chunk-1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:35:50]   └─ Status: 200
+[2025-11-13 02:35:50]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:35:52] API Call #12 | Type: order-details-cmonth-1-chunk-1-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:35:56]   └─ Status: 200
+[2025-11-13 02:35:56]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:35:58] API Call #13 | Type: chunk-month-1-chunk-1-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:35:58]   └─ Status: 200
+[2025-11-13 02:35:58]   └─ Success: Retrieved 7 orders
+[2025-11-13 02:36:00] API Call #14 | Type: order-details-cmonth-1-chunk-1-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:36:01]   └─ Status: 200
+[2025-11-13 02:36:01]   └─ Success: Retrieved 7 orders
+[2025-11-13 02:36:02] API Call #15 | Type: chunk-month-1-chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:36:06]   └─ Status: 200
+[2025-11-13 02:36:06]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:36:08] API Call #16 | Type: order-details-cmonth-1-chunk-2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:36:12]   └─ Status: 200
+[2025-11-13 02:36:12]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:36:14] API Call #17 | Type: order-details-cmonth-1-chunk-2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:36:18]   └─ Status: 200
+[2025-11-13 02:36:18]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:36:20] API Call #18 | Type: chunk-month-1-chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:36:25]   └─ Status: 200
+[2025-11-13 02:36:25]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:36:26] API Call #19 | Type: order-details-cmonth-1-chunk-2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:36:30]   └─ Status: 200
+[2025-11-13 02:36:30]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:36:32] API Call #20 | Type: order-details-cmonth-1-chunk-2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:36:37]   └─ Status: 200
+[2025-11-13 02:36:37]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:36:39] API Call #21 | Type: chunk-month-1-chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:36:43]   └─ Status: 200
+[2025-11-13 02:36:43]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:36:44] API Call #22 | Type: order-details-cmonth-1-chunk-2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:36:48]   └─ Status: 200
+[2025-11-13 02:36:48]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:36:50] API Call #23 | Type: order-details-cmonth-1-chunk-2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:36:55]   └─ Status: 200
+[2025-11-13 02:36:55]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:36:57] API Call #24 | Type: chunk-month-1-chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:37:00]   └─ Status: 200
+[2025-11-13 02:37:00]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:37:01] API Call #25 | Type: order-details-cmonth-1-chunk-2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:37:06]   └─ Status: 200
+[2025-11-13 02:37:06]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:37:08] API Call #26 | Type: order-details-cmonth-1-chunk-2-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:37:13]   └─ Status: 200
+[2025-11-13 02:37:13]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:37:15] API Call #27 | Type: chunk-month-1-chunk-2-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:37:17]   └─ Status: 200
+[2025-11-13 02:37:17]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:37:19] API Call #28 | Type: order-details-cmonth-1-chunk-2-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:37:23]   └─ Status: 200
+[2025-11-13 02:37:23]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:37:25] API Call #29 | Type: order-details-cmonth-1-chunk-2-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:37:29]   └─ Status: 200
+[2025-11-13 02:37:29]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:37:31] API Call #30 | Type: chunk-month-1-chunk-2-batch-6 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:37:33]   └─ Status: 200
+[2025-11-13 02:37:33]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:37:35] API Call #31 | Type: order-details-cmonth-1-chunk-2-b6-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:37:39]   └─ Status: 200
+[2025-11-13 02:37:39]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:37:41] API Call #32 | Type: order-details-cmonth-1-chunk-2-b6-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:37:46]   └─ Status: 200
+[2025-11-13 02:37:46]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:37:48] API Call #33 | Type: chunk-month-1-chunk-2-batch-7 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:37:50]   └─ Status: 200
+[2025-11-13 02:37:50]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:37:52] API Call #34 | Type: order-details-cmonth-1-chunk-2-b7-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:37:56]   └─ Status: 200
+[2025-11-13 02:37:56]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:37:58] API Call #35 | Type: order-details-cmonth-1-chunk-2-b7-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:38:03]   └─ Status: 200
+[2025-11-13 02:38:03]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:38:05] API Call #36 | Type: chunk-month-1-chunk-2-batch-8 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:38:07]   └─ Status: 200
+[2025-11-13 02:38:07]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:38:09] API Call #37 | Type: order-details-cmonth-1-chunk-2-b8-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:38:14]   └─ Status: 200
+[2025-11-13 02:38:14]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:38:16] API Call #38 | Type: order-details-cmonth-1-chunk-2-b8-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:38:20]   └─ Status: 200
+[2025-11-13 02:38:20]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:38:22] API Call #39 | Type: chunk-month-1-chunk-2-batch-9 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:38:23]   └─ Status: 200
+[2025-11-13 02:38:23]   └─ Success: Retrieved 19 orders
+[2025-11-13 02:38:25] API Call #40 | Type: order-details-cmonth-1-chunk-2-b9-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:38:27]   └─ Status: 200
+[2025-11-13 02:38:27]   └─ Success: Retrieved 19 orders
+[2025-11-13 02:38:29] API Call #41 | Type: chunk-month-1-chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:38:30]   └─ Status: 200
+[2025-11-13 02:38:30]   └─ Success: Retrieved 35 orders
+[2025-11-13 02:38:32] API Call #42 | Type: order-details-cmonth-1-chunk-3-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:38:35]   └─ Status: 200
+[2025-11-13 02:38:35]   └─ Success: Retrieved 35 orders
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 02:38:37
+Year: 2024
+================================================================================
+
+[2025-11-13 02:38:38] API Call #1 | Type: chunk-month-2-chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:38:41]   └─ Status: 200
+[2025-11-13 02:38:41]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:38:42] API Call #2 | Type: order-details-cmonth-2-chunk-1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:38:46]   └─ Status: 200
+[2025-11-13 02:38:46]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:38:48] API Call #3 | Type: order-details-cmonth-2-chunk-1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:38:52]   └─ Status: 200
+[2025-11-13 02:38:52]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:38:54] API Call #4 | Type: chunk-month-2-chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:38:57]   └─ Status: 200
+[2025-11-13 02:38:57]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:38:59] API Call #5 | Type: order-details-cmonth-2-chunk-1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:39:03]   └─ Status: 200
+[2025-11-13 02:39:03]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:39:05] API Call #6 | Type: order-details-cmonth-2-chunk-1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:39:09]   └─ Status: 200
+[2025-11-13 02:39:09]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:39:11] API Call #7 | Type: chunk-month-2-chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:39:16]   └─ Status: 200
+[2025-11-13 02:39:16]   └─ Success: Retrieved 0 orders
+[2025-11-13 02:39:18] API Call #8 | Type: chunk-month-2-chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:39:21]   └─ Status: 200
+[2025-11-13 02:39:21]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:39:23] API Call #9 | Type: order-details-cmonth-2-chunk-2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:39:27]   └─ Status: 200
+[2025-11-13 02:39:27]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:39:29] API Call #10 | Type: order-details-cmonth-2-chunk-2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:39:33]   └─ Status: 200
+[2025-11-13 02:39:33]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:39:35] API Call #11 | Type: chunk-month-2-chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:39:41]   └─ Status: 200
+[2025-11-13 02:39:41]   └─ Success: Retrieved 0 orders
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 02:39:43
+Year: 2024
+================================================================================
+
+[2025-11-13 02:39:44] API Call #1 | Type: chunk-month-3-chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:39:47]   └─ Status: 200
+[2025-11-13 02:39:47]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:39:48] API Call #2 | Type: order-details-cmonth-3-chunk-1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:39:54]   └─ Status: 200
+[2025-11-13 02:39:54]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:39:56] API Call #3 | Type: order-details-cmonth-3-chunk-1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:40:02]   └─ Status: 200
+[2025-11-13 02:40:02]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:40:04] API Call #4 | Type: chunk-month-3-chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:40:07]   └─ Status: 200
+[2025-11-13 02:40:07]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:40:08] API Call #5 | Type: order-details-cmonth-3-chunk-1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:40:13]   └─ Status: 200
+[2025-11-13 02:40:13]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:40:15] API Call #6 | Type: order-details-cmonth-3-chunk-1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:40:19]   └─ Status: 200
+[2025-11-13 02:40:19]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:40:21] API Call #7 | Type: chunk-month-3-chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:40:25]   └─ Status: 200
+[2025-11-13 02:40:25]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:40:26] API Call #8 | Type: order-details-cmonth-3-chunk-1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:40:30]   └─ Status: 200
+[2025-11-13 02:40:30]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:40:32] API Call #9 | Type: order-details-cmonth-3-chunk-1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:40:37]   └─ Status: 200
+[2025-11-13 02:40:37]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:40:39] API Call #10 | Type: chunk-month-3-chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:40:44]   └─ Status: 200
+[2025-11-13 02:40:44]   └─ Success: Retrieved 95 orders
+[2025-11-13 02:40:45] API Call #11 | Type: order-details-cmonth-3-chunk-1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:40:49]   └─ Status: 200
+[2025-11-13 02:40:49]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:40:51] API Call #12 | Type: order-details-cmonth-3-chunk-1-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:40:55]   └─ Status: 200
+[2025-11-13 02:40:55]   └─ Success: Retrieved 45 orders
+[2025-11-13 02:40:56] API Call #13 | Type: chunk-month-3-chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:41:01]   └─ Status: 200
+[2025-11-13 02:41:01]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:41:03] API Call #14 | Type: order-details-cmonth-3-chunk-2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:41:07]   └─ Status: 200
+[2025-11-13 02:41:07]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:41:09] API Call #15 | Type: order-details-cmonth-3-chunk-2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:41:13]   └─ Status: 200
+[2025-11-13 02:41:13]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:41:15] API Call #16 | Type: chunk-month-3-chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:41:19]   └─ Status: 200
+[2025-11-13 02:41:19]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:41:20] API Call #17 | Type: order-details-cmonth-3-chunk-2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:41:24]   └─ Status: 200
+[2025-11-13 02:41:24]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:41:26] API Call #18 | Type: order-details-cmonth-3-chunk-2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:41:32]   └─ Status: 200
+[2025-11-13 02:41:32]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:41:34] API Call #19 | Type: chunk-month-3-chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:41:37]   └─ Status: 200
+[2025-11-13 02:41:37]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:41:39] API Call #20 | Type: order-details-cmonth-3-chunk-2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:41:43]   └─ Status: 200
+[2025-11-13 02:41:43]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:41:45] API Call #21 | Type: order-details-cmonth-3-chunk-2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:41:49]   └─ Status: 200
+[2025-11-13 02:41:49]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:41:51] API Call #22 | Type: chunk-month-3-chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:41:53]   └─ Status: 200
+[2025-11-13 02:41:53]   └─ Success: Retrieved 69 orders
+[2025-11-13 02:41:55] API Call #23 | Type: order-details-cmonth-3-chunk-2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:41:58]   └─ Status: 200
+[2025-11-13 02:41:58]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:42:00] API Call #24 | Type: order-details-cmonth-3-chunk-2-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:42:02]   └─ Status: 200
+[2025-11-13 02:42:03]   └─ Success: Retrieved 19 orders
+[2025-11-13 02:42:04] API Call #25 | Type: chunk-month-3-chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:42:05]   └─ Status: 200
+[2025-11-13 02:42:05]   └─ Success: Retrieved 24 orders
+[2025-11-13 02:42:06] API Call #26 | Type: order-details-cmonth-3-chunk-3-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:42:08]   └─ Status: 200
+[2025-11-13 02:42:08]   └─ Success: Retrieved 24 orders
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 02:42:11
+Year: 2024
+================================================================================
+
+[2025-11-13 02:42:11] API Call #1 | Type: chunk-month-4-chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:42:14]   └─ Status: 200
+[2025-11-13 02:42:14]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:42:15] API Call #2 | Type: order-details-cmonth-4-chunk-1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:42:19]   └─ Status: 200
+[2025-11-13 02:42:19]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:42:21] API Call #3 | Type: order-details-cmonth-4-chunk-1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:42:26]   └─ Status: 200
+[2025-11-13 02:42:26]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:42:28] API Call #4 | Type: chunk-month-4-chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:42:30]   └─ Status: 200
+[2025-11-13 02:42:30]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:42:32] API Call #5 | Type: order-details-cmonth-4-chunk-1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:42:37]   └─ Status: 200
+[2025-11-13 02:42:37]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:42:39] API Call #6 | Type: order-details-cmonth-4-chunk-1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:42:44]   └─ Status: 200
+[2025-11-13 02:42:44]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:42:46] API Call #7 | Type: chunk-month-4-chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:42:50]   └─ Status: 200
+[2025-11-13 02:42:50]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:42:52] API Call #8 | Type: order-details-cmonth-4-chunk-1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:42:56]   └─ Status: 200
+[2025-11-13 02:42:56]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:42:58] API Call #9 | Type: order-details-cmonth-4-chunk-1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:43:04]   └─ Status: 200
+[2025-11-13 02:43:04]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:43:06] API Call #10 | Type: chunk-month-4-chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:43:09]   └─ Status: 200
+[2025-11-13 02:43:09]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:43:11] API Call #11 | Type: order-details-cmonth-4-chunk-1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:43:14]   └─ Status: 200
+[2025-11-13 02:43:14]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:43:16] API Call #12 | Type: order-details-cmonth-4-chunk-1-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:43:20]   └─ Status: 200
+[2025-11-13 02:43:20]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:43:22] API Call #13 | Type: chunk-month-4-chunk-1-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:43:24]   └─ Status: 200
+[2025-11-13 02:43:24]   └─ Success: Retrieved 35 orders
+[2025-11-13 02:43:26] API Call #14 | Type: order-details-cmonth-4-chunk-1-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:43:28]   └─ Status: 200
+[2025-11-13 02:43:28]   └─ Success: Retrieved 35 orders
+[2025-11-13 02:43:30] API Call #15 | Type: chunk-month-4-chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:43:32]   └─ Status: 200
+[2025-11-13 02:43:32]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:43:34] API Call #16 | Type: order-details-cmonth-4-chunk-2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:43:38]   └─ Status: 200
+[2025-11-13 02:43:38]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:43:40] API Call #17 | Type: order-details-cmonth-4-chunk-2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:43:44]   └─ Status: 200
+[2025-11-13 02:43:44]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:43:46] API Call #18 | Type: chunk-month-4-chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:43:49]   └─ Status: 200
+[2025-11-13 02:43:49]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:43:51] API Call #19 | Type: order-details-cmonth-4-chunk-2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:43:56]   └─ Status: 200
+[2025-11-13 02:43:56]   └─ Success: Retrieved 0 orders
+[2025-11-13 02:43:59] API Call #20 | Type: order-details-cmonth-4-chunk-2-b2-sub0-retry1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:44:03]   └─ Status: 200
+[2025-11-13 02:44:03]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:44:05] API Call #21 | Type: order-details-cmonth-4-chunk-2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:44:10]   └─ Status: 200
+[2025-11-13 02:44:10]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:44:12] API Call #22 | Type: chunk-month-4-chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:44:14]   └─ Status: 200
+[2025-11-13 02:44:14]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:44:15] API Call #23 | Type: order-details-cmonth-4-chunk-2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:44:19]   └─ Status: 200
+[2025-11-13 02:44:19]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:44:21] API Call #24 | Type: order-details-cmonth-4-chunk-2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:44:26]   └─ Status: 200
+[2025-11-13 02:44:26]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:44:28] API Call #25 | Type: chunk-month-4-chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:44:30]   └─ Status: 200
+[2025-11-13 02:44:30]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:44:32] API Call #26 | Type: order-details-cmonth-4-chunk-2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:44:38]   └─ Status: 200
+[2025-11-13 02:44:38]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:44:40] API Call #27 | Type: order-details-cmonth-4-chunk-2-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:44:44]   └─ Status: 200
+[2025-11-13 02:44:45]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:44:47] API Call #28 | Type: chunk-month-4-chunk-2-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:44:50]   └─ Status: 200
+[2025-11-13 02:44:50]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:44:51] API Call #29 | Type: order-details-cmonth-4-chunk-2-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:44:55]   └─ Status: 200
+[2025-11-13 02:44:55]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:44:57] API Call #30 | Type: order-details-cmonth-4-chunk-2-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:45:01]   └─ Status: 200
+[2025-11-13 02:45:01]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:45:03] API Call #31 | Type: chunk-month-4-chunk-2-batch-6 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:45:07]   └─ Status: 200
+[2025-11-13 02:45:07]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:45:09] API Call #32 | Type: order-details-cmonth-4-chunk-2-b6-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:45:14]   └─ Status: 200
+[2025-11-13 02:45:14]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:45:16] API Call #33 | Type: order-details-cmonth-4-chunk-2-b6-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:45:21]   └─ Status: 200
+[2025-11-13 02:45:21]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:45:23] API Call #34 | Type: chunk-month-4-chunk-2-batch-7 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:45:24]   └─ Status: 200
+[2025-11-13 02:45:24]   └─ Success: Retrieved 46 orders
+[2025-11-13 02:45:25] API Call #35 | Type: order-details-cmonth-4-chunk-2-b7-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:45:29]   └─ Status: 200
+[2025-11-13 02:45:29]   └─ Success: Retrieved 46 orders
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 02:45:31
+Year: 2024
+================================================================================
+
+[2025-11-13 02:45:31] API Call #1 | Type: chunk-month-5-chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:45:33]   └─ Status: 200
+[2025-11-13 02:45:33]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:45:35] API Call #2 | Type: order-details-cmonth-5-chunk-1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:45:38]   └─ Status: 200
+[2025-11-13 02:45:38]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:45:40] API Call #3 | Type: order-details-cmonth-5-chunk-1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:45:45]   └─ Status: 200
+[2025-11-13 02:45:45]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:45:47] API Call #4 | Type: chunk-month-5-chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:45:49]   └─ Status: 200
+[2025-11-13 02:45:49]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:45:50] API Call #5 | Type: order-details-cmonth-5-chunk-1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:45:54]   └─ Status: 200
+[2025-11-13 02:45:54]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:45:56] API Call #6 | Type: order-details-cmonth-5-chunk-1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:46:02]   └─ Status: 200
+[2025-11-13 02:46:02]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:46:04] API Call #7 | Type: chunk-month-5-chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:46:06]   └─ Status: 200
+[2025-11-13 02:46:06]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:46:07] API Call #8 | Type: order-details-cmonth-5-chunk-1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:46:11]   └─ Status: 200
+[2025-11-13 02:46:11]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:46:13] API Call #9 | Type: order-details-cmonth-5-chunk-1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:46:17]   └─ Status: 200
+[2025-11-13 02:46:17]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:46:19] API Call #10 | Type: chunk-month-5-chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:46:22]   └─ Status: 200
+[2025-11-13 02:46:22]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:46:23] API Call #11 | Type: order-details-cmonth-5-chunk-1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:46:28]   └─ Status: 200
+[2025-11-13 02:46:28]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:46:30] API Call #12 | Type: order-details-cmonth-5-chunk-1-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:46:36]   └─ Status: 200
+[2025-11-13 02:46:36]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:46:38] API Call #13 | Type: chunk-month-5-chunk-1-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:46:40]   └─ Status: 200
+[2025-11-13 02:46:40]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:46:42] API Call #14 | Type: order-details-cmonth-5-chunk-1-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:46:46]   └─ Status: 200
+[2025-11-13 02:46:46]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:46:48] API Call #15 | Type: order-details-cmonth-5-chunk-1-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:46:52]   └─ Status: 200
+[2025-11-13 02:46:52]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:46:54] API Call #16 | Type: chunk-month-5-chunk-1-batch-6 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:46:55]   └─ Status: 200
+[2025-11-13 02:46:55]   └─ Success: Retrieved 14 orders
+[2025-11-13 02:46:56] API Call #17 | Type: order-details-cmonth-5-chunk-1-b6-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:46:58]   └─ Status: 200
+[2025-11-13 02:46:58]   └─ Success: Retrieved 14 orders
+[2025-11-13 02:46:59] API Call #18 | Type: chunk-month-5-chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:47:01]   └─ Status: 200
+[2025-11-13 02:47:01]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:47:03] API Call #19 | Type: order-details-cmonth-5-chunk-2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:47:07]   └─ Status: 200
+[2025-11-13 02:47:07]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:47:09] API Call #20 | Type: order-details-cmonth-5-chunk-2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:47:13]   └─ Status: 200
+[2025-11-13 02:47:13]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:47:15] API Call #21 | Type: chunk-month-5-chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:47:17]   └─ Status: 200
+[2025-11-13 02:47:17]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:47:18] API Call #22 | Type: order-details-cmonth-5-chunk-2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:47:22]   └─ Status: 200
+[2025-11-13 02:47:22]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:47:24] API Call #23 | Type: order-details-cmonth-5-chunk-2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:47:28]   └─ Status: 200
+[2025-11-13 02:47:28]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:47:30] API Call #24 | Type: chunk-month-5-chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:47:32]   └─ Status: 200
+[2025-11-13 02:47:32]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:47:34] API Call #25 | Type: order-details-cmonth-5-chunk-2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:47:38]   └─ Status: 200
+[2025-11-13 02:47:38]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:47:40] API Call #26 | Type: order-details-cmonth-5-chunk-2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:47:44]   └─ Status: 200
+[2025-11-13 02:47:44]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:47:46] API Call #27 | Type: chunk-month-5-chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:47:48]   └─ Status: 200
+[2025-11-13 02:47:48]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:47:50] API Call #28 | Type: order-details-cmonth-5-chunk-2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:47:55]   └─ Status: 200
+[2025-11-13 02:47:55]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:47:57] API Call #29 | Type: order-details-cmonth-5-chunk-2-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:48:01]   └─ Status: 200
+[2025-11-13 02:48:01]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:48:03] API Call #30 | Type: chunk-month-5-chunk-2-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:48:04]   └─ Status: 200
+[2025-11-13 02:48:04]   └─ Success: Retrieved 44 orders
+[2025-11-13 02:48:06] API Call #31 | Type: order-details-cmonth-5-chunk-2-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:48:09]   └─ Status: 200
+[2025-11-13 02:48:09]   └─ Success: Retrieved 44 orders
+[2025-11-13 02:48:10] API Call #32 | Type: chunk-month-5-chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:48:11]   └─ Status: 200
+[2025-11-13 02:48:11]   └─ Success: Retrieved 37 orders
+[2025-11-13 02:48:13] API Call #33 | Type: order-details-cmonth-5-chunk-3-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:48:16]   └─ Status: 200
+[2025-11-13 02:48:16]   └─ Success: Retrieved 37 orders
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 02:48:17
+Year: 2024
+================================================================================
+
+[2025-11-13 02:48:18] API Call #1 | Type: chunk-month-6-chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:48:20]   └─ Status: 200
+[2025-11-13 02:48:20]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:48:21] API Call #2 | Type: order-details-cmonth-6-chunk-1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:48:25]   └─ Status: 200
+[2025-11-13 02:48:25]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:48:27] API Call #3 | Type: order-details-cmonth-6-chunk-1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:48:32]   └─ Status: 200
+[2025-11-13 02:48:32]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:48:34] API Call #4 | Type: chunk-month-6-chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:48:36]   └─ Status: 200
+[2025-11-13 02:48:36]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:48:37] API Call #5 | Type: order-details-cmonth-6-chunk-1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:48:41]   └─ Status: 200
+[2025-11-13 02:48:41]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:48:43] API Call #6 | Type: order-details-cmonth-6-chunk-1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:48:47]   └─ Status: 200
+[2025-11-13 02:48:47]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:48:49] API Call #7 | Type: chunk-month-6-chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:48:51]   └─ Status: 200
+[2025-11-13 02:48:51]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:48:53] API Call #8 | Type: order-details-cmonth-6-chunk-1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:48:57]   └─ Status: 200
+[2025-11-13 02:48:57]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:48:59] API Call #9 | Type: order-details-cmonth-6-chunk-1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:49:03]   └─ Status: 200
+[2025-11-13 02:49:03]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:49:05] API Call #10 | Type: chunk-month-6-chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:49:07]   └─ Status: 200
+[2025-11-13 02:49:07]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:49:08] API Call #11 | Type: order-details-cmonth-6-chunk-1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:49:12]   └─ Status: 200
+[2025-11-13 02:49:12]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:49:14] API Call #12 | Type: order-details-cmonth-6-chunk-1-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:49:18]   └─ Status: 200
+[2025-11-13 02:49:18]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:49:20] API Call #13 | Type: chunk-month-6-chunk-1-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:49:22]   └─ Status: 200
+[2025-11-13 02:49:22]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:49:24] API Call #14 | Type: order-details-cmonth-6-chunk-1-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:49:27]   └─ Status: 200
+[2025-11-13 02:49:27]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:49:29] API Call #15 | Type: order-details-cmonth-6-chunk-1-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:49:33]   └─ Status: 200
+[2025-11-13 02:49:33]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:49:35] API Call #16 | Type: chunk-month-6-chunk-1-batch-6 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:49:37]   └─ Status: 200
+[2025-11-13 02:49:37]   └─ Success: Retrieved 65 orders
+[2025-11-13 02:49:38] API Call #17 | Type: order-details-cmonth-6-chunk-1-b6-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:49:44]   └─ Status: 200
+[2025-11-13 02:49:44]   └─ Success: Retrieved 0 orders
+[2025-11-13 02:49:47] API Call #18 | Type: order-details-cmonth-6-chunk-1-b6-sub0-retry1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:49:50]   └─ Status: 200
+[2025-11-13 02:49:50]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:49:52] API Call #19 | Type: order-details-cmonth-6-chunk-1-b6-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:49:54]   └─ Status: 200
+[2025-11-13 02:49:54]   └─ Success: Retrieved 15 orders
+[2025-11-13 02:49:55] API Call #20 | Type: chunk-month-6-chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:49:57]   └─ Status: 200
+[2025-11-13 02:49:57]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:49:59] API Call #21 | Type: order-details-cmonth-6-chunk-2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:50:02]   └─ Status: 200
+[2025-11-13 02:50:02]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:50:04] API Call #22 | Type: order-details-cmonth-6-chunk-2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:50:08]   └─ Status: 200
+[2025-11-13 02:50:08]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:50:10] API Call #23 | Type: chunk-month-6-chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:50:13]   └─ Status: 200
+[2025-11-13 02:50:13]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:50:14] API Call #24 | Type: order-details-cmonth-6-chunk-2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:50:18]   └─ Status: 200
+[2025-11-13 02:50:18]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:50:20] API Call #25 | Type: order-details-cmonth-6-chunk-2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:50:25]   └─ Status: 200
+[2025-11-13 02:50:25]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:50:27] API Call #26 | Type: chunk-month-6-chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:50:29]   └─ Status: 200
+[2025-11-13 02:50:29]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:50:30] API Call #27 | Type: order-details-cmonth-6-chunk-2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:50:35]   └─ Status: 200
+[2025-11-13 02:50:35]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:50:37] API Call #28 | Type: order-details-cmonth-6-chunk-2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:50:41]   └─ Status: 200
+[2025-11-13 02:50:41]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:50:43] API Call #29 | Type: chunk-month-6-chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:50:45]   └─ Status: 200
+[2025-11-13 02:50:45]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:50:47] API Call #30 | Type: order-details-cmonth-6-chunk-2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:50:50]   └─ Status: 200
+[2025-11-13 02:50:50]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:50:52] API Call #31 | Type: order-details-cmonth-6-chunk-2-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:50:56]   └─ Status: 200
+[2025-11-13 02:50:56]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:50:58] API Call #32 | Type: chunk-month-6-chunk-2-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:51:00]   └─ Status: 200
+[2025-11-13 02:51:00]   └─ Success: Retrieved 89 orders
+[2025-11-13 02:51:01] API Call #33 | Type: order-details-cmonth-6-chunk-2-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:51:06]   └─ Status: 200
+[2025-11-13 02:51:06]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:51:08] API Call #34 | Type: order-details-cmonth-6-chunk-2-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:51:11]   └─ Status: 200
+[2025-11-13 02:51:11]   └─ Success: Retrieved 39 orders
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 02:51:13
+Year: 2024
+================================================================================
+
+[2025-11-13 02:51:14] API Call #1 | Type: chunk-month-7-chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:51:18]   └─ Status: 200
+[2025-11-13 02:51:18]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:51:19] API Call #2 | Type: order-details-cmonth-7-chunk-1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:51:23]   └─ Status: 200
+[2025-11-13 02:51:23]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:51:25] API Call #3 | Type: order-details-cmonth-7-chunk-1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:51:29]   └─ Status: 200
+[2025-11-13 02:51:29]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:51:31] API Call #4 | Type: chunk-month-7-chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:51:33]   └─ Status: 200
+[2025-11-13 02:51:33]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:51:34] API Call #5 | Type: order-details-cmonth-7-chunk-1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:51:38]   └─ Status: 200
+[2025-11-13 02:51:38]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:51:40] API Call #6 | Type: order-details-cmonth-7-chunk-1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:51:44]   └─ Status: 200
+[2025-11-13 02:51:44]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:51:46] API Call #7 | Type: chunk-month-7-chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:51:48]   └─ Status: 200
+[2025-11-13 02:51:48]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:51:50] API Call #8 | Type: order-details-cmonth-7-chunk-1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:51:54]   └─ Status: 200
+[2025-11-13 02:51:54]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:51:56] API Call #9 | Type: order-details-cmonth-7-chunk-1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:52:00]   └─ Status: 200
+[2025-11-13 02:52:00]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:52:02] API Call #10 | Type: chunk-month-7-chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:52:03]   └─ Status: 200
+[2025-11-13 02:52:03]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:52:05] API Call #11 | Type: order-details-cmonth-7-chunk-1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:52:09]   └─ Status: 200
+[2025-11-13 02:52:09]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:52:11] API Call #12 | Type: order-details-cmonth-7-chunk-1-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:52:15]   └─ Status: 200
+[2025-11-13 02:52:15]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:52:17] API Call #13 | Type: chunk-month-7-chunk-1-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:52:19]   └─ Status: 200
+[2025-11-13 02:52:19]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:52:21] API Call #14 | Type: order-details-cmonth-7-chunk-1-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:52:24]   └─ Status: 200
+[2025-11-13 02:52:24]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:52:26] API Call #15 | Type: order-details-cmonth-7-chunk-1-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:52:30]   └─ Status: 200
+[2025-11-13 02:52:30]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:52:32] API Call #16 | Type: chunk-month-7-chunk-1-batch-6 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:52:34]   └─ Status: 200
+[2025-11-13 02:52:34]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:52:36] API Call #17 | Type: order-details-cmonth-7-chunk-1-b6-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:52:40]   └─ Status: 200
+[2025-11-13 02:52:40]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:52:42] API Call #18 | Type: order-details-cmonth-7-chunk-1-b6-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:52:46]   └─ Status: 200
+[2025-11-13 02:52:46]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:52:48] API Call #19 | Type: chunk-month-7-chunk-1-batch-7 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:52:50]   └─ Status: 200
+[2025-11-13 02:52:50]   └─ Success: Retrieved 22 orders
+[2025-11-13 02:52:51] API Call #20 | Type: order-details-cmonth-7-chunk-1-b7-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:52:53]   └─ Status: 200
+[2025-11-13 02:52:53]   └─ Success: Retrieved 22 orders
+[2025-11-13 02:52:54] API Call #21 | Type: chunk-month-7-chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:52:57]   └─ Status: 200
+[2025-11-13 02:52:57]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:52:58] API Call #22 | Type: order-details-cmonth-7-chunk-2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:53:02]   └─ Status: 200
+[2025-11-13 02:53:02]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:53:04] API Call #23 | Type: order-details-cmonth-7-chunk-2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:53:11]   └─ Status: 200
+[2025-11-13 02:53:11]   └─ Success: Retrieved 0 orders
+[2025-11-13 02:53:13] API Call #24 | Type: order-details-cmonth-7-chunk-2-b1-sub1-retry1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:53:17]   └─ Status: 200
+[2025-11-13 02:53:17]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:53:19] API Call #25 | Type: chunk-month-7-chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:53:21]   └─ Status: 200
+[2025-11-13 02:53:21]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:53:23] API Call #26 | Type: order-details-cmonth-7-chunk-2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:53:27]   └─ Status: 200
+[2025-11-13 02:53:27]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:53:29] API Call #27 | Type: order-details-cmonth-7-chunk-2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:53:35]   └─ Status: 200
+[2025-11-13 02:53:35]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:53:37] API Call #28 | Type: chunk-month-7-chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:53:39]   └─ Status: 200
+[2025-11-13 02:53:39]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:53:40] API Call #29 | Type: order-details-cmonth-7-chunk-2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:53:44]   └─ Status: 200
+[2025-11-13 02:53:44]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:53:46] API Call #30 | Type: order-details-cmonth-7-chunk-2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:53:50]   └─ Status: 200
+[2025-11-13 02:53:50]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:53:52] API Call #31 | Type: chunk-month-7-chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:53:54]   └─ Status: 200
+[2025-11-13 02:53:54]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:53:55] API Call #32 | Type: order-details-cmonth-7-chunk-2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:53:59]   └─ Status: 200
+[2025-11-13 02:53:59]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:54:01] API Call #33 | Type: order-details-cmonth-7-chunk-2-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:54:05]   └─ Status: 200
+[2025-11-13 02:54:05]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:54:07] API Call #34 | Type: chunk-month-7-chunk-2-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:54:09]   └─ Status: 200
+[2025-11-13 02:54:09]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:54:11] API Call #35 | Type: order-details-cmonth-7-chunk-2-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:54:16]   └─ Status: 200
+[2025-11-13 02:54:16]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:54:18] API Call #36 | Type: order-details-cmonth-7-chunk-2-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:54:22]   └─ Status: 200
+[2025-11-13 02:54:22]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:54:24] API Call #37 | Type: chunk-month-7-chunk-2-batch-6 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:54:24]   └─ Status: 200
+[2025-11-13 02:54:24]   └─ Success: Retrieved 11 orders
+[2025-11-13 02:54:26] API Call #38 | Type: order-details-cmonth-7-chunk-2-b6-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:54:27]   └─ Status: 200
+[2025-11-13 02:54:27]   └─ Success: Retrieved 11 orders
+[2025-11-13 02:54:28] API Call #39 | Type: chunk-month-7-chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:54:29]   └─ Status: 200
+[2025-11-13 02:54:29]   └─ Success: Retrieved 37 orders
+[2025-11-13 02:54:31] API Call #40 | Type: order-details-cmonth-7-chunk-3-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:54:33]   └─ Status: 200
+[2025-11-13 02:54:33]   └─ Success: Retrieved 37 orders
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 02:54:35
+Year: 2024
+================================================================================
+
+[2025-11-13 02:54:35] API Call #1 | Type: chunk-month-8-chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:54:37]   └─ Status: 200
+[2025-11-13 02:54:37]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:54:38] API Call #2 | Type: order-details-cmonth-8-chunk-1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:54:42]   └─ Status: 200
+[2025-11-13 02:54:42]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:54:44] API Call #3 | Type: order-details-cmonth-8-chunk-1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:54:49]   └─ Status: 200
+[2025-11-13 02:54:49]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:54:51] API Call #4 | Type: chunk-month-8-chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:54:53]   └─ Status: 200
+[2025-11-13 02:54:53]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:54:54] API Call #5 | Type: order-details-cmonth-8-chunk-1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:54:58]   └─ Status: 200
+[2025-11-13 02:54:58]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:55:00] API Call #6 | Type: order-details-cmonth-8-chunk-1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:55:04]   └─ Status: 200
+[2025-11-13 02:55:04]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:55:06] API Call #7 | Type: chunk-month-8-chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:55:08]   └─ Status: 200
+[2025-11-13 02:55:08]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:55:10] API Call #8 | Type: order-details-cmonth-8-chunk-1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:55:14]   └─ Status: 200
+[2025-11-13 02:55:14]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:55:16] API Call #9 | Type: order-details-cmonth-8-chunk-1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:55:22]   └─ Status: 200
+[2025-11-13 02:55:22]   └─ Success: Retrieved 0 orders
+[2025-11-13 02:55:24] API Call #10 | Type: order-details-cmonth-8-chunk-1-b3-sub1-retry1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:55:28]   └─ Status: 200
+[2025-11-13 02:55:28]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:55:30] API Call #11 | Type: chunk-month-8-chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:55:32]   └─ Status: 200
+[2025-11-13 02:55:32]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:55:33] API Call #12 | Type: order-details-cmonth-8-chunk-1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:55:37]   └─ Status: 200
+[2025-11-13 02:55:37]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:55:39] API Call #13 | Type: order-details-cmonth-8-chunk-1-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:55:43]   └─ Status: 200
+[2025-11-13 02:55:43]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:55:45] API Call #14 | Type: chunk-month-8-chunk-1-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:55:47]   └─ Status: 200
+[2025-11-13 02:55:47]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:55:49] API Call #15 | Type: order-details-cmonth-8-chunk-1-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:55:53]   └─ Status: 200
+[2025-11-13 02:55:53]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:55:55] API Call #16 | Type: order-details-cmonth-8-chunk-1-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:55:59]   └─ Status: 200
+[2025-11-13 02:55:59]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:56:01] API Call #17 | Type: chunk-month-8-chunk-1-batch-6 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:56:03]   └─ Status: 200
+[2025-11-13 02:56:03]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:56:05] API Call #18 | Type: order-details-cmonth-8-chunk-1-b6-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:56:09]   └─ Status: 200
+[2025-11-13 02:56:09]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:56:11] API Call #19 | Type: order-details-cmonth-8-chunk-1-b6-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:56:15]   └─ Status: 200
+[2025-11-13 02:56:15]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:56:17] API Call #20 | Type: chunk-month-8-chunk-1-batch-7 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:56:18]   └─ Status: 200
+[2025-11-13 02:56:18]   └─ Success: Retrieved 86 orders
+[2025-11-13 02:56:20] API Call #21 | Type: order-details-cmonth-8-chunk-1-b7-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:56:23]   └─ Status: 200
+[2025-11-13 02:56:23]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:56:25] API Call #22 | Type: order-details-cmonth-8-chunk-1-b7-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:56:28]   └─ Status: 200
+[2025-11-13 02:56:28]   └─ Success: Retrieved 36 orders
+[2025-11-13 02:56:30] API Call #23 | Type: chunk-month-8-chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:56:32]   └─ Status: 200
+[2025-11-13 02:56:32]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:56:34] API Call #24 | Type: order-details-cmonth-8-chunk-2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:56:38]   └─ Status: 200
+[2025-11-13 02:56:38]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:56:40] API Call #25 | Type: order-details-cmonth-8-chunk-2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:56:43]   └─ Status: 200
+[2025-11-13 02:56:43]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:56:45] API Call #26 | Type: chunk-month-8-chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:56:48]   └─ Status: 200
+[2025-11-13 02:56:48]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:56:49] API Call #27 | Type: order-details-cmonth-8-chunk-2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:56:54]   └─ Status: 200
+[2025-11-13 02:56:54]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:56:56] API Call #28 | Type: order-details-cmonth-8-chunk-2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:57:00]   └─ Status: 200
+[2025-11-13 02:57:00]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:57:02] API Call #29 | Type: chunk-month-8-chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:57:04]   └─ Status: 200
+[2025-11-13 02:57:04]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:57:05] API Call #30 | Type: order-details-cmonth-8-chunk-2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:57:08]   └─ Status: 200
+[2025-11-13 02:57:08]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:57:10] API Call #31 | Type: order-details-cmonth-8-chunk-2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:57:16]   └─ Status: 200
+[2025-11-13 02:57:16]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:57:18] API Call #32 | Type: chunk-month-8-chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:57:20]   └─ Status: 200
+[2025-11-13 02:57:20]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:57:21] API Call #33 | Type: order-details-cmonth-8-chunk-2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:57:25]   └─ Status: 200
+[2025-11-13 02:57:25]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:57:27] API Call #34 | Type: order-details-cmonth-8-chunk-2-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:57:31]   └─ Status: 200
+[2025-11-13 02:57:31]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:57:33] API Call #35 | Type: chunk-month-8-chunk-2-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:57:35]   └─ Status: 200
+[2025-11-13 02:57:35]   └─ Success: Retrieved 71 orders
+[2025-11-13 02:57:36] API Call #36 | Type: order-details-cmonth-8-chunk-2-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:57:40]   └─ Status: 200
+[2025-11-13 02:57:40]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:57:42] API Call #37 | Type: order-details-cmonth-8-chunk-2-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:57:44]   └─ Status: 200
+[2025-11-13 02:57:44]   └─ Success: Retrieved 21 orders
+[2025-11-13 02:57:46] API Call #38 | Type: chunk-month-8-chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:57:46]   └─ Status: 200
+[2025-11-13 02:57:46]   └─ Success: Retrieved 49 orders
+[2025-11-13 02:57:48] API Call #39 | Type: order-details-cmonth-8-chunk-3-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:57:52]   └─ Status: 200
+[2025-11-13 02:57:52]   └─ Success: Retrieved 49 orders
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 02:57:53
+Year: 2024
+================================================================================
+
+[2025-11-13 02:57:54] API Call #1 | Type: chunk-month-9-chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:57:56]   └─ Status: 200
+[2025-11-13 02:57:56]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:57:57] API Call #2 | Type: order-details-cmonth-9-chunk-1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:58:02]   └─ Status: 200
+[2025-11-13 02:58:02]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:58:04] API Call #3 | Type: order-details-cmonth-9-chunk-1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:58:07]   └─ Status: 200
+[2025-11-13 02:58:07]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:58:09] API Call #4 | Type: chunk-month-9-chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:58:12]   └─ Status: 200
+[2025-11-13 02:58:12]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:58:13] API Call #5 | Type: order-details-cmonth-9-chunk-1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:58:17]   └─ Status: 200
+[2025-11-13 02:58:17]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:58:19] API Call #6 | Type: order-details-cmonth-9-chunk-1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:58:23]   └─ Status: 200
+[2025-11-13 02:58:23]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:58:25] API Call #7 | Type: chunk-month-9-chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:58:27]   └─ Status: 200
+[2025-11-13 02:58:27]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:58:29] API Call #8 | Type: order-details-cmonth-9-chunk-1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:58:33]   └─ Status: 200
+[2025-11-13 02:58:33]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:58:35] API Call #9 | Type: order-details-cmonth-9-chunk-1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:58:38]   └─ Status: 200
+[2025-11-13 02:58:38]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:58:40] API Call #10 | Type: chunk-month-9-chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:58:43]   └─ Status: 200
+[2025-11-13 02:58:43]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:58:44] API Call #11 | Type: order-details-cmonth-9-chunk-1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:58:48]   └─ Status: 200
+[2025-11-13 02:58:48]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:58:50] API Call #12 | Type: order-details-cmonth-9-chunk-1-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:58:54]   └─ Status: 200
+[2025-11-13 02:58:54]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:58:56] API Call #13 | Type: chunk-month-9-chunk-1-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:58:58]   └─ Status: 200
+[2025-11-13 02:58:58]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:58:59] API Call #14 | Type: order-details-cmonth-9-chunk-1-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:59:03]   └─ Status: 200
+[2025-11-13 02:59:03]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:59:05] API Call #15 | Type: order-details-cmonth-9-chunk-1-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:59:09]   └─ Status: 200
+[2025-11-13 02:59:09]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:59:11] API Call #16 | Type: chunk-month-9-chunk-1-batch-6 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:59:12]   └─ Status: 200
+[2025-11-13 02:59:12]   └─ Success: Retrieved 36 orders
+[2025-11-13 02:59:14] API Call #17 | Type: order-details-cmonth-9-chunk-1-b6-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:59:17]   └─ Status: 200
+[2025-11-13 02:59:17]   └─ Success: Retrieved 36 orders
+[2025-11-13 02:59:18] API Call #18 | Type: chunk-month-9-chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:59:20]   └─ Status: 200
+[2025-11-13 02:59:20]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:59:22] API Call #19 | Type: order-details-cmonth-9-chunk-2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:59:26]   └─ Status: 200
+[2025-11-13 02:59:26]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:59:28] API Call #20 | Type: order-details-cmonth-9-chunk-2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:59:32]   └─ Status: 200
+[2025-11-13 02:59:32]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:59:34] API Call #21 | Type: chunk-month-9-chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:59:36]   └─ Status: 200
+[2025-11-13 02:59:36]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:59:38] API Call #22 | Type: order-details-cmonth-9-chunk-2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:59:41]   └─ Status: 200
+[2025-11-13 02:59:41]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:59:43] API Call #23 | Type: order-details-cmonth-9-chunk-2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:59:47]   └─ Status: 200
+[2025-11-13 02:59:47]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:59:49] API Call #24 | Type: chunk-month-9-chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 02:59:51]   └─ Status: 200
+[2025-11-13 02:59:51]   └─ Success: Retrieved 100 orders
+[2025-11-13 02:59:52] API Call #25 | Type: order-details-cmonth-9-chunk-2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 02:59:56]   └─ Status: 200
+[2025-11-13 02:59:56]   └─ Success: Retrieved 50 orders
+[2025-11-13 02:59:58] API Call #26 | Type: order-details-cmonth-9-chunk-2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:00:02]   └─ Status: 200
+[2025-11-13 03:00:02]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:00:04] API Call #27 | Type: chunk-month-9-chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:00:05]   └─ Status: 200
+[2025-11-13 03:00:05]   └─ Success: Retrieved 86 orders
+[2025-11-13 03:00:07] API Call #28 | Type: order-details-cmonth-9-chunk-2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:00:11]   └─ Status: 200
+[2025-11-13 03:00:11]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:00:13] API Call #29 | Type: order-details-cmonth-9-chunk-2-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:00:16]   └─ Status: 200
+[2025-11-13 03:00:16]   └─ Success: Retrieved 36 orders
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 03:00:19
+Year: 2024
+================================================================================
+
+[2025-11-13 03:00:19] API Call #1 | Type: chunk-month-10-chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:00:22]   └─ Status: 200
+[2025-11-13 03:00:22]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:00:23] API Call #2 | Type: order-details-cmonth-10-chunk-1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:00:27]   └─ Status: 200
+[2025-11-13 03:00:27]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:00:29] API Call #3 | Type: order-details-cmonth-10-chunk-1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:00:34]   └─ Status: 200
+[2025-11-13 03:00:34]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:00:36] API Call #4 | Type: chunk-month-10-chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:00:38]   └─ Status: 200
+[2025-11-13 03:00:38]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:00:40] API Call #5 | Type: order-details-cmonth-10-chunk-1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:00:43]   └─ Status: 200
+[2025-11-13 03:00:43]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:00:45] API Call #6 | Type: order-details-cmonth-10-chunk-1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:00:49]   └─ Status: 200
+[2025-11-13 03:00:49]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:00:51] API Call #7 | Type: chunk-month-10-chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:00:54]   └─ Status: 200
+[2025-11-13 03:00:54]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:00:55] API Call #8 | Type: order-details-cmonth-10-chunk-1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:00:59]   └─ Status: 200
+[2025-11-13 03:00:59]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:01:01] API Call #9 | Type: order-details-cmonth-10-chunk-1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:01:05]   └─ Status: 200
+[2025-11-13 03:01:05]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:01:07] API Call #10 | Type: chunk-month-10-chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:01:12]   └─ Status: 200
+[2025-11-13 03:01:12]   └─ Success: Retrieved 0 orders
+[2025-11-13 03:01:14] API Call #11 | Type: chunk-month-10-chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:01:16]   └─ Status: 200
+[2025-11-13 03:01:16]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:01:17] API Call #12 | Type: order-details-cmonth-10-chunk-2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:01:21]   └─ Status: 200
+[2025-11-13 03:01:21]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:01:23] API Call #13 | Type: order-details-cmonth-10-chunk-2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:01:27]   └─ Status: 200
+[2025-11-13 03:01:27]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:01:29] API Call #14 | Type: chunk-month-10-chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:01:31]   └─ Status: 200
+[2025-11-13 03:01:31]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:01:33] API Call #15 | Type: order-details-cmonth-10-chunk-2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:01:37]   └─ Status: 200
+[2025-11-13 03:01:37]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:01:39] API Call #16 | Type: order-details-cmonth-10-chunk-2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:01:42]   └─ Status: 200
+[2025-11-13 03:01:42]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:01:44] API Call #17 | Type: chunk-month-10-chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:01:47]   └─ Status: 200
+[2025-11-13 03:01:47]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:01:48] API Call #18 | Type: order-details-cmonth-10-chunk-2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:01:52]   └─ Status: 200
+[2025-11-13 03:01:52]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:01:54] API Call #19 | Type: order-details-cmonth-10-chunk-2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:01:57]   └─ Status: 200
+[2025-11-13 03:01:57]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:01:59] API Call #20 | Type: chunk-month-10-chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:02:00]   └─ Status: 200
+[2025-11-13 03:02:00]   └─ Success: Retrieved 14 orders
+[2025-11-13 03:02:01] API Call #21 | Type: order-details-cmonth-10-chunk-2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:02:02]   └─ Status: 200
+[2025-11-13 03:02:02]   └─ Success: Retrieved 14 orders
+[2025-11-13 03:02:04] API Call #22 | Type: chunk-month-10-chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:02:04]   └─ Status: 200
+[2025-11-13 03:02:04]   └─ Success: Retrieved 14 orders
+[2025-11-13 03:02:06] API Call #23 | Type: order-details-cmonth-10-chunk-3-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:02:07]   └─ Status: 200
+[2025-11-13 03:02:07]   └─ Success: Retrieved 14 orders
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 03:02:10
+Year: 2024
+================================================================================
+
+[2025-11-13 03:02:10] API Call #1 | Type: chunk-month-11-chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:02:12]   └─ Status: 200
+[2025-11-13 03:02:12]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:02:13] API Call #2 | Type: order-details-cmonth-11-chunk-1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:02:17]   └─ Status: 200
+[2025-11-13 03:02:17]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:02:19] API Call #3 | Type: order-details-cmonth-11-chunk-1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:02:23]   └─ Status: 200
+[2025-11-13 03:02:23]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:02:25] API Call #4 | Type: chunk-month-11-chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:02:27]   └─ Status: 200
+[2025-11-13 03:02:27]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:02:29] API Call #5 | Type: order-details-cmonth-11-chunk-1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:02:32]   └─ Status: 200
+[2025-11-13 03:02:32]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:02:34] API Call #6 | Type: order-details-cmonth-11-chunk-1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:02:38]   └─ Status: 200
+[2025-11-13 03:02:38]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:02:40] API Call #7 | Type: chunk-month-11-chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:02:42]   └─ Status: 200
+[2025-11-13 03:02:42]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:02:44] API Call #8 | Type: order-details-cmonth-11-chunk-1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:02:48]   └─ Status: 200
+[2025-11-13 03:02:48]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:02:50] API Call #9 | Type: order-details-cmonth-11-chunk-1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:02:54]   └─ Status: 200
+[2025-11-13 03:02:54]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:02:56] API Call #10 | Type: chunk-month-11-chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:02:58]   └─ Status: 200
+[2025-11-13 03:02:58]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:02:59] API Call #11 | Type: order-details-cmonth-11-chunk-1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:03:04]   └─ Status: 200
+[2025-11-13 03:03:04]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:03:06] API Call #12 | Type: order-details-cmonth-11-chunk-1-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:03:09]   └─ Status: 200
+[2025-11-13 03:03:09]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:03:11] API Call #13 | Type: chunk-month-11-chunk-1-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:03:13]   └─ Status: 200
+[2025-11-13 03:03:13]   └─ Success: Retrieved 62 orders
+[2025-11-13 03:03:14] API Call #14 | Type: order-details-cmonth-11-chunk-1-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:03:18]   └─ Status: 200
+[2025-11-13 03:03:18]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:03:20] API Call #15 | Type: order-details-cmonth-11-chunk-1-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:03:21]   └─ Status: 200
+[2025-11-13 03:03:21]   └─ Success: Retrieved 12 orders
+[2025-11-13 03:03:23] API Call #16 | Type: chunk-month-11-chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:03:25]   └─ Status: 200
+[2025-11-13 03:03:25]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:03:26] API Call #17 | Type: order-details-cmonth-11-chunk-2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:03:30]   └─ Status: 200
+[2025-11-13 03:03:30]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:03:32] API Call #18 | Type: order-details-cmonth-11-chunk-2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:03:36]   └─ Status: 200
+[2025-11-13 03:03:36]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:03:38] API Call #19 | Type: chunk-month-11-chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:03:40]   └─ Status: 200
+[2025-11-13 03:03:40]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:03:41] API Call #20 | Type: order-details-cmonth-11-chunk-2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:03:45]   └─ Status: 200
+[2025-11-13 03:03:45]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:03:47] API Call #21 | Type: order-details-cmonth-11-chunk-2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:03:51]   └─ Status: 200
+[2025-11-13 03:03:51]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:03:53] API Call #22 | Type: chunk-month-11-chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:03:55]   └─ Status: 200
+[2025-11-13 03:03:55]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:03:57] API Call #23 | Type: order-details-cmonth-11-chunk-2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:04:00]   └─ Status: 200
+[2025-11-13 03:04:00]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:04:02] API Call #24 | Type: order-details-cmonth-11-chunk-2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:04:07]   └─ Status: 200
+[2025-11-13 03:04:07]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:04:09] API Call #25 | Type: chunk-month-11-chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:04:11]   └─ Status: 200
+[2025-11-13 03:04:11]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:04:12] API Call #26 | Type: order-details-cmonth-11-chunk-2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:04:16]   └─ Status: 200
+[2025-11-13 03:04:16]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:04:18] API Call #27 | Type: order-details-cmonth-11-chunk-2-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:04:22]   └─ Status: 200
+[2025-11-13 03:04:22]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:04:24] API Call #28 | Type: chunk-month-11-chunk-2-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:04:25]   └─ Status: 200
+[2025-11-13 03:04:25]   └─ Success: Retrieved 44 orders
+[2025-11-13 03:04:27] API Call #29 | Type: order-details-cmonth-11-chunk-2-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:04:33]   └─ Status: 200
+[2025-11-13 03:04:33]   └─ Success: Retrieved 44 orders
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 03:04:34
+Year: 2024
+================================================================================
+
+[2025-11-13 03:04:35] API Call #1 | Type: chunk-month-12-chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:04:37]   └─ Status: 200
+[2025-11-13 03:04:37]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:04:38] API Call #2 | Type: order-details-cmonth-12-chunk-1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:04:42]   └─ Status: 200
+[2025-11-13 03:04:42]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:04:44] API Call #3 | Type: order-details-cmonth-12-chunk-1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:04:48]   └─ Status: 200
+[2025-11-13 03:04:48]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:04:50] API Call #4 | Type: chunk-month-12-chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:04:52]   └─ Status: 200
+[2025-11-13 03:04:52]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:04:53] API Call #5 | Type: order-details-cmonth-12-chunk-1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:04:57]   └─ Status: 200
+[2025-11-13 03:04:57]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:04:59] API Call #6 | Type: order-details-cmonth-12-chunk-1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:05:03]   └─ Status: 200
+[2025-11-13 03:05:03]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:05:05] API Call #7 | Type: chunk-month-12-chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:05:07]   └─ Status: 200
+[2025-11-13 03:05:07]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:05:08] API Call #8 | Type: order-details-cmonth-12-chunk-1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:05:12]   └─ Status: 200
+[2025-11-13 03:05:12]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:05:14] API Call #9 | Type: order-details-cmonth-12-chunk-1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:05:18]   └─ Status: 200
+[2025-11-13 03:05:18]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:05:20] API Call #10 | Type: chunk-month-12-chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:05:22]   └─ Status: 200
+[2025-11-13 03:05:22]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:05:24] API Call #11 | Type: order-details-cmonth-12-chunk-1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:05:30]   └─ Status: 200
+[2025-11-13 03:05:30]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:05:32] API Call #12 | Type: order-details-cmonth-12-chunk-1-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:05:36]   └─ Status: 200
+[2025-11-13 03:05:36]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:05:38] API Call #13 | Type: chunk-month-12-chunk-1-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:05:39]   └─ Status: 200
+[2025-11-13 03:05:39]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:05:41] API Call #14 | Type: order-details-cmonth-12-chunk-1-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:05:45]   └─ Status: 200
+[2025-11-13 03:05:45]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:05:47] API Call #15 | Type: order-details-cmonth-12-chunk-1-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:05:51]   └─ Status: 200
+[2025-11-13 03:05:51]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:05:54] API Call #16 | Type: chunk-month-12-chunk-1-batch-6 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:05:56]   └─ Status: 200
+[2025-11-13 03:05:56]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:05:57] API Call #17 | Type: order-details-cmonth-12-chunk-1-b6-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:06:01]   └─ Status: 200
+[2025-11-13 03:06:01]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:06:03] API Call #18 | Type: order-details-cmonth-12-chunk-1-b6-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:06:07]   └─ Status: 200
+[2025-11-13 03:06:07]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:06:09] API Call #19 | Type: chunk-month-12-chunk-1-batch-7 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:06:10]   └─ Status: 200
+[2025-11-13 03:06:10]   └─ Success: Retrieved 28 orders
+[2025-11-13 03:06:11] API Call #20 | Type: order-details-cmonth-12-chunk-1-b7-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:06:13]   └─ Status: 200
+[2025-11-13 03:06:13]   └─ Success: Retrieved 28 orders
+[2025-11-13 03:06:15] API Call #21 | Type: chunk-month-12-chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:06:17]   └─ Status: 200
+[2025-11-13 03:06:17]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:06:18] API Call #22 | Type: order-details-cmonth-12-chunk-2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:06:23]   └─ Status: 200
+[2025-11-13 03:06:23]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:06:25] API Call #23 | Type: order-details-cmonth-12-chunk-2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:06:33]   └─ Status: 200
+[2025-11-13 03:06:33]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:06:35] API Call #24 | Type: chunk-month-12-chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:06:37]   └─ Status: 200
+[2025-11-13 03:06:37]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:06:38] API Call #25 | Type: order-details-cmonth-12-chunk-2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:06:42]   └─ Status: 200
+[2025-11-13 03:06:42]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:06:44] API Call #26 | Type: order-details-cmonth-12-chunk-2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:06:49]   └─ Status: 200
+[2025-11-13 03:06:49]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:06:51] API Call #27 | Type: chunk-month-12-chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:06:56]   └─ Status: 200
+[2025-11-13 03:06:56]   └─ Success: Retrieved 0 orders
+[2025-11-13 03:06:57] API Call #28 | Type: chunk-month-12-chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:06:58]   └─ Status: 200
+[2025-11-13 03:06:58]   └─ Success: Retrieved 12 orders
+[2025-11-13 03:06:59] API Call #29 | Type: order-details-cmonth-12-chunk-3-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:07:00]   └─ Status: 200
+[2025-11-13 03:07:00]   └─ Success: Retrieved 12 orders
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 03:25:12
+Year: 2024
+================================================================================
+
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 03:27:23
+Year: 2024
+================================================================================
+
+[2025-11-13 03:27:23] API Call #1 | Type: chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:27:26]   └─ Status: 200
+[2025-11-13 03:27:26]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:27:28] API Call #2 | Type: order-details-c1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:27:32]   └─ Status: 200
+[2025-11-13 03:27:32]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:27:34] API Call #3 | Type: order-details-c1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:27:37]   └─ Status: 200
+[2025-11-13 03:27:37]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:27:39] API Call #4 | Type: chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:27:41]   └─ Status: 200
+[2025-11-13 03:27:41]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:27:42] API Call #5 | Type: order-details-c1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:27:45]   └─ Status: 200
+[2025-11-13 03:27:45]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:27:47] API Call #6 | Type: order-details-c1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:27:50]   └─ Status: 200
+[2025-11-13 03:27:50]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:27:52] API Call #7 | Type: chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:27:53]   └─ Status: 200
+[2025-11-13 03:27:53]   └─ Success: Retrieved 36 orders
+[2025-11-13 03:27:54] API Call #8 | Type: order-details-c1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:27:56]   └─ Status: 200
+[2025-11-13 03:27:56]   └─ Success: Retrieved 36 orders
+[2025-11-13 03:27:58] API Call #9 | Type: chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:28:00]   └─ Status: 200
+[2025-11-13 03:28:00]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:28:02] API Call #10 | Type: order-details-c2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:28:06]   └─ Status: 200
+[2025-11-13 03:28:06]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:28:08] API Call #11 | Type: order-details-c2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:28:11]   └─ Status: 200
+[2025-11-13 03:28:11]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:28:13] API Call #12 | Type: chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:28:15]   └─ Status: 200
+[2025-11-13 03:28:15]   └─ Success: Retrieved 59 orders
+[2025-11-13 03:28:16] API Call #13 | Type: order-details-c2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:28:19]   └─ Status: 200
+[2025-11-13 03:28:19]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:28:21] API Call #14 | Type: order-details-c2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:28:22]   └─ Status: 200
+[2025-11-13 03:28:22]   └─ Success: Retrieved 9 orders
+[2025-11-13 03:28:23] API Call #15 | Type: chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:28:25]   └─ Status: 200
+[2025-11-13 03:28:25]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:28:27] API Call #16 | Type: order-details-c3-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:28:30]   └─ Status: 200
+[2025-11-13 03:28:30]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:28:32] API Call #17 | Type: order-details-c3-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:28:35]   └─ Status: 200
+[2025-11-13 03:28:35]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:28:37] API Call #18 | Type: chunk-3-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:28:39]   └─ Status: 200
+[2025-11-13 03:28:39]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:28:41] API Call #19 | Type: order-details-c3-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:28:44]   └─ Status: 200
+[2025-11-13 03:28:44]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:28:46] API Call #20 | Type: order-details-c3-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:28:50]   └─ Status: 200
+[2025-11-13 03:28:50]   └─ Success: Retrieved 50 orders
+
+================================================================================
+EXTRACTION SESSION START: 2025-11-13 03:29:07
+Year: 2024
+================================================================================
+
+[2025-11-13 03:29:07] API Call #1 | Type: chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:29:09]   └─ Status: 200
+[2025-11-13 03:29:09]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:29:10] API Call #2 | Type: order-details-c1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:29:13]   └─ Status: 200
+[2025-11-13 03:29:13]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:29:15] API Call #3 | Type: order-details-c1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:29:18]   └─ Status: 200
+[2025-11-13 03:29:18]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:29:20] API Call #4 | Type: chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:29:22]   └─ Status: 200
+[2025-11-13 03:29:22]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:29:23] API Call #5 | Type: order-details-c1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:29:26]   └─ Status: 200
+[2025-11-13 03:29:26]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:29:28] API Call #6 | Type: order-details-c1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:29:31]   └─ Status: 200
+[2025-11-13 03:29:31]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:29:33] API Call #7 | Type: chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:29:34]   └─ Status: 200
+[2025-11-13 03:29:34]   └─ Success: Retrieved 36 orders
+[2025-11-13 03:29:36] API Call #8 | Type: order-details-c1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:29:38]   └─ Status: 200
+[2025-11-13 03:29:38]   └─ Success: Retrieved 36 orders
+[2025-11-13 03:29:39] API Call #9 | Type: chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:29:41]   └─ Status: 200
+[2025-11-13 03:29:41]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:29:42] API Call #10 | Type: order-details-c2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:29:45]   └─ Status: 200
+[2025-11-13 03:29:45]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:29:47] API Call #11 | Type: order-details-c2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:29:50]   └─ Status: 200
+[2025-11-13 03:29:50]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:29:52] API Call #12 | Type: chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:29:53]   └─ Status: 200
+[2025-11-13 03:29:53]   └─ Success: Retrieved 59 orders
+[2025-11-13 03:29:54] API Call #13 | Type: order-details-c2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:29:57]   └─ Status: 200
+[2025-11-13 03:29:57]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:29:59] API Call #14 | Type: order-details-c2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:30:00]   └─ Status: 200
+[2025-11-13 03:30:00]   └─ Success: Retrieved 9 orders
+[2025-11-13 03:30:01] API Call #15 | Type: chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:30:03]   └─ Status: 200
+[2025-11-13 03:30:03]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:30:04] API Call #16 | Type: order-details-c3-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:30:07]   └─ Status: 200
+[2025-11-13 03:30:07]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:30:09] API Call #17 | Type: order-details-c3-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:30:12]   └─ Status: 200
+[2025-11-13 03:30:12]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:30:14] API Call #18 | Type: chunk-3-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:30:16]   └─ Status: 200
+[2025-11-13 03:30:16]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:30:17] API Call #19 | Type: order-details-c3-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:30:20]   └─ Status: 200
+[2025-11-13 03:30:20]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:30:22] API Call #20 | Type: order-details-c3-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:30:25]   └─ Status: 200
+[2025-11-13 03:30:25]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:30:27] API Call #21 | Type: chunk-3-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:30:27]   └─ Status: 200
+[2025-11-13 03:30:27]   └─ Success: Retrieved 17 orders
+[2025-11-13 03:30:29] API Call #22 | Type: order-details-c3-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:30:30]   └─ Status: 200
+[2025-11-13 03:30:30]   └─ Success: Retrieved 17 orders
+[2025-11-13 03:30:32] API Call #23 | Type: chunk-4-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:30:34]   └─ Status: 200
+[2025-11-13 03:30:34]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:30:36] API Call #24 | Type: order-details-c4-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:30:39]   └─ Status: 200
+[2025-11-13 03:30:39]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:30:41] API Call #25 | Type: order-details-c4-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:30:44]   └─ Status: 200
+[2025-11-13 03:30:44]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:30:46] API Call #26 | Type: chunk-4-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:30:48]   └─ Status: 200
+[2025-11-13 03:30:48]   └─ Success: Retrieved 73 orders
+[2025-11-13 03:30:49] API Call #27 | Type: order-details-c4-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:30:55]   └─ Status: 200
+[2025-11-13 03:30:55]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:30:57] API Call #28 | Type: order-details-c4-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:30:59]   └─ Status: 200
+[2025-11-13 03:30:59]   └─ Success: Retrieved 23 orders
+[2025-11-13 03:31:00] API Call #29 | Type: chunk-5-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:31:02]   └─ Status: 200
+[2025-11-13 03:31:02]   └─ Success: Retrieved 83 orders
+[2025-11-13 03:31:04] API Call #30 | Type: order-details-c5-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:31:08]   └─ Status: 200
+[2025-11-13 03:31:08]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:31:10] API Call #31 | Type: order-details-c5-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:31:12]   └─ Status: 200
+[2025-11-13 03:31:12]   └─ Success: Retrieved 33 orders
+[2025-11-13 03:31:16] API Call #32 | Type: chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:31:18]   └─ Status: 200
+[2025-11-13 03:31:18]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:31:19] API Call #33 | Type: order-details-c1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:31:22]   └─ Status: 200
+[2025-11-13 03:31:22]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:31:24] API Call #34 | Type: order-details-c1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:31:27]   └─ Status: 200
+[2025-11-13 03:31:27]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:31:29] API Call #35 | Type: chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:31:31]   └─ Status: 200
+[2025-11-13 03:31:31]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:31:33] API Call #36 | Type: order-details-c1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:31:35]   └─ Status: 200
+[2025-11-13 03:31:35]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:31:37] API Call #37 | Type: order-details-c1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:31:40]   └─ Status: 200
+[2025-11-13 03:31:40]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:31:42] API Call #38 | Type: chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:31:44]   └─ Status: 200
+[2025-11-13 03:31:44]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:31:46] API Call #39 | Type: order-details-c1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:31:49]   └─ Status: 200
+[2025-11-13 03:31:49]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:31:51] API Call #40 | Type: order-details-c1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:31:54]   └─ Status: 200
+[2025-11-13 03:31:54]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:31:56] API Call #41 | Type: chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:31:56]   └─ Status: 200
+[2025-11-13 03:31:56]   └─ Success: Retrieved 6 orders
+[2025-11-13 03:31:57] API Call #42 | Type: order-details-c1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:31:58]   └─ Status: 200
+[2025-11-13 03:31:58]   └─ Success: Retrieved 6 orders
+[2025-11-13 03:32:00] API Call #43 | Type: chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:32:01]   └─ Status: 200
+[2025-11-13 03:32:01]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:32:03] API Call #44 | Type: order-details-c2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:32:06]   └─ Status: 200
+[2025-11-13 03:32:06]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:32:08] API Call #45 | Type: order-details-c2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:32:11]   └─ Status: 200
+[2025-11-13 03:32:11]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:32:13] API Call #46 | Type: chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:32:15]   └─ Status: 200
+[2025-11-13 03:32:15]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:32:16] API Call #47 | Type: order-details-c2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:32:19]   └─ Status: 200
+[2025-11-13 03:32:19]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:32:21] API Call #48 | Type: order-details-c2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:32:24]   └─ Status: 200
+[2025-11-13 03:32:24]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:32:26] API Call #49 | Type: chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:32:27]   └─ Status: 200
+[2025-11-13 03:32:27]   └─ Success: Retrieved 59 orders
+[2025-11-13 03:32:29] API Call #50 | Type: order-details-c2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:32:32]   └─ Status: 200
+[2025-11-13 03:32:32]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:32:34] API Call #51 | Type: order-details-c2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:32:34]   └─ Status: 200
+[2025-11-13 03:32:34]   └─ Success: Retrieved 9 orders
+[2025-11-13 03:32:36] API Call #52 | Type: chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:32:38]   └─ Status: 200
+[2025-11-13 03:32:38]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:32:39] API Call #53 | Type: order-details-c3-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:32:42]   └─ Status: 200
+[2025-11-13 03:32:42]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:32:44] API Call #54 | Type: order-details-c3-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:32:47]   └─ Status: 200
+[2025-11-13 03:32:47]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:32:49] API Call #55 | Type: chunk-3-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:32:51]   └─ Status: 200
+[2025-11-13 03:32:51]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:32:53] API Call #56 | Type: order-details-c3-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:32:55]   └─ Status: 200
+[2025-11-13 03:32:55]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:32:57] API Call #57 | Type: order-details-c3-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:33:00]   └─ Status: 200
+[2025-11-13 03:33:00]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:33:02] API Call #58 | Type: chunk-3-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:33:04]   └─ Status: 200
+[2025-11-13 03:33:04]   └─ Success: Retrieved 93 orders
+[2025-11-13 03:33:06] API Call #59 | Type: order-details-c3-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:33:09]   └─ Status: 200
+[2025-11-13 03:33:09]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:33:11] API Call #60 | Type: order-details-c3-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:33:14]   └─ Status: 200
+[2025-11-13 03:33:14]   └─ Success: Retrieved 43 orders
+[2025-11-13 03:33:16] API Call #61 | Type: chunk-4-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:33:17]   └─ Status: 200
+[2025-11-13 03:33:17]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:33:19] API Call #62 | Type: order-details-c4-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:33:22]   └─ Status: 200
+[2025-11-13 03:33:22]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:33:24] API Call #63 | Type: order-details-c4-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:33:26]   └─ Status: 200
+[2025-11-13 03:33:26]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:33:28] API Call #64 | Type: chunk-4-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:33:30]   └─ Status: 200
+[2025-11-13 03:33:30]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:33:31] API Call #65 | Type: order-details-c4-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:33:34]   └─ Status: 200
+[2025-11-13 03:33:34]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:33:36] API Call #66 | Type: order-details-c4-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:33:40]   └─ Status: 200
+[2025-11-13 03:33:40]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:33:42] API Call #67 | Type: chunk-4-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:33:42]   └─ Status: 200
+[2025-11-13 03:33:42]   └─ Success: Retrieved 24 orders
+[2025-11-13 03:33:44] API Call #68 | Type: order-details-c4-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:33:45]   └─ Status: 200
+[2025-11-13 03:33:45]   └─ Success: Retrieved 24 orders
+[2025-11-13 03:33:46] API Call #69 | Type: chunk-5-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:33:52]   └─ Status: 200
+[2025-11-13 03:33:52]   └─ Success: Retrieved 63 orders
+[2025-11-13 03:33:53] API Call #70 | Type: order-details-c5-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:33:57]   └─ Status: 200
+[2025-11-13 03:33:57]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:33:59] API Call #71 | Type: order-details-c5-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:34:00]   └─ Status: 200
+[2025-11-13 03:34:00]   └─ Success: Retrieved 13 orders
+[2025-11-13 03:34:03] API Call #72 | Type: chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:34:05]   └─ Status: 200
+[2025-11-13 03:34:05]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:34:07] API Call #73 | Type: order-details-c1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:34:09]   └─ Status: 200
+[2025-11-13 03:34:09]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:34:11] API Call #74 | Type: order-details-c1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:34:14]   └─ Status: 200
+[2025-11-13 03:34:14]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:34:16] API Call #75 | Type: chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:34:18]   └─ Status: 200
+[2025-11-13 03:34:18]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:34:19] API Call #76 | Type: order-details-c1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:34:22]   └─ Status: 200
+[2025-11-13 03:34:22]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:34:24] API Call #77 | Type: order-details-c1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:34:27]   └─ Status: 200
+[2025-11-13 03:34:27]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:34:29] API Call #78 | Type: chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:34:31]   └─ Status: 200
+[2025-11-13 03:34:31]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:34:32] API Call #79 | Type: order-details-c1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:34:35]   └─ Status: 200
+[2025-11-13 03:34:35]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:34:37] API Call #80 | Type: order-details-c1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:34:40]   └─ Status: 200
+[2025-11-13 03:34:40]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:34:42] API Call #81 | Type: chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:34:42]   └─ Status: 200
+[2025-11-13 03:34:42]   └─ Success: Retrieved 7 orders
+[2025-11-13 03:34:44] API Call #82 | Type: order-details-c1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:34:45]   └─ Status: 200
+[2025-11-13 03:34:45]   └─ Success: Retrieved 7 orders
+[2025-11-13 03:34:46] API Call #83 | Type: chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:34:48]   └─ Status: 200
+[2025-11-13 03:34:48]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:34:50] API Call #84 | Type: order-details-c2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:34:52]   └─ Status: 200
+[2025-11-13 03:34:52]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:34:54] API Call #85 | Type: order-details-c2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:34:57]   └─ Status: 200
+[2025-11-13 03:34:57]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:34:59] API Call #86 | Type: chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:35:01]   └─ Status: 200
+[2025-11-13 03:35:01]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:35:03] API Call #87 | Type: order-details-c2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:35:05]   └─ Status: 200
+[2025-11-13 03:35:05]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:35:07] API Call #88 | Type: order-details-c2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:35:10]   └─ Status: 200
+[2025-11-13 03:35:10]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:35:12] API Call #89 | Type: chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:35:14]   └─ Status: 200
+[2025-11-13 03:35:14]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:35:16] API Call #90 | Type: order-details-c2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:35:19]   └─ Status: 200
+[2025-11-13 03:35:19]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:35:21] API Call #91 | Type: order-details-c2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:35:24]   └─ Status: 200
+[2025-11-13 03:35:24]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:35:26] API Call #92 | Type: chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:35:27]   └─ Status: 200
+[2025-11-13 03:35:27]   └─ Success: Retrieved 79 orders
+[2025-11-13 03:35:28] API Call #93 | Type: order-details-c2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:35:31]   └─ Status: 200
+[2025-11-13 03:35:31]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:35:33] API Call #94 | Type: order-details-c2-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:35:35]   └─ Status: 200
+[2025-11-13 03:35:35]   └─ Success: Retrieved 29 orders
+[2025-11-13 03:35:37] API Call #95 | Type: chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:35:39]   └─ Status: 200
+[2025-11-13 03:35:39]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:35:40] API Call #96 | Type: order-details-c3-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:35:43]   └─ Status: 200
+[2025-11-13 03:35:43]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:35:45] API Call #97 | Type: order-details-c3-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:35:51]   └─ Status: 200
+[2025-11-13 03:35:51]   └─ Success: Retrieved 0 orders
+[2025-11-13 03:35:54] API Call #98 | Type: order-details-c3-b1-sub1-retry1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:35:57]   └─ Status: 200
+[2025-11-13 03:35:57]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:35:59] API Call #99 | Type: chunk-3-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:36:01]   └─ Status: 200
+[2025-11-13 03:36:01]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:36:02] API Call #100 | Type: order-details-c3-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:36:04]   └─ Status: 200
+[2025-11-13 03:36:04]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:36:07] API Call #101 | Type: order-details-c3-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:36:12]   └─ Status: 200
+[2025-11-13 03:36:12]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:36:14] API Call #102 | Type: chunk-3-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:36:16]   └─ Status: 200
+[2025-11-13 03:36:16]   └─ Success: Retrieved 80 orders
+[2025-11-13 03:36:17] API Call #103 | Type: order-details-c3-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:36:23]   └─ Status: 200
+[2025-11-13 03:36:23]   └─ Shopee Error: Wrong parameters, detail: the order is not found.
+[2025-11-13 03:36:24] API Call #104 | Type: order-details-c3-b3-sub0-retry1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:36:27]   └─ Status: 200
+[2025-11-13 03:36:27]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:36:29] API Call #105 | Type: order-details-c3-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:36:31]   └─ Status: 200
+[2025-11-13 03:36:31]   └─ Success: Retrieved 30 orders
+[2025-11-13 03:36:33] API Call #106 | Type: chunk-4-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:36:35]   └─ Status: 200
+[2025-11-13 03:36:35]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:36:36] API Call #107 | Type: order-details-c4-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:36:39]   └─ Status: 200
+[2025-11-13 03:36:39]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:36:41] API Call #108 | Type: order-details-c4-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:36:44]   └─ Status: 200
+[2025-11-13 03:36:44]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:36:46] API Call #109 | Type: chunk-4-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:36:48]   └─ Status: 200
+[2025-11-13 03:36:48]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:36:49] API Call #110 | Type: order-details-c4-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:36:52]   └─ Status: 200
+[2025-11-13 03:36:52]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:36:54] API Call #111 | Type: order-details-c4-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:36:57]   └─ Status: 200
+[2025-11-13 03:36:57]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:36:59] API Call #112 | Type: chunk-4-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:37:00]   └─ Status: 200
+[2025-11-13 03:37:00]   └─ Success: Retrieved 29 orders
+[2025-11-13 03:37:01] API Call #113 | Type: order-details-c4-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:37:03]   └─ Status: 200
+[2025-11-13 03:37:03]   └─ Success: Retrieved 29 orders
+[2025-11-13 03:37:05] API Call #114 | Type: chunk-5-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:37:06]   └─ Status: 200
+[2025-11-13 03:37:06]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:37:08] API Call #115 | Type: order-details-c5-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:37:11]   └─ Status: 200
+[2025-11-13 03:37:11]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:37:13] API Call #116 | Type: order-details-c5-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:37:17]   └─ Status: 200
+[2025-11-13 03:37:17]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:37:19] API Call #117 | Type: chunk-5-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:37:19]   └─ Status: 200
+[2025-11-13 03:37:19]   └─ Success: Retrieved 34 orders
+[2025-11-13 03:37:21] API Call #118 | Type: order-details-c5-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:37:24]   └─ Status: 200
+[2025-11-13 03:37:24]   └─ Success: Retrieved 34 orders
+[2025-11-13 03:37:27] API Call #119 | Type: chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:37:29]   └─ Status: 200
+[2025-11-13 03:37:29]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:37:30] API Call #120 | Type: order-details-c1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:37:33]   └─ Status: 200
+[2025-11-13 03:37:33]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:37:35] API Call #121 | Type: order-details-c1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:37:38]   └─ Status: 200
+[2025-11-13 03:37:38]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:37:40] API Call #122 | Type: chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:37:42]   └─ Status: 200
+[2025-11-13 03:37:42]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:37:43] API Call #123 | Type: order-details-c1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:37:46]   └─ Status: 200
+[2025-11-13 03:37:46]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:37:48] API Call #124 | Type: order-details-c1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:37:51]   └─ Status: 200
+[2025-11-13 03:37:51]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:37:53] API Call #125 | Type: chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:37:55]   └─ Status: 200
+[2025-11-13 03:37:55]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:37:56] API Call #126 | Type: order-details-c1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:37:59]   └─ Status: 200
+[2025-11-13 03:37:59]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:38:01] API Call #127 | Type: order-details-c1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:38:04]   └─ Status: 200
+[2025-11-13 03:38:04]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:38:06] API Call #128 | Type: chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:38:07]   └─ Status: 200
+[2025-11-13 03:38:07]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:38:09] API Call #129 | Type: order-details-c1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:38:12]   └─ Status: 200
+[2025-11-13 03:38:12]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:38:14] API Call #130 | Type: order-details-c1-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:38:17]   └─ Status: 200
+[2025-11-13 03:38:17]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:38:19] API Call #131 | Type: chunk-1-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:38:21]   └─ Status: 200
+[2025-11-13 03:38:21]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:38:22] API Call #132 | Type: order-details-c1-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:38:25]   └─ Status: 200
+[2025-11-13 03:38:25]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:38:27] API Call #133 | Type: order-details-c1-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:38:30]   └─ Status: 200
+[2025-11-13 03:38:30]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:38:32] API Call #134 | Type: chunk-1-batch-6 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:38:33]   └─ Status: 200
+[2025-11-13 03:38:33]   └─ Success: Retrieved 36 orders
+[2025-11-13 03:38:34] API Call #135 | Type: order-details-c1-b6-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:38:37]   └─ Status: 200
+[2025-11-13 03:38:37]   └─ Success: Retrieved 36 orders
+[2025-11-13 03:38:38] API Call #136 | Type: chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:38:40]   └─ Status: 200
+[2025-11-13 03:38:40]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:38:42] API Call #137 | Type: order-details-c2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:38:44]   └─ Status: 200
+[2025-11-13 03:38:44]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:38:46] API Call #138 | Type: order-details-c2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:38:50]   └─ Status: 200
+[2025-11-13 03:38:50]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:38:52] API Call #139 | Type: chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:38:54]   └─ Status: 200
+[2025-11-13 03:38:54]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:38:55] API Call #140 | Type: order-details-c2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:38:58]   └─ Status: 200
+[2025-11-13 03:38:58]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:39:00] API Call #141 | Type: order-details-c2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:39:03]   └─ Status: 200
+[2025-11-13 03:39:03]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:39:05] API Call #142 | Type: chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:39:07]   └─ Status: 200
+[2025-11-13 03:39:07]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:39:08] API Call #143 | Type: order-details-c2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:39:11]   └─ Status: 200
+[2025-11-13 03:39:11]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:39:13] API Call #144 | Type: order-details-c2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:39:16]   └─ Status: 200
+[2025-11-13 03:39:16]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:39:18] API Call #145 | Type: chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:39:20]   └─ Status: 200
+[2025-11-13 03:39:20]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:39:21] API Call #146 | Type: order-details-c2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:39:24]   └─ Status: 200
+[2025-11-13 03:39:24]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:39:26] API Call #147 | Type: order-details-c2-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:39:29]   └─ Status: 200
+[2025-11-13 03:39:29]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:39:31] API Call #148 | Type: chunk-2-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:39:32]   └─ Status: 200
+[2025-11-13 03:39:32]   └─ Success: Retrieved 29 orders
+[2025-11-13 03:39:34] API Call #149 | Type: order-details-c2-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:39:36]   └─ Status: 200
+[2025-11-13 03:39:36]   └─ Success: Retrieved 29 orders
+[2025-11-13 03:39:37] API Call #150 | Type: chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:39:42]   └─ Status: 200
+[2025-11-13 03:39:42]   └─ Success: Retrieved 0 orders
+[2025-11-13 03:39:46] API Call #151 | Type: chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:39:48]   └─ Status: 200
+[2025-11-13 03:39:48]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:39:49] API Call #152 | Type: order-details-c1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:39:52]   └─ Status: 200
+[2025-11-13 03:39:52]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:39:54] API Call #153 | Type: order-details-c1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:39:57]   └─ Status: 200
+[2025-11-13 03:39:57]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:39:59] API Call #154 | Type: chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:40:02]   └─ Status: 200
+[2025-11-13 03:40:02]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:40:04] API Call #155 | Type: order-details-c1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:40:08]   └─ Status: 200
+[2025-11-13 03:40:08]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:40:10] API Call #156 | Type: order-details-c1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:40:13]   └─ Status: 200
+[2025-11-13 03:40:13]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:40:15] API Call #157 | Type: chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:40:17]   └─ Status: 200
+[2025-11-13 03:40:17]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:40:19] API Call #158 | Type: order-details-c1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:40:22]   └─ Status: 200
+[2025-11-13 03:40:22]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:40:24] API Call #159 | Type: order-details-c1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:40:27]   └─ Status: 200
+[2025-11-13 03:40:27]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:40:29] API Call #160 | Type: chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:40:30]   └─ Status: 200
+[2025-11-13 03:40:30]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:40:32] API Call #161 | Type: order-details-c1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:40:35]   └─ Status: 200
+[2025-11-13 03:40:35]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:40:37] API Call #162 | Type: order-details-c1-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:40:42]   └─ Status: 200
+[2025-11-13 03:40:42]   └─ Shopee Error: Wrong parameters, detail: the order is not found.
+[2025-11-13 03:40:43] API Call #163 | Type: order-details-c1-b4-sub1-retry1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:40:46]   └─ Status: 200
+[2025-11-13 03:40:46]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:40:48] API Call #164 | Type: chunk-1-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:40:49]   └─ Status: 200
+[2025-11-13 03:40:49]   └─ Success: Retrieved 62 orders
+[2025-11-13 03:40:51] API Call #165 | Type: order-details-c1-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:40:53]   └─ Status: 200
+[2025-11-13 03:40:53]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:40:55] API Call #166 | Type: order-details-c1-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:40:56]   └─ Status: 200
+[2025-11-13 03:40:56]   └─ Success: Retrieved 12 orders
+[2025-11-13 03:40:58] API Call #167 | Type: chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:41:00]   └─ Status: 200
+[2025-11-13 03:41:00]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:41:01] API Call #168 | Type: order-details-c2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:41:04]   └─ Status: 200
+[2025-11-13 03:41:04]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:41:06] API Call #169 | Type: order-details-c2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:41:08]   └─ Status: 200
+[2025-11-13 03:41:08]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:41:10] API Call #170 | Type: chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:41:13]   └─ Status: 200
+[2025-11-13 03:41:13]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:41:14] API Call #171 | Type: order-details-c2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:41:17]   └─ Status: 200
+[2025-11-13 03:41:17]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:41:19] API Call #172 | Type: order-details-c2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:41:22]   └─ Status: 200
+[2025-11-13 03:41:22]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:41:24] API Call #173 | Type: chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:41:26]   └─ Status: 200
+[2025-11-13 03:41:26]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:41:27] API Call #174 | Type: order-details-c2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:41:30]   └─ Status: 200
+[2025-11-13 03:41:30]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:41:32] API Call #175 | Type: order-details-c2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:41:35]   └─ Status: 200
+[2025-11-13 03:41:35]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:41:37] API Call #176 | Type: chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:41:39]   └─ Status: 200
+[2025-11-13 03:41:39]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:41:41] API Call #177 | Type: order-details-c2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:41:44]   └─ Status: 200
+[2025-11-13 03:41:44]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:41:46] API Call #178 | Type: order-details-c2-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:41:49]   └─ Status: 200
+[2025-11-13 03:41:49]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:41:51] API Call #179 | Type: chunk-2-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:41:52]   └─ Status: 200
+[2025-11-13 03:41:52]   └─ Success: Retrieved 47 orders
+[2025-11-13 03:41:53] API Call #180 | Type: order-details-c2-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:41:57]   └─ Status: 200
+[2025-11-13 03:41:57]   └─ Success: Retrieved 47 orders
+[2025-11-13 03:41:58] API Call #181 | Type: chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:42:00]   └─ Status: 200
+[2025-11-13 03:42:00]   └─ Success: Retrieved 84 orders
+[2025-11-13 03:42:02] API Call #182 | Type: order-details-c3-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:42:05]   └─ Status: 200
+[2025-11-13 03:42:05]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:42:07] API Call #183 | Type: order-details-c3-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:42:09]   └─ Status: 200
+[2025-11-13 03:42:09]   └─ Success: Retrieved 34 orders
+[2025-11-13 03:42:13] API Call #184 | Type: chunk-1-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:42:15]   └─ Status: 200
+[2025-11-13 03:42:15]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:42:16] API Call #185 | Type: order-details-c1-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:42:19]   └─ Status: 200
+[2025-11-13 03:42:19]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:42:21] API Call #186 | Type: order-details-c1-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:42:24]   └─ Status: 200
+[2025-11-13 03:42:24]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:42:26] API Call #187 | Type: chunk-1-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:42:28]   └─ Status: 200
+[2025-11-13 03:42:28]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:42:30] API Call #188 | Type: order-details-c1-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:42:32]   └─ Status: 200
+[2025-11-13 03:42:32]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:42:34] API Call #189 | Type: order-details-c1-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:42:37]   └─ Status: 200
+[2025-11-13 03:42:37]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:42:40] API Call #190 | Type: chunk-1-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:42:41]   └─ Status: 200
+[2025-11-13 03:42:41]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:42:43] API Call #191 | Type: order-details-c1-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:42:46]   └─ Status: 200
+[2025-11-13 03:42:46]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:42:48] API Call #192 | Type: order-details-c1-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:42:51]   └─ Status: 200
+[2025-11-13 03:42:51]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:42:53] API Call #193 | Type: chunk-1-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:42:55]   └─ Status: 200
+[2025-11-13 03:42:55]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:42:56] API Call #194 | Type: order-details-c1-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:42:59]   └─ Status: 200
+[2025-11-13 03:42:59]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:43:01] API Call #195 | Type: order-details-c1-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:43:04]   └─ Status: 200
+[2025-11-13 03:43:04]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:43:06] API Call #196 | Type: chunk-1-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:43:08]   └─ Status: 200
+[2025-11-13 03:43:08]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:43:09] API Call #197 | Type: order-details-c1-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:43:12]   └─ Status: 200
+[2025-11-13 03:43:12]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:43:14] API Call #198 | Type: order-details-c1-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:43:17]   └─ Status: 200
+[2025-11-13 03:43:17]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:43:19] API Call #199 | Type: chunk-1-batch-6 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:43:21]   └─ Status: 200
+[2025-11-13 03:43:21]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:43:23] API Call #200 | Type: order-details-c1-b6-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:43:26]   └─ Status: 200
+[2025-11-13 03:43:26]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:43:28] API Call #201 | Type: order-details-c1-b6-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:43:30]   └─ Status: 200
+[2025-11-13 03:43:30]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:43:32] API Call #202 | Type: chunk-1-batch-7 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:43:33]   └─ Status: 200
+[2025-11-13 03:43:33]   └─ Success: Retrieved 28 orders
+[2025-11-13 03:43:34] API Call #203 | Type: order-details-c1-b7-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:43:36]   └─ Status: 200
+[2025-11-13 03:43:36]   └─ Success: Retrieved 28 orders
+[2025-11-13 03:43:38] API Call #204 | Type: chunk-2-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:43:40]   └─ Status: 200
+[2025-11-13 03:43:40]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:43:41] API Call #205 | Type: order-details-c2-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:43:44]   └─ Status: 200
+[2025-11-13 03:43:44]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:43:46] API Call #206 | Type: order-details-c2-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:43:48]   └─ Status: 200
+[2025-11-13 03:43:48]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:43:50] API Call #207 | Type: chunk-2-batch-2 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:43:53]   └─ Status: 200
+[2025-11-13 03:43:53]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:43:54] API Call #208 | Type: order-details-c2-b2-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:43:57]   └─ Status: 200
+[2025-11-13 03:43:57]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:43:59] API Call #209 | Type: order-details-c2-b2-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:44:03]   └─ Status: 200
+[2025-11-13 03:44:03]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:44:05] API Call #210 | Type: chunk-2-batch-3 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:44:07]   └─ Status: 200
+[2025-11-13 03:44:07]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:44:08] API Call #211 | Type: order-details-c2-b3-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:44:12]   └─ Status: 200
+[2025-11-13 03:44:12]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:44:14] API Call #212 | Type: order-details-c2-b3-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:44:18]   └─ Status: 200
+[2025-11-13 03:44:18]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:44:20] API Call #213 | Type: chunk-2-batch-4 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:44:22]   └─ Status: 200
+[2025-11-13 03:44:22]   └─ Success: Retrieved 100 orders
+[2025-11-13 03:44:23] API Call #214 | Type: order-details-c2-b4-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:44:28]   └─ Status: 200
+[2025-11-13 03:44:28]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:44:30] API Call #215 | Type: order-details-c2-b4-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:44:35]   └─ Status: 200
+[2025-11-13 03:44:35]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:44:37] API Call #216 | Type: chunk-2-batch-5 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:44:38]   └─ Status: 200
+[2025-11-13 03:44:38]   └─ Success: Retrieved 67 orders
+[2025-11-13 03:44:40] API Call #217 | Type: order-details-c2-b5-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:44:43]   └─ Status: 200
+[2025-11-13 03:44:43]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:44:46] API Call #218 | Type: order-details-c2-b5-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:44:47]   └─ Status: 200
+[2025-11-13 03:44:47]   └─ Success: Retrieved 17 orders
+[2025-11-13 03:44:48] API Call #219 | Type: chunk-3-batch-1 | Method: GET | Path: /api/v2/order/get_order_list
+[2025-11-13 03:44:50]   └─ Status: 200
+[2025-11-13 03:44:50]   └─ Success: Retrieved 60 orders
+[2025-11-13 03:44:51] API Call #220 | Type: order-details-c3-b1-sub0 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:44:54]   └─ Status: 200
+[2025-11-13 03:44:54]   └─ Success: Retrieved 50 orders
+[2025-11-13 03:44:56] API Call #221 | Type: order-details-c3-b1-sub1 | Method: GET | Path: /api/v2/order/get_order_detail
+[2025-11-13 03:44:57]   └─ Status: 200
+[2025-11-13 03:44:57]   └─ Success: Retrieved 10 orders

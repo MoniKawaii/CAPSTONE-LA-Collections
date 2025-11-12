@@ -248,15 +248,16 @@ def load_lazada_data():
 
 def load_shopee_data():
     """
-    Load all Shopee product data from raw JSON files
+    Load all Shopee product data from raw JSON files (yearly directories + fallback)
     
     Returns:
         tuple: (products_data, productitem_data, variant_data, category_data, review_data)
     """
     staging_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Staging')
+    yearly_path = os.path.join(staging_dir, 'Shopee Staging Yearly')
     
     # Define all Shopee files
-    files_to_load = {
+    file_types = {
         'products': get_staging_filename('shopee', 'products'),
         'productitem': get_staging_filename('shopee', 'productitem'),
         'product_variant': get_staging_filename('shopee', 'product_variant'),
@@ -264,23 +265,45 @@ def load_shopee_data():
         'productreview': get_staging_filename('shopee', 'productreview')
     }
     
-    loaded_data = {}
+    loaded_data = {key: [] for key in file_types.keys()}
     
-    for data_type, filename in files_to_load.items():
-        file_path = os.path.join(staging_dir, filename)
+    # Load from yearly directories
+    if os.path.exists(yearly_path):
+        print("📁 Loading Shopee product data from yearly directories...")
+        for year_folder in sorted(os.listdir(yearly_path)):
+            if year_folder.startswith('Shopee20'):
+                year_path = os.path.join(yearly_path, year_folder)
+                if os.path.isdir(year_path):
+                    for data_type, filename in file_types.items():
+                        file_path = os.path.join(year_path, filename)
+                        if os.path.exists(file_path):
+                            try:
+                                with open(file_path, 'r', encoding='utf-8') as f:
+                                    year_data = json.load(f)
+                                loaded_data[data_type].extend(year_data)
+                                print(f"✅ Loaded {len(year_data)} {data_type} records from {year_folder}")
+                            except Exception as e:
+                                print(f"⚠️ Error loading {data_type} from {year_folder}: {e}")
         
-        if os.path.exists(file_path):
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    loaded_data[data_type] = data
-                    print(f"✅ Loaded {len(data)} records from {filename}")
-            except Exception as e:
-                print(f"⚠️ Error loading {filename}: {e}")
-                loaded_data[data_type] = []
-        else:
-            print(f"⚠️ File not found: {filename}")
-            loaded_data[data_type] = []
+        # Print totals from yearly directories
+        for data_type in file_types.keys():
+            if loaded_data[data_type]:
+                print(f"📊 Total {data_type} from yearly directories: {len(loaded_data[data_type])}")
+    
+    # Fallback to main staging directory for any missing data
+    for data_type, filename in file_types.items():
+        if not loaded_data[data_type]:
+            file_path = os.path.join(staging_dir, filename)
+            if os.path.exists(file_path):
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        loaded_data[data_type] = data
+                        print(f"✅ Fallback: Loaded {len(data)} {data_type} records from main staging")
+                except Exception as e:
+                    print(f"⚠️ Error loading {filename}: {e}")
+            else:
+                print(f"⚠️ File not found: {filename}")
     
     return (
         loaded_data.get('products', []),
@@ -799,33 +822,67 @@ def find_and_add_missing_items(product_df, variant_df, variant_key_counter):
     except Exception as e:
         print(f"⚠️ Error reading lazada_multiple_order_items_raw.json: {e}")
     
-    # Load Shopee Products
+    # Load Shopee Products from yearly directories
     try:
-        products_file = os.path.join(staging_dir, 'shopee_products_raw.json')
-        if os.path.exists(products_file):
-            with open(products_file, 'r', encoding='utf-8') as f:
-                products = json.load(f)
-            for product in products:
-                if 'item_id' in product and product['item_id']:
-                    all_items['shopee_products'].add(str(product['item_id']))
-            print(f"📊 Shopee products in raw: {len(all_items['shopee_products'])}")
+        shopee_products_data = []
+        yearly_path = os.path.join(staging_dir, 'Shopee Staging Yearly')
+        
+        if os.path.exists(yearly_path):
+            for year_folder in sorted(os.listdir(yearly_path)):
+                if year_folder.startswith('Shopee20'):
+                    year_path = os.path.join(yearly_path, year_folder)
+                    if os.path.isdir(year_path):
+                        products_file = os.path.join(year_path, 'shopee_products_raw.json')
+                        if os.path.exists(products_file):
+                            with open(products_file, 'r', encoding='utf-8') as f:
+                                year_products = json.load(f)
+                            shopee_products_data.extend(year_products)
+        
+        # Fallback to main staging directory
+        if not shopee_products_data:
+            products_file = os.path.join(staging_dir, 'shopee_products_raw.json')
+            if os.path.exists(products_file):
+                with open(products_file, 'r', encoding='utf-8') as f:
+                    shopee_products_data = json.load(f)
+        
+        for product in shopee_products_data:
+            if 'item_id' in product and product['item_id']:
+                all_items['shopee_products'].add(str(product['item_id']))
+        print(f"📊 Shopee products in raw: {len(all_items['shopee_products'])}")
     except Exception as e:
         print(f"⚠️ Error reading shopee_products_raw.json: {e}")
-    
-    # Load Shopee Orders (for item_ids in order items)
+
+    # Load Shopee Orders (for item_ids in order items) from yearly directories
     try:
-        orders_file = os.path.join(staging_dir, 'shopee_orders_raw.json')
-        if os.path.exists(orders_file):
-            with open(orders_file, 'r', encoding='utf-8') as f:
-                orders = json.load(f)
-            for order in orders:
-                if 'item_list' in order:
-                    for item in order['item_list']:
-                        if 'item_id' in item and item['item_id']:
-                            all_items['shopee_order_items'].add(str(item['item_id']))
-                        if 'model_id' in item and item['model_id']:
-                            all_items['shopee_order_items'].add(str(item['model_id']))
-            print(f"📊 Shopee order items in raw: {len(all_items['shopee_order_items'])}")
+        shopee_orders_data = []
+        yearly_path = os.path.join(staging_dir, 'Shopee Staging Yearly')
+        
+        if os.path.exists(yearly_path):
+            for year_folder in sorted(os.listdir(yearly_path)):
+                if year_folder.startswith('Shopee20'):
+                    year_path = os.path.join(yearly_path, year_folder)
+                    if os.path.isdir(year_path):
+                        orders_file = os.path.join(year_path, 'shopee_orders_raw.json')
+                        if os.path.exists(orders_file):
+                            with open(orders_file, 'r', encoding='utf-8') as f:
+                                year_orders = json.load(f)
+                            shopee_orders_data.extend(year_orders)
+        
+        # Fallback to main staging directory
+        if not shopee_orders_data:
+            orders_file = os.path.join(staging_dir, 'shopee_orders_raw.json')
+            if os.path.exists(orders_file):
+                with open(orders_file, 'r', encoding='utf-8') as f:
+                    shopee_orders_data = json.load(f)
+        
+        for order in shopee_orders_data:
+            if 'item_list' in order:
+                for item in order['item_list']:
+                    if 'item_id' in item and item['item_id']:
+                        all_items['shopee_order_items'].add(str(item['item_id']))
+                    if 'model_id' in item and item['model_id']:
+                        all_items['shopee_order_items'].add(str(item['model_id']))
+        print(f"📊 Shopee order items in raw: {len(all_items['shopee_order_items'])}")
     except Exception as e:
         print(f"⚠️ Error reading shopee_orders_raw.json: {e}")
     

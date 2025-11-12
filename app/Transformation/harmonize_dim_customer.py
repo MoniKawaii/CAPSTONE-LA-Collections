@@ -52,20 +52,43 @@ def load_lazada_orders_raw():
 
 
 def load_shopee_orders_raw():
-    """Load raw Shopee orders from JSON file"""
-    json_path = os.path.join(os.path.dirname(__file__), '..', 'Staging', 'shopee_orders_raw.json')
+    """Load raw Shopee orders from JSON file (yearly directories + fallback)"""
+    staging_dir = os.path.join(os.path.dirname(__file__), '..', 'Staging')
+    yearly_path = os.path.join(staging_dir, 'Shopee Staging Yearly')
     
-    try:
-        with open(json_path, 'r', encoding='utf-8') as file:
-            orders_data = json.load(file)
-        print(f"✓ Loaded {len(orders_data)} Shopee orders")
-        return orders_data
-    except FileNotFoundError:
-        print(f"⚠️ Shopee orders file not found: {json_path}")
-        return []
-    except json.JSONDecodeError as e:
-        print(f"❌ Error parsing Shopee orders JSON: {e}")
-        return []
+    orders_data = []
+    
+    # Load from yearly directories
+    if os.path.exists(yearly_path):
+        print("📁 Loading Shopee orders from yearly directories...")
+        for year_folder in sorted(os.listdir(yearly_path)):
+            if year_folder.startswith('Shopee20'):
+                year_path = os.path.join(yearly_path, year_folder)
+                if os.path.isdir(year_path):
+                    orders_file = os.path.join(year_path, 'shopee_orders_raw.json')
+                    if os.path.exists(orders_file):
+                        try:
+                            with open(orders_file, 'r', encoding='utf-8') as file:
+                                year_orders = json.load(file)
+                            orders_data.extend(year_orders)
+                            print(f"✅ Loaded {len(year_orders)} orders from {year_folder}")
+                        except Exception as e:
+                            print(f"⚠️ Error loading orders from {year_folder}: {e}")
+        print(f"📊 Total from yearly directories: {len(orders_data)} orders")
+    
+    # Fallback to main staging directory if no yearly data found
+    if not orders_data:
+        json_path = os.path.join(staging_dir, 'shopee_orders_raw.json')
+        try:
+            with open(json_path, 'r', encoding='utf-8') as file:
+                orders_data = json.load(file)
+            print(f"✅ Fallback: Loaded {len(orders_data)} Shopee orders from main staging")
+        except FileNotFoundError:
+            print(f"⚠️ Shopee orders file not found: {json_path}")
+        except json.JSONDecodeError as e:
+            print(f"❌ Error parsing Shopee orders JSON: {e}")
+    
+    return orders_data
 
 
 def extract_customers_from_lazada_orders(orders_data):

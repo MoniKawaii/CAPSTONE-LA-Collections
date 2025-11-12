@@ -134,73 +134,155 @@ def load_lazada_order_items_raw():
 
 
 def load_shopee_orders_raw():
-    """Load raw Shopee order items from multiple order items JSON file"""
-    json_path = os.path.join(os.path.dirname(__file__), '..', 'Staging', 'shopee_multiple_order_items_raw.json')
+    """Load raw Shopee order items from multiple order items JSON files across all yearly directories"""
+    staging_path = os.path.join(os.path.dirname(__file__), '..', 'Staging')
+    yearly_path = os.path.join(staging_path, 'Shopee Staging Yearly')
     
-    try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            orders_data = json.load(f)
-        print(f"✓ Loaded {len(orders_data)} raw Shopee order items from multiple order items file")
-        return orders_data
-    except FileNotFoundError:
-        print(f"❌ File not found: {json_path}")
-        return []
-    except json.JSONDecodeError as e:
-        print(f"❌ Error parsing JSON: {e}")
-        return []
+    all_orders_data = []
+    total_files_processed = 0
+    
+    # Check if yearly directory structure exists
+    if os.path.exists(yearly_path):
+        # Load from yearly directories
+        for year_dir in os.listdir(yearly_path):
+            year_path = os.path.join(yearly_path, year_dir)
+            if os.path.isdir(year_path):
+                json_path = os.path.join(year_path, 'shopee_multiple_order_items_raw.json')
+                
+                try:
+                    with open(json_path, 'r', encoding='utf-8') as f:
+                        orders_data = json.load(f)
+                    all_orders_data.extend(orders_data)
+                    total_files_processed += 1
+                    print(f"  ✓ Loaded {len(orders_data)} records from {year_dir}")
+                except FileNotFoundError:
+                    print(f"  ⚠️ File not found: {json_path}")
+                except json.JSONDecodeError as e:
+                    print(f"  ❌ Error parsing JSON in {year_dir}: {e}")
+    
+    # Fallback: try loading from main staging directory
+    if not all_orders_data:
+        fallback_path = os.path.join(staging_path, 'shopee_multiple_order_items_raw.json')
+        try:
+            with open(fallback_path, 'r', encoding='utf-8') as f:
+                all_orders_data = json.load(f)
+            print(f"✓ Loaded {len(all_orders_data)} records from fallback location")
+        except FileNotFoundError:
+            print(f"❌ No Shopee order data found in yearly directories or fallback location")
+            return []
+    
+    print(f"✓ Loaded {len(all_orders_data)} raw Shopee order items from {total_files_processed} yearly files")
+    return all_orders_data
 
 
 def load_shopee_payment_details():
-    """Load raw Shopee payment details from JSON files and create order_sn lookup"""
+    """Load raw Shopee payment details from JSON files across all yearly directories and create order_sn lookup"""
+    staging_path = os.path.join(os.path.dirname(__file__), '..', 'Staging')
+    yearly_path = os.path.join(staging_path, 'Shopee Staging Yearly')
+    
     payment_details = {}
-    
-    json_files = [
-        'shopee_paymentdetail_raw.json',
-        'shopee_paymentdetail_2_raw.json'
-    ]
-    
     total_loaded = 0
-    for filename in json_files:
-        json_path = os.path.join(os.path.dirname(__file__), '..', 'Staging', filename)
-        
-        try:
-            with open(json_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                
-            for record in data:
-                order_sn = record.get('order_sn')
-                if order_sn:
-                    # Store the entire payment detail record indexed by order_sn
-                    payment_details[order_sn] = record
-                    total_loaded += 1
-        except FileNotFoundError:
-            print(f"❌ File not found: {json_path}")
-        except json.JSONDecodeError as e:
-            print(f"❌ Error parsing JSON in {filename}: {e}")
+    total_files_processed = 0
     
-    print(f"✓ Loaded {total_loaded} Shopee payment details from {len(json_files)} files")
+    # Check if yearly directory structure exists
+    if os.path.exists(yearly_path):
+        # Load from yearly directories
+        for year_dir in os.listdir(yearly_path):
+            year_path = os.path.join(yearly_path, year_dir)
+            if os.path.isdir(year_path):
+                json_path = os.path.join(year_path, 'shopee_paymentdetail_raw.json')
+                
+                try:
+                    with open(json_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    
+                    year_count = 0
+                    for record in data:
+                        order_sn = record.get('order_sn')
+                        if order_sn:
+                            # Store the entire payment detail record indexed by order_sn
+                            payment_details[order_sn] = record
+                            year_count += 1
+                    
+                    total_loaded += year_count
+                    total_files_processed += 1
+                    print(f"  ✓ Loaded {year_count} payment records from {year_dir}")
+                    
+                except FileNotFoundError:
+                    print(f"  ⚠️ Payment file not found: {json_path}")
+                except json.JSONDecodeError as e:
+                    print(f"  ❌ Error parsing payment JSON in {year_dir}: {e}")
+    
+    # Fallback: try loading from main staging directory 
+    if not payment_details:
+        fallback_files = [
+            'shopee_paymentdetail_raw.json',
+            'shopee_paymentdetail_2_raw.json'
+        ]
+        
+        for filename in fallback_files:
+            fallback_path = os.path.join(staging_path, filename)
+            try:
+                with open(fallback_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    
+                for record in data:
+                    order_sn = record.get('order_sn')
+                    if order_sn:
+                        payment_details[order_sn] = record
+                        total_loaded += 1
+                        
+                print(f"  ✓ Loaded payment details from fallback: {filename}")
+                
+            except FileNotFoundError:
+                print(f"  ⚠️ Fallback file not found: {filename}")
+            except json.JSONDecodeError as e:
+                print(f"  ❌ Error parsing fallback JSON: {filename}")
+    
+    print(f"✓ Loaded {total_loaded} Shopee payment details from {total_files_processed} yearly files")
     return payment_details
 
 
 def load_shopee_orders_with_buyers():
-    """Load Shopee orders with buyer username information"""
-    json_path = os.path.join(os.path.dirname(__file__), '..', 'Staging', 'shopee_orders_raw.json')
+    """Load Shopee orders with buyer username information from all yearly directories"""
+    staging_path = os.path.join(os.path.dirname(__file__), '..', 'Staging')
+    yearly_path = os.path.join(staging_path, 'Shopee Staging Yearly')
     
-    try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            orders_data = json.load(f)
-        print(f"✓ Loaded {len(orders_data)} Shopee orders with buyer information")
-        return orders_data
-    except FileNotFoundError:
-        print(f"❌ File not found: {json_path}")
-        return []
-    except json.JSONDecodeError as e:
-        print(f"❌ Error parsing JSON: {e}")
-        return []
-                    
-    return payment_details
+    all_orders_data = []
+    total_files_processed = 0
     
-    return payment_details
+    # Check if yearly directory structure exists
+    if os.path.exists(yearly_path):
+        # Load from yearly directories
+        for year_dir in os.listdir(yearly_path):
+            year_path = os.path.join(yearly_path, year_dir)
+            if os.path.isdir(year_path):
+                json_path = os.path.join(year_path, 'shopee_orders_raw.json')
+                
+                try:
+                    with open(json_path, 'r', encoding='utf-8') as f:
+                        orders_data = json.load(f)
+                    all_orders_data.extend(orders_data)
+                    total_files_processed += 1
+                    print(f"  ✓ Loaded {len(orders_data)} orders with buyers from {year_dir}")
+                except FileNotFoundError:
+                    print(f"  ⚠️ Orders file not found: {json_path}")
+                except json.JSONDecodeError as e:
+                    print(f"  ❌ Error parsing orders JSON in {year_dir}: {e}")
+    
+    # Fallback: try loading from main staging directory
+    if not all_orders_data:
+        fallback_path = os.path.join(staging_path, 'shopee_orders_raw.json')
+        try:
+            with open(fallback_path, 'r', encoding='utf-8') as f:
+                all_orders_data = json.load(f)
+            print(f"✓ Loaded {len(all_orders_data)} orders from fallback location")
+        except FileNotFoundError:
+            print(f"❌ No Shopee orders data found in yearly directories or fallback location")
+            return []
+    
+    print(f"📥 Also loaded {len(all_orders_data)} nested Shopee orders")
+    return all_orders_data
 
 
 def load_dimension_lookups():
@@ -982,7 +1064,9 @@ def extract_order_items_from_shopee_multiple_items(order_items_data, payment_det
                 discounted_total_price = float(matching_payment_item.get('discounted_price', 0.0))
                 
                 # Get individual item discounts (exclude shipping discounts per user requirement)
-                item_seller_discount = float(matching_payment_item.get('seller_discount', 0.0))
+                # FIXED: Use correct voucher fields and add order-level voucher proration
+                item_seller_discount = float(matching_payment_item.get('seller_discount', 0.0)) + \
+                                      float(matching_payment_item.get('discount_from_voucher_seller', 0.0))
                 item_platform_discount = float(matching_payment_item.get('shopee_discount', 0.0)) + \
                                        float(matching_payment_item.get('discount_from_coin', 0.0)) + \
                                        float(matching_payment_item.get('discount_from_voucher_shopee', 0.0))
@@ -996,11 +1080,25 @@ def extract_order_items_from_shopee_multiple_items(order_items_data, payment_det
                 final_paid_price = original_unit_price - voucher_platform_per_unit - voucher_seller_per_unit
                 
             else:
-                # Fallback to order item data (for cases without payment details)
+                # Fallback: Prorate order-level voucher amounts when item-level data is missing
                 original_unit_price = unit_original
-                voucher_seller_per_unit = 0.0
-                voucher_platform_per_unit = 0.0
-                final_paid_price = original_unit_price  # No discounts applied
+                
+                # Get order-level voucher amounts from payment details
+                order_seller_voucher = float(order_income.get('voucher_from_seller', 0.0))
+                order_platform_voucher = float(order_income.get('voucher_from_shopee', 0.0))
+                
+                # Calculate total units in order for voucher proration
+                total_units_in_order = 0
+                for other_item in order_items_data:
+                    if str(other_item.get('order_sn', '')) == order_sn:
+                        total_units_in_order += other_item.get('model_quantity_purchased', 1)
+                
+                # Prorate order-level vouchers across all units
+                voucher_seller_per_unit = (order_seller_voucher / total_units_in_order) if total_units_in_order > 0 else 0.0
+                voucher_platform_per_unit = (order_platform_voucher / total_units_in_order) if total_units_in_order > 0 else 0.0
+                
+                # Calculate paid price with prorated vouchers
+                final_paid_price = original_unit_price - voucher_platform_per_unit - voucher_seller_per_unit
             
             # Shipping fee calculation from payment details (use buyer_paid_shipping_fee)
             shipping_per_unit = 0.0
@@ -1095,14 +1193,9 @@ def harmonize_fact_orders():
     shopee_orders_data = load_shopee_orders_raw()  # Now loads multiple_order_items
     shopee_payment_details_data = load_shopee_payment_details()
     
-    # ALSO load original nested orders for additional coverage
-    shopee_nested_orders_data = []
-    try:
-        with open(os.path.join(os.path.dirname(__file__), '..', 'Staging', 'shopee_orders_raw.json'), 'r', encoding='utf-8') as f:
-            shopee_nested_orders_data = json.load(f)
-        print(f"📥 Also loaded {len(shopee_nested_orders_data)} nested Shopee orders")
-    except Exception as e:
-        print(f"⚠️ Could not load nested shopee orders: {e}")
+    # ALSO load original nested orders for additional coverage using updated function
+    shopee_nested_orders_data = load_shopee_orders_with_buyers()
+    print(f"📥 Loaded {len(shopee_nested_orders_data)} nested Shopee orders from yearly directories")
     
     # Process Lazada orders
     print("\n🔄 Processing Lazada order items...")

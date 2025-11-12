@@ -54,33 +54,65 @@ def load_lazada_orders():
 
 def load_shopee_orders():
     """
-    Load Shopee order data from raw JSON files
+    Load Shopee order data from raw JSON files (yearly directories + fallback)
     
     Returns:
         tuple: (orders_data, payment_details_data) as lists of dictionaries
     """
     staging_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Staging')
-    
-    # Load orders raw data
-    orders_file = os.path.join(staging_dir, 'shopee_orders_raw.json')
-    payment_details_file = os.path.join(staging_dir, 'shopee_paymentdetail_raw.json')
+    yearly_path = os.path.join(staging_dir, 'Shopee Staging Yearly')
     
     orders_data = []
     payment_details_data = []
     
-    if os.path.exists(orders_file):
-        with open(orders_file, 'r', encoding='utf-8') as f:
-            orders_data = json.load(f)
-        print(f"✅ Loaded {len(orders_data)} orders from shopee_orders_raw.json")
-    else:
-        print(f"⚠️ File not found: {orders_file}")
+    # Load orders data from yearly directories
+    if os.path.exists(yearly_path):
+        print("📁 Loading Shopee orders from yearly directories...")
+        for year_folder in sorted(os.listdir(yearly_path)):
+            if year_folder.startswith('Shopee20'):
+                year_path = os.path.join(yearly_path, year_folder)
+                if os.path.isdir(year_path):
+                    # Load orders
+                    orders_file = os.path.join(year_path, 'shopee_orders_raw.json')
+                    if os.path.exists(orders_file):
+                        try:
+                            with open(orders_file, 'r', encoding='utf-8') as f:
+                                year_orders = json.load(f)
+                            orders_data.extend(year_orders)
+                            print(f"✅ Loaded {len(year_orders)} orders from {year_folder}")
+                        except Exception as e:
+                            print(f"⚠️ Error loading orders from {year_folder}: {e}")
+                    
+                    # Load payment details
+                    payment_file = os.path.join(year_path, 'shopee_paymentdetail_raw.json')
+                    if os.path.exists(payment_file):
+                        try:
+                            with open(payment_file, 'r', encoding='utf-8') as f:
+                                year_payments = json.load(f)
+                            payment_details_data.extend(year_payments)
+                            print(f"✅ Loaded {len(year_payments)} payment details from {year_folder}")
+                        except Exception as e:
+                            print(f"⚠️ Error loading payments from {year_folder}: {e}")
+        print(f"📊 Total from yearly directories: {len(orders_data)} orders, {len(payment_details_data)} payments")
     
-    if os.path.exists(payment_details_file):
-        with open(payment_details_file, 'r', encoding='utf-8') as f:
-            payment_details_data = json.load(f)
-        print(f"✅ Loaded {len(payment_details_data)} payment details from shopee_paymentdetail_raw.json")
-    else:
-        print(f"⚠️ File not found: {payment_details_file}")
+    # Fallback to main staging directory if no yearly data found
+    if not orders_data:
+        orders_file = os.path.join(staging_dir, 'shopee_orders_raw.json')
+        if os.path.exists(orders_file):
+            with open(orders_file, 'r', encoding='utf-8') as f:
+                orders_data = json.load(f)
+            print(f"✅ Fallback: Loaded {len(orders_data)} orders from main staging")
+        else:
+            print(f"⚠️ File not found: {orders_file}")
+    
+    if not payment_details_data:
+        payment_details_file = os.path.join(staging_dir, 'shopee_paymentdetail_raw.json')
+        if os.path.exists(payment_details_file):
+            with open(payment_details_file, 'r', encoding='utf-8') as f:
+                payment_details_data = json.load(f)
+            print(f"✅ Fallback: Loaded {len(payment_details_data)} payment details from main staging")
+        else:
+            print(f"⚠️ File not found: {payment_details_file}")
     
     return orders_data, payment_details_data
 
