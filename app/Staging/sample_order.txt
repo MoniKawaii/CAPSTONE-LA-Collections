@@ -1,0 +1,883 @@
+ IDENTIFYING A FEW SHOPEE ORDERS:
+ 
+ from shopee_paymentdetail_raw.json: 
+
+ {
+    "buyer_payment_info": {
+      "bulky_handling_fee": 0,
+      "buyer_paid_extended_warranty": 0,
+      "buyer_paid_installation_fee": 0,
+      "buyer_payment_method": "Cash on Delivery",
+      "buyer_service_fee": 0,
+      "buyer_tax_amount": 0,
+      "buyer_total_amount": 1095,
+      "credit_card_promotion": 0,
+      "footwear_tax": 0,
+      "icms_tax_amount": 0,
+      "import_processing_charge": 0,
+      "import_tax_amount": 0,
+      "initial_buyer_txn_fee": 0,
+      "insurance_premium": 0,
+      "iof_tax_amount": 0,
+      "is_paid_by_credit_card": false,
+      "merchant_subtotal": 1000,
+      "seller_voucher": 0,
+      "shipping_fee": 95,
+      "shipping_fee_sst_amount": 0,
+      "shopee_coins_redeemed": 0,
+      "shopee_voucher": 0,
+      "total_tax_and_fees_amount": 0,
+      "trade_in_bonus": 0,
+      "trade_in_discount": 0,
+      "vat": 0
+    },
+    "buyer_user_name": "lovelyeraquel",
+    "order_income": {
+      "actual_installation_fee": 0,
+      "actual_shipping_fee": 95,
+      "buyer_paid_extended_warranty": 0,
+      "buyer_paid_shipping_fee": 95,
+      "buyer_payment_method": "Cash on Delivery",
+      "buyer_total_amount": 1095,
+      "buyer_transaction_fee": 0,
+      "campaign_fee": 0,
+      "coins": 0,
+      "commission_fee": 0,
+      "cost_of_goods_sold": 1000,
+      "credit_card_promotion": 0,
+      "credit_card_transaction_fee": 25,
+      "cross_border_tax": 0,
+      "delivery_seller_protection_fee_premium_amount": 0,
+      "drc_adjustable_refund": 0,
+      "escrow_amount": 895,
+      "escrow_import_tax": 0,
+      "escrow_tax": 0,
+      "estimated_shipping_fee": 95,
+      "final_escrow_product_gst": 0,
+      "final_escrow_shipping_gst": 0,
+      "final_product_protection": 0,
+      "final_product_vat_tax": 0,
+      "final_return_to_seller_shipping_fee": 0,
+      "final_shipping_fee": -95,
+      "final_shipping_vat_tax": 0,
+      "fsf_seller_protection_fee_claim_amount": 0,
+      "installation_fee_paid_by_buyer": 0,
+      "instalment_plan": "N/A",
+      "items": [
+        {
+          "activity_id": 7147152,
+          "activity_type": "bundle_deal",
+          "ams_commission_fee": 0,
+          "buyer_paid_extended_warranty": 0,
+          "discount_from_coin": 0,
+          "discount_from_voucher_seller": 0,
+          "discount_from_voucher_shopee": 0,
+          "discounted_price": 332,
+          "installation_fee_paid_by_buyer": 0,
+          "is_main_item": false,
+          "item_id": 3561704640,
+          "item_name": "(COD) ShangriLa Hotels Water Based Humidifier Scent/Room and Linen Spray 1L Anti-Bacterial",
+          "item_sku": "",
+          "model_id": 80454474894,
+          "model_name": "Shangri-La,1000mL (1L)",
+          "model_sku": "",
+          "original_price": 350,
+          "promotion_list": [
+            {
+              "promotion_id": 7147152,
+              "promotion_type": "bundle_deal"
+            }
+          ],
+          "quantity_purchased": 1,
+          "seller_discount": 18,
+          "seller_order_processing_fee": 0,
+          "selling_price": 350,
+          "shopee_discount": 0
+        },
+        {
+          "activity_id": 7147152,
+          "activity_type": "bundle_deal",
+          "ams_commission_fee": 0,
+          "buyer_paid_extended_warranty": 0,
+          "discount_from_coin": 0,
+          "discount_from_voucher_seller": 0,
+          "discount_from_voucher_shopee": 0,
+          "discounted_price": 334,
+          "installation_fee_paid_by_buyer": 0,
+          "is_main_item": false,
+          "item_id": 8106980080,
+          "item_name": "Premium Scents - Fresh Bamboo 1000mL",
+          "item_sku": "",
+          "model_id": 0,
+          "model_name": "",
+          "model_sku": "",
+          "original_price": 350,
+          "promotion_list": [
+            {
+              "promotion_id": 7147152,
+              "promotion_type": "bundle_deal"
+            }
+          ],
+          "quantity_purchased": 1,
+          "seller_discount": 16,
+          "seller_order_processing_fee": 0,
+          "selling_price": 350,
+          "shopee_discount": 0
+        },
+        {
+          "activity_id": 7147152,
+          "activity_type": "bundle_deal",
+          "ams_commission_fee": 0,
+          "buyer_paid_extended_warranty": 0,
+          "discount_from_coin": 0,
+          "discount_from_voucher_seller": 0,
+          "discount_from_voucher_shopee": 0,
+          "discounted_price": 334,
+          "installation_fee_paid_by_buyer": 0,
+          "is_main_item": false,
+          "item_id": 9540916930,
+          "item_name": "Marriott Hotel Waterbased Scent 1Liter",
+          "item_sku": "",
+          "model_id": 0,
+          "model_name": "",
+          "model_sku": "",
+          "original_price": 350,
+          "promotion_list": [
+            {
+              "promotion_id": 7147152,
+              "promotion_type": "bundle_deal"
+            }
+          ],
+          "quantity_purchased": 1,
+          "seller_discount": 16,
+          "seller_order_processing_fee": 0,
+          "selling_price": 350,
+          "shopee_discount": 0
+        }
+      ],
+      "order_ams_commission_fee": 0,
+      "order_chargeable_weight": 0,
+      "order_discounted_price": 1000,
+      "order_original_price": 1050,
+      "order_seller_discount": 50,
+      "order_selling_price": 1050,
+      "original_cost_of_goods_sold": 1000,
+      "original_price": 1050,
+      "original_shopee_discount": 0,
+      "overseas_return_service_fee": 0,
+      "payment_promotion": 0,
+      "prorated_coins_value_offset_return_items": 0,
+      "prorated_payment_channel_promo_bank_offset_return_items": 0,
+      "prorated_payment_channel_promo_shopee_offset_return_items": 0,
+      "prorated_seller_voucher_offset_return_items": 0,
+      "prorated_shopee_voucher_offset_return_items": 0,
+      "reverse_shipping_fee": 0,
+      "reverse_shipping_fee_sst": 0,
+      "rsf_seller_protection_fee_claim_amount": 0,
+      "sales_tax_on_lvg": 0,
+      "seller_coin_cash_back": 0,
+      "seller_discount": 50,
+      "seller_lost_compensation": 0,
+      "seller_order_processing_fee": 0,
+      "seller_return_refund": 0,
+      "seller_shipping_discount": 0,
+      "seller_transaction_fee": 25,
+      "seller_voucher_code": [],
+      "service_fee": 80,
+      "shipping_fee_discount_from_3pl": 0,
+      "shipping_fee_sst": 0,
+      "shipping_seller_protection_fee_amount": 0,
+      "shopee_discount": 0,
+      "shopee_shipping_rebate": 0,
+      "tax_registration_code": "",
+      "tenure_info_list": [
+        {
+          "instalment_plan": "N/A"
+        }
+      ],
+      "trade_in_bonus_by_seller": 0,
+      "vat_on_imported_goods": 0,
+      "voucher_from_seller": 0,
+      "voucher_from_shopee": 0,
+      "withholding_pit_tax": 0,
+      "withholding_tax": 0,
+      "withholding_vat_tax": 0
+    },
+    "order_sn": "210511BGWNB0FQ",
+    "return_order_sn_list": []
+  },
+
+
+----
+
+from shopee_orders_raw.json :
+
+  {
+    "actual_shipping_fee": 95,
+    "actual_shipping_fee_confirmed": true,
+    "advance_package": false,
+    "booking_sn": "",
+    "buyer_cancel_reason": "",
+    "buyer_cpf_id": null,
+    "buyer_user_id": 212390299,
+    "buyer_username": "lovelyeraquel",
+    "cancel_by": "",
+    "cancel_reason": "",
+    "cod": true,
+    "create_time": 1620696930,
+    "currency": "PHP",
+    "days_to_ship": 2,
+    "dropshipper": null,
+    "dropshipper_phone": null,
+    "estimated_shipping_fee": 95,
+    "fulfillment_flag": "fulfilled_by_local_seller",
+    "goods_to_declare": false,
+    "hot_listing_order": false,
+    "invoice_data": null,
+    "is_buyer_shop_collection": false,
+    "item_list": [
+      {
+        "add_on_deal": false,
+        "add_on_deal_id": 0,
+        "consultation_id": "",
+        "hot_listing_item": false,
+        "image_info": {
+          "image_url": "https://cf.shopee.ph/file/6a98defd29e09b113e9e27e34a63667c_tn"
+        },
+        "is_b2c_owned_item": false,
+        "is_prescription_item": false,
+        "item_id": 3561704640,
+        "item_name": "(COD) ShangriLa Hotels Water Based Humidifier Scent/Room and Linen Spray 1L Anti-Bacterial",
+        "item_sku": "",
+        "main_item": false,
+        "model_discounted_price": 0,
+        "model_id": 80454474894,
+        "model_name": "Shangri-La,1000mL (1L)",
+        "model_original_price": 350,
+        "model_quantity_purchased": 1,
+        "model_sku": "",
+        "order_item_id": 1,
+        "product_location_id": [],
+        "promotion_group_id": 0,
+        "promotion_id": 7147152,
+        "promotion_type": "bundle_deal",
+        "weight": 1.2,
+        "wholesale": false
+      },
+      {
+        "add_on_deal": false,
+        "add_on_deal_id": 0,
+        "consultation_id": "",
+        "hot_listing_item": false,
+        "image_info": {
+          "image_url": "https://cf.shopee.ph/file/e87fb1d43a90ec560fd8180fb7a07df0_tn"
+        },
+        "is_b2c_owned_item": false,
+        "is_prescription_item": false,
+        "item_id": 8106980080,
+        "item_name": "Premium Scents - Fresh Bamboo 1000mL",
+        "item_sku": "",
+        "main_item": false,
+        "model_discounted_price": 0,
+        "model_id": 0,
+        "model_name": "",
+        "model_original_price": 350,
+        "model_quantity_purchased": 1,
+        "model_sku": "",
+        "order_item_id": 1,
+        "product_location_id": [],
+        "promotion_group_id": 0,
+        "promotion_id": 7147152,
+        "promotion_type": "bundle_deal",
+        "weight": 1,
+        "wholesale": false
+      },
+      {
+        "add_on_deal": false,
+        "add_on_deal_id": 0,
+        "consultation_id": "",
+        "hot_listing_item": false,
+        "image_info": {
+          "image_url": "https://cf.shopee.ph/file/3853bd2cbeb5e8a83868a27c2c2980a0_tn"
+        },
+        "is_b2c_owned_item": false,
+        "is_prescription_item": false,
+        "item_id": 9540916930,
+        "item_name": "Marriott Hotel Waterbased Scent 1Liter",
+        "item_sku": "",
+        "main_item": false,
+        "model_discounted_price": 0,
+        "model_id": 0,
+        "model_name": "",
+        "model_original_price": 350,
+        "model_quantity_purchased": 1,
+        "model_sku": "",
+        "order_item_id": 1,
+        "product_location_id": [],
+        "promotion_group_id": 0,
+        "promotion_id": 7147152,
+        "promotion_type": "bundle_deal",
+        "weight": 1,
+        "wholesale": false
+      }
+    ],
+    "message_to_seller": "",
+    "note": "",
+    "note_update_time": 0,
+    "order_sn": "210511BGWNB0FQ",
+    "order_status": "COMPLETED",
+    "package_list": [
+      {
+        "package_number": "2611613528252417084",
+        "group_shipment_id": null,
+        "logistics_status": "LOGISTICS_DELIVERY_DONE",
+        "shipping_carrier": "",
+        "item_list": [
+          {
+            "item_id": 0,
+            "model_id": 0,
+            "model_quantity": 1,
+            "order_item_id": 0,
+            "promotion_group_id": 0,
+            "product_location_id": ""
+          },
+          {
+            "item_id": 0,
+            "model_id": 0,
+            "model_quantity": 1,
+            "order_item_id": 0,
+            "promotion_group_id": 0,
+            "product_location_id": ""
+          },
+          {
+            "item_id": 0,
+            "model_id": 0,
+            "model_quantity": 1,
+            "order_item_id": 0,
+            "promotion_group_id": 0,
+            "product_location_id": ""
+          }
+        ],
+        "parcel_chargeable_weight_gram": 3200,
+        "allow_self_design_awb": true,
+        "logistics_channel_id": 40018,
+        "sorting_group": ""
+      }
+    ],
+    "pay_time": 1620974409,
+    "payment_method": "Cash on Delivery",
+    "pickup_done_time": 1620889240,
+    "recipient_address": {
+      "name": "****",
+      "phone": "****",
+      "town": "****",
+      "district": "****",
+      "city": "****",
+      "state": "****",
+      "region": "****",
+      "zipcode": "****",
+      "full_address": "****"
+    },
+    "region": "PH",
+    "reverse_shipping_fee": 0,
+    "ship_by_date": 1620956730,
+    "shipping_carrier": "J&T Express",
+    "split_up": false,
+    "total_amount": 1095,
+    "update_time": 1620974481
+  },
+
+ive checked this particular  order_sn 210511BGWNB0FQ . so in the orders_raw the is "model_discounted_price": 0, 
+which is because of the promo bundle deal it is showing up 0 in the original_unit_price for fact_orders. instead it should get the
+model_original_price as original_unit_price. then 
+
+
+
+
+problematic order_key with multiple 0 columns:
+4221.2
+4222.2
+4223.2
+4224.2
+4225.2
+4226.2
+4226.2
+4227.2
+4228.2
+4229.2
+4229.2
+4230.2
+4231.2
+4232.2
+4233.2
+4234.2
+4235.2
+4236.2
+4237.2
+4238.2
+4239.2
+4240.2
+
+
+--------
+
+sample order with 0 paid_price but no discounts: 221019RJQ1CBAG with order_key 17560.2
+
+rows in fact_orders.csv :
+
+S00020642,17560.2,44.2,284.2,20221019,47712.2,2,1,0.0,350.0,0.0,360.0,284.0
+S00020643,17560.2,44.2,284.2,20221019,47712.2,2,1,0.0,350.0,0.0,360.0,284.0
+S00020644,17560.2,44.2,284.2,20221019,47712.2,2,1,0.0,350.0,0.0,360.0,284.0
+S00020645,17560.2,44.2,284.2,20221019,47712.2,2,1,0.0,350.0,0.0,360.0,284.0
+
+from shopee_paymentdetail_raw.json
+
+  {
+    "buyer_payment_info": {
+      "bulky_handling_fee": 0,
+      "buyer_paid_extended_warranty": 0,
+      "buyer_paid_installation_fee": 0,
+      "buyer_payment_method": "Cash on Delivery",
+      "buyer_service_fee": 0,
+      "buyer_tax_amount": 0,
+      "buyer_total_amount": 3386,
+      "credit_card_promotion": 0,
+      "footwear_tax": 0,
+      "icms_tax_amount": 0,
+      "import_processing_charge": 0,
+      "import_tax_amount": 0,
+      "initial_buyer_txn_fee": 0,
+      "insurance_premium": 0,
+      "iof_tax_amount": 0,
+      "is_paid_by_credit_card": false,
+      "merchant_subtotal": 3140,
+      "seller_voucher": 0,
+      "shipping_fee": 246,
+      "shipping_fee_sst_amount": 0,
+      "shopee_coins_redeemed": 0,
+      "shopee_voucher": 0,
+      "total_tax_and_fees_amount": 0,
+      "trade_in_bonus": 0,
+      "trade_in_discount": 0,
+      "vat": 0
+    },
+    "buyer_user_name": "whiterosemaria",
+    "order_income": {
+      "actual_installation_fee": 0,
+      "actual_shipping_fee": 284,
+      "buyer_paid_extended_warranty": 0,
+      "buyer_paid_shipping_fee": 246,
+      "buyer_payment_method": "Cash on Delivery",
+      "buyer_total_amount": 3386,
+      "buyer_transaction_fee": 0,
+      "campaign_fee": 0,
+      "coins": 0,
+      "commission_fee": 35,
+      "cost_of_goods_sold": 3140,
+      "credit_card_promotion": 0,
+      "credit_card_transaction_fee": 76,
+      "cross_border_tax": 0,
+      "delivery_seller_protection_fee_premium_amount": 0,
+      "drc_adjustable_refund": 0,
+      "escrow_amount": 2780,
+      "escrow_import_tax": 0,
+      "escrow_tax": 0,
+      "estimated_shipping_fee": 284,
+      "final_escrow_product_gst": 0,
+      "final_escrow_shipping_gst": 0,
+      "final_product_protection": 0,
+      "final_product_vat_tax": 0,
+      "final_return_to_seller_shipping_fee": 0,
+      "final_shipping_fee": -284,
+      "final_shipping_vat_tax": 0,
+      "fsf_seller_protection_fee_claim_amount": 0,
+      "installation_fee_paid_by_buyer": 0,
+      "instalment_plan": "N/A",
+      "items": [
+        {
+          "activity_id": 24455714,
+          "activity_type": "bundle_deal",
+          "ams_commission_fee": 0,
+          "buyer_paid_extended_warranty": 0,
+          "discount_from_coin": 0,
+          "discount_from_voucher_seller": 0,
+          "discount_from_voucher_shopee": 0,
+          "discounted_price": 930,
+          "installation_fee_paid_by_buyer": 0,
+          "is_main_item": false,
+          "item_id": 9540916930,
+          "item_name": "(COD) 1L Marriott Hotel Waterbased Essential Oil for Diffusers/Humidifiers",
+          "item_sku": "",
+          "model_id": 0,
+          "model_name": "",
+          "model_sku": "",
+          "original_price": 1050,
+          "promotion_list": [
+            {
+              "promotion_id": 24455714,
+              "promotion_type": "bundle_deal"
+            }
+          ],
+          "quantity_purchased": 3,
+          "seller_discount": 120,
+          "seller_order_processing_fee": 0,
+          "selling_price": 1050,
+          "shopee_discount": 0
+        },
+        {
+          "activity_id": 24455714,
+          "activity_type": "bundle_deal",
+          "ams_commission_fee": 0,
+          "buyer_paid_extended_warranty": 0,
+          "discount_from_coin": 0,
+          "discount_from_voucher_seller": 0,
+          "discount_from_voucher_shopee": 0,
+          "discounted_price": 930,
+          "installation_fee_paid_by_buyer": 0,
+          "is_main_item": false,
+          "item_id": 9540916930,
+          "item_name": "(COD) 1L Marriott Hotel Waterbased Essential Oil for Diffusers/Humidifiers",
+          "item_sku": "",
+          "model_id": 0,
+          "model_name": "",
+          "model_sku": "",
+          "original_price": 1050,
+          "promotion_list": [
+            {
+              "promotion_id": 24455714,
+              "promotion_type": "bundle_deal"
+            }
+          ],
+          "quantity_purchased": 3,
+          "seller_discount": 120,
+          "seller_order_processing_fee": 0,
+          "selling_price": 1050,
+          "shopee_discount": 0
+        },
+        {
+          "activity_id": 24455714,
+          "activity_type": "bundle_deal",
+          "ams_commission_fee": 0,
+          "buyer_paid_extended_warranty": 0,
+          "discount_from_coin": 0,
+          "discount_from_voucher_seller": 0,
+          "discount_from_voucher_shopee": 0,
+          "discounted_price": 930,
+          "installation_fee_paid_by_buyer": 0,
+          "is_main_item": false,
+          "item_id": 9540916930,
+          "item_name": "(COD) 1L Marriott Hotel Waterbased Essential Oil for Diffusers/Humidifiers",
+          "item_sku": "",
+          "model_id": 0,
+          "model_name": "",
+          "model_sku": "",
+          "original_price": 1050,
+          "promotion_list": [
+            {
+              "promotion_id": 24455714,
+              "promotion_type": "bundle_deal"
+            }
+          ],
+          "quantity_purchased": 3,
+          "seller_discount": 120,
+          "seller_order_processing_fee": 0,
+          "selling_price": 1050,
+          "shopee_discount": 0
+        },
+        {
+          "activity_id": 0,
+          "activity_type": "",
+          "ams_commission_fee": 0,
+          "buyer_paid_extended_warranty": 0,
+          "discount_from_coin": 0,
+          "discount_from_voucher_seller": 0,
+          "discount_from_voucher_shopee": 0,
+          "discounted_price": 350,
+          "installation_fee_paid_by_buyer": 0,
+          "is_main_item": false,
+          "item_id": 9540916930,
+          "item_name": "(COD) 1L Marriott Hotel Waterbased Essential Oil for Diffusers/Humidifiers",
+          "item_sku": "",
+          "model_id": 0,
+          "model_name": "",
+          "model_sku": "",
+          "original_price": 350,
+          "quantity_purchased": 1,
+          "seller_discount": 0,
+          "seller_order_processing_fee": 0,
+          "selling_price": 350,
+          "shopee_discount": 0
+        }
+      ],
+      "order_ams_commission_fee": 0,
+      "order_chargeable_weight": 0,
+      "order_discounted_price": 3140,
+      "order_original_price": 3500,
+      "order_seller_discount": 360,
+      "order_selling_price": 3500,
+      "original_cost_of_goods_sold": 3140,
+      "original_price": 3500,
+      "original_shopee_discount": 0,
+      "overseas_return_service_fee": 0,
+      "payment_promotion": 0,
+      "prorated_coins_value_offset_return_items": 0,
+      "prorated_payment_channel_promo_bank_offset_return_items": 0,
+      "prorated_payment_channel_promo_shopee_offset_return_items": 0,
+      "prorated_seller_voucher_offset_return_items": 0,
+      "prorated_shopee_voucher_offset_return_items": 0,
+      "reverse_shipping_fee": 0,
+      "reverse_shipping_fee_sst": 0,
+      "rsf_seller_protection_fee_claim_amount": 0,
+      "sales_tax_on_lvg": 0,
+      "seller_coin_cash_back": 0,
+      "seller_discount": 360,
+      "seller_lost_compensation": 0,
+      "seller_order_processing_fee": 0,
+      "seller_return_refund": 0,
+      "seller_shipping_discount": 38,
+      "seller_transaction_fee": 76,
+      "seller_voucher_code": [],
+      "service_fee": 211,
+      "shipping_fee_discount_from_3pl": 0,
+      "shipping_fee_sst": 0,
+      "shipping_seller_protection_fee_amount": 0,
+      "shopee_discount": 0,
+      "shopee_shipping_rebate": 0,
+      "tax_registration_code": "",
+      "tenure_info_list": [
+        {
+          "instalment_plan": "N/A"
+        }
+      ],
+      "trade_in_bonus_by_seller": 0,
+      "vat_on_imported_goods": 0,
+      "voucher_from_seller": 0,
+      "voucher_from_shopee": 0,
+      "withholding_pit_tax": 0,
+      "withholding_tax": 0,
+      "withholding_vat_tax": 0
+    },
+    "order_sn": "221019RJQ1CBAG",
+    "return_order_sn_list": []
+  },
+
+
+from shopee_orders_raw.json
+  {
+    "actual_shipping_fee": 284,
+    "actual_shipping_fee_confirmed": true,
+    "advance_package": false,
+    "booking_sn": "",
+    "buyer_cancel_reason": "",
+    "buyer_cpf_id": null,
+    "buyer_user_id": 121570317,
+    "buyer_username": "whiterosemaria",
+    "cancel_by": "",
+    "cancel_reason": "",
+    "cod": true,
+    "create_time": 1666145535,
+    "currency": "PHP",
+    "days_to_ship": 2,
+    "dropshipper": null,
+    "dropshipper_phone": null,
+    "estimated_shipping_fee": 284,
+    "fulfillment_flag": "fulfilled_by_local_seller",
+    "goods_to_declare": false,
+    "hot_listing_order": false,
+    "invoice_data": null,
+    "is_buyer_shop_collection": false,
+    "item_list": [
+      {
+        "add_on_deal": false,
+        "add_on_deal_id": 0,
+        "consultation_id": "",
+        "hot_listing_item": false,
+        "image_info": {
+          "image_url": "https://cf.shopee.ph/file/cbafc5286c4d129e9ec454d72bbf4c0f_tn"
+        },
+        "is_b2c_owned_item": false,
+        "is_prescription_item": false,
+        "item_id": 9540916930,
+        "item_name": "(COD) 1L Marriott Hotel Waterbased Essential Oil for Diffusers/Humidifiers",
+        "item_sku": "",
+        "main_item": false,
+        "model_discounted_price": 0,
+        "model_id": 0,
+        "model_name": "",
+        "model_original_price": 350,
+        "model_quantity_purchased": 3,
+        "model_sku": "",
+        "order_item_id": 1,
+        "product_location_id": [],
+        "promotion_group_id": 0,
+        "promotion_id": 24455714,
+        "promotion_type": "bundle_deal",
+        "weight": 1.22,
+        "wholesale": false
+      },
+      {
+        "add_on_deal": false,
+        "add_on_deal_id": 0,
+        "consultation_id": "",
+        "hot_listing_item": false,
+        "image_info": {
+          "image_url": "https://cf.shopee.ph/file/cbafc5286c4d129e9ec454d72bbf4c0f_tn"
+        },
+        "is_b2c_owned_item": false,
+        "is_prescription_item": false,
+        "item_id": 9540916930,
+        "item_name": "(COD) 1L Marriott Hotel Waterbased Essential Oil for Diffusers/Humidifiers",
+        "item_sku": "",
+        "main_item": false,
+        "model_discounted_price": 0,
+        "model_id": 0,
+        "model_name": "",
+        "model_original_price": 350,
+        "model_quantity_purchased": 3,
+        "model_sku": "",
+        "order_item_id": 2,
+        "product_location_id": [],
+        "promotion_group_id": 0,
+        "promotion_id": 24455714,
+        "promotion_type": "bundle_deal",
+        "weight": 1.22,
+        "wholesale": false
+      },
+      {
+        "add_on_deal": false,
+        "add_on_deal_id": 0,
+        "consultation_id": "",
+        "hot_listing_item": false,
+        "image_info": {
+          "image_url": "https://cf.shopee.ph/file/cbafc5286c4d129e9ec454d72bbf4c0f_tn"
+        },
+        "is_b2c_owned_item": false,
+        "is_prescription_item": false,
+        "item_id": 9540916930,
+        "item_name": "(COD) 1L Marriott Hotel Waterbased Essential Oil for Diffusers/Humidifiers",
+        "item_sku": "",
+        "main_item": false,
+        "model_discounted_price": 0,
+        "model_id": 0,
+        "model_name": "",
+        "model_original_price": 350,
+        "model_quantity_purchased": 3,
+        "model_sku": "",
+        "order_item_id": 3,
+        "product_location_id": [],
+        "promotion_group_id": 0,
+        "promotion_id": 24455714,
+        "promotion_type": "bundle_deal",
+        "weight": 1.22,
+        "wholesale": false
+      },
+      {
+        "add_on_deal": false,
+        "add_on_deal_id": 0,
+        "consultation_id": "",
+        "hot_listing_item": false,
+        "image_info": {
+          "image_url": "https://cf.shopee.ph/file/cbafc5286c4d129e9ec454d72bbf4c0f_tn"
+        },
+        "is_b2c_owned_item": false,
+        "is_prescription_item": false,
+        "item_id": 9540916930,
+        "item_name": "(COD) 1L Marriott Hotel Waterbased Essential Oil for Diffusers/Humidifiers",
+        "item_sku": "",
+        "main_item": false,
+        "model_discounted_price": 350,
+        "model_id": 0,
+        "model_name": "",
+        "model_original_price": 350,
+        "model_quantity_purchased": 1,
+        "model_sku": "",
+        "order_item_id": 9540916930,
+        "product_location_id": [],
+        "promotion_group_id": 0,
+        "promotion_id": 0,
+        "promotion_type": "",
+        "weight": 1.22,
+        "wholesale": false
+      }
+    ],
+    "message_to_seller": "",
+    "note": "",
+    "note_update_time": 0,
+    "order_sn": "221019RJQ1CBAG",
+    "order_status": "COMPLETED",
+    "package_list": [
+      {
+        "package_number": "OFG119844734172903",
+        "group_shipment_id": null,
+        "logistics_status": "LOGISTICS_DELIVERY_DONE",
+        "shipping_carrier": "SPX Express",
+        "item_list": [
+          {
+            "item_id": 9540916930,
+            "model_id": 0,
+            "model_quantity": 3,
+            "order_item_id": 1,
+            "promotion_group_id": 0,
+            "product_location_id": ""
+          },
+          {
+            "item_id": 9540916930,
+            "model_id": 0,
+            "model_quantity": 3,
+            "order_item_id": 2,
+            "promotion_group_id": 0,
+            "product_location_id": ""
+          },
+          {
+            "item_id": 9540916930,
+            "model_id": 0,
+            "model_quantity": 3,
+            "order_item_id": 3,
+            "promotion_group_id": 0,
+            "product_location_id": ""
+          },
+          {
+            "item_id": 9540916930,
+            "model_id": 0,
+            "model_quantity": 1,
+            "order_item_id": 9540916930,
+            "promotion_group_id": 0,
+            "product_location_id": ""
+          }
+        ],
+        "parcel_chargeable_weight_gram": 12200,
+        "allow_self_design_awb": true,
+        "logistics_channel_id": 40066,
+        "sorting_group": ""
+      }
+    ],
+    "pay_time": 1666432237,
+    "payment_method": "Cash on Delivery",
+    "pickup_done_time": 1666238592,
+    "recipient_address": {
+      "name": "****",
+      "phone": "****",
+      "town": "****",
+      "district": "****",
+      "city": "****",
+      "state": "****",
+      "region": "****",
+      "zipcode": "****",
+      "full_address": "****"
+    },
+    "region": "PH",
+    "reverse_shipping_fee": 0,
+    "ship_by_date": 1666318955,
+    "shipping_carrier": "SPX Express",
+    "split_up": false,
+    "total_amount": 3386,
+    "update_time": 1666744783
+  },
+
+  the logic might be fetching the model_discounted_price from shopee_orders_raw.json as the paid_price,
+  but it should be discounted_price from the shopee_paymentdetail_raw.json then multiply by its quantity.
+  it should get the original_price from shopee_paymentdetail_raw.json as the original_unit_price.
+  then seller_discount as voucher_seller_amount and shopee_discount as voucher_platform_amount. 
+  DO NOT INCLUDE seller_shipping_discount in voucher_seller_amount .
+  as for price_total in harmonizing dim_order , it should get directly from total_amount in shopee_orders_raw.json
+  shipping_fee from shopee_paymentdetail_raw.json is shipping_fee_paid_by_buyer

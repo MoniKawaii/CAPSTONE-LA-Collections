@@ -1,38 +1,26 @@
 """
-Harmonize Customer Dimension from Lazada API Response to Unified Schema
-======================================================================
+Simplified Customer Dimension Harmonization
+==========================================
 
 This module processes Lazada and Shopee orders and extracts customer information to create
-the Dim_Customer dimension table with proper customer segmentation and analytics.
+the Dim_Customer dimension table. Strictly follows DIM_CUSTOMER_COLUMNS from config.
 
 Key Requirements from Schema:
 - customer_key: Internal surrogate ID (sequential)
-- platform_customer_id: Generated synthetic ID (Lazada doesn't provide this)
+- platform_customer_id: For Lazada = buyer_id, For Shopee = buyer_username (raw)
 - buyer_segment: Calculated as 'New Buyer' or 'Returning Buyer'
 - total_orders: Count of orders per platform_customer_id
 - customer_since: Earliest order_date for each platform_customer_id
 - last_order_date: Latest order_date for each platform_customer_id
 - platform_key: Always 1 for Lazada, 2 for Shopee
 
-Platform Customer ID Generation Logic:
-Since Lazada doesn't provide platform_customer_id, we generate it using:
-'LZ' + first_char(first_name) + last_char(first_name) + first2_digits(phone) + last2_digits(phone)
-
-For Shopee:
-- Uses buyer_user_id directly from API when available and not 0
-- When buyer_user_id = 0 (missing/anonymous): Generates unique synthetic ID
-  Format: "SP0_{order_suffix}_{timestamp}" to prevent aggregating different customers
-- Falls back to username+phone format if buyer_user_id is None
-
-Example: 
-- first_name: "Antonio", phone: "639123456789"
-- platform_customer_id: "LZAO1289" must be toUppercase match the example above.
+For Shopee null usernames: Creates single "Deleted User" record
 """
 
 import pandas as pd
+import json
 import numpy as np
 from datetime import datetime, date
-import json
 import os
 import sys
 import re
@@ -41,102 +29,9 @@ import re
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import (
     DIM_CUSTOMER_COLUMNS,
-    LAZADA_TO_UNIFIED_MAPPING,
-    SHOPEE_TO_UNIFIED_MAPPING,
-    COLUMN_DATA_TYPES,
     get_empty_dataframe,
     apply_data_types
 )
-
-
-def clean_text_data(text):
-    """
-    Clean text data by removing emojis, Korean characters, and other non-standard characters
-    while preserving basic ASCII letters, numbers, and common punctuation.
-    
-    Args:
-        text (str): Input text to clean
-        
-    Returns:
-        str: Cleaned text with emojis and Korean characters removed
-    """
-    if not text or pd.isna(text):
-        return ""
-    
-    text = str(text)
-    
-    # Remove emoji characters (Unicode ranges for emojis)
-    emoji_pattern = re.compile(
-        "["
-        "\U0001F600-\U0001F64F"  # emoticons
-        "\U0001F300-\U0001F5FF"  # symbols & pictographs
-        "\U0001F680-\U0001F6FF"  # transport & map symbols
-        "\U0001F1E0-\U0001F1FF"  # flags (iOS)
-        "\U00002600-\U000027BF"  # misc symbols
-        "\U0001f926-\U0001f937"  # additional emoticons
-        "\U00010000-\U0010ffff"  # supplementary characters
-        "\u2640-\u2642"          # gender symbols
-        "\u2600-\u2B55"          # misc symbols
-        "\u200d"                 # zero width joiner
-        "\u23cf"                 # eject symbol
-        "\u23e9"                 # fast forward
-        "\u231a"                 # watch
-        "\ufe0f"                 # variation selector
-        "\u3030"                 # wavy dash
-        "]+", 
-        flags=re.UNICODE
-    )
-    
-    # Remove Korean characters (Hangul)
-    # Korean Unicode ranges: AC00-D7AF (Hangul syllables), 1100-11FF (Hangul Jamo), 3130-318F (Hangul compatibility)
-    korean_pattern = re.compile(r'[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]+')
-    
-    # Remove Chinese characters (common ranges)
-    chinese_pattern = re.compile(r'[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]+')
-    
-    # Remove Japanese characters (Hiragana, Katakana, Kanji)
-    japanese_pattern = re.compile(r'[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+')
-    
-    # Apply cleaning patterns
-    cleaned_text = emoji_pattern.sub('', text)
-    cleaned_text = korean_pattern.sub('', cleaned_text)
-    cleaned_text = chinese_pattern.sub('', cleaned_text)
-    cleaned_text = japanese_pattern.sub('', cleaned_text)
-    
-    # Remove excessive whitespace and normalize
-    cleaned_text = ' '.join(cleaned_text.split())
-    
-    # Remove any remaining non-printable characters except basic punctuation
-    cleaned_text = re.sub(r'[^\x20-\x7E]', '', cleaned_text)
-    
-    return cleaned_text.strip()
-
-
-def clean_username_for_id(username):
-    """
-    Clean username specifically for ID generation, keeping only alphanumeric characters
-    
-    Args:
-        username (str): Input username
-        
-    Returns:
-        str: Cleaned username with only alphanumeric characters
-    """
-    if not username or pd.isna(username):
-        return "XX"
-    
-    # First apply general text cleaning
-    cleaned = clean_text_data(str(username))
-    
-    # Keep only alphanumeric characters
-    alphanumeric_only = re.sub(r'[^a-zA-Z0-9]', '', cleaned)
-    
-    if len(alphanumeric_only) >= 2:
-        return alphanumeric_only[0].upper() + alphanumeric_only[-1].upper()
-    elif len(alphanumeric_only) == 1:
-        return alphanumeric_only[0].upper() + "X"
-    else:
-        return "XX"
 
 
 def load_lazada_orders_raw():
@@ -144,15 +39,15 @@ def load_lazada_orders_raw():
     json_path = os.path.join(os.path.dirname(__file__), '..', 'Staging', 'lazada_orders_raw.json')
     
     try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            orders_data = json.load(f)
-        print(f"✓ Loaded {len(orders_data)} raw Lazada orders")
+        with open(json_path, 'r', encoding='utf-8') as file:
+            orders_data = json.load(file)
+        print(f"✓ Loaded {len(orders_data)} Lazada orders")
         return orders_data
     except FileNotFoundError:
-        print(f"⚠️ File not found: {json_path}")
+        print(f"⚠️ Lazada orders file not found: {json_path}")
         return []
     except json.JSONDecodeError as e:
-        print(f"❌ Error parsing JSON: {e}")
+        print(f"❌ Error parsing Lazada orders JSON: {e}")
         return []
 
 
@@ -161,151 +56,30 @@ def load_shopee_orders_raw():
     json_path = os.path.join(os.path.dirname(__file__), '..', 'Staging', 'shopee_orders_raw.json')
     
     try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            orders_data = json.load(f)
-        print(f"✓ Loaded {len(orders_data)} raw Shopee orders")
+        with open(json_path, 'r', encoding='utf-8') as file:
+            orders_data = json.load(file)
+        print(f"✓ Loaded {len(orders_data)} Shopee orders")
         return orders_data
     except FileNotFoundError:
-        print(f"⚠️ File not found: {json_path}")
+        print(f"⚠️ Shopee orders file not found: {json_path}")
         return []
     except json.JSONDecodeError as e:
-        print(f"❌ Error parsing JSON: {e}")
+        print(f"❌ Error parsing Shopee orders JSON: {e}")
         return []
-
-
-def load_orders_raw(platform='lazada'):
-    """
-    Load raw orders from JSON file for specified platform
-    
-    Args:
-        platform (str): 'lazada' or 'shopee'
-        
-    Returns:
-        list: Orders data
-    """
-    if platform == 'lazada':
-        return load_lazada_orders_raw()
-    elif platform == 'shopee':
-        return load_shopee_orders_raw()
-    else:
-        print(f"❌ Unknown platform: {platform}")
-        return []
-
-
-def clean_name(name):
-    """
-    Clean and extract characters from masked name, removing emojis and non-ASCII characters
-    
-    Args:
-        name (str): Masked name like "A**********a" or "c*****************n" or "🙂Antonio🙂"
-        
-    Returns:
-        str: Cleaned name characters
-    """
-    if not name or len(name) < 2:
-        return "XX"  # Default if name is too short
-    
-    # First clean the text to remove emojis, Korean, etc.
-    cleaned_text = clean_text_data(str(name))
-    
-    # Remove asterisks and get first and last character
-    clean_name = re.sub(r'\*', '', cleaned_text)
-    if len(clean_name) >= 2:
-        return clean_name[0].upper() + clean_name[-1].upper()
-    elif len(clean_name) == 1:
-        return clean_name[0].upper() + "X"
-    else:
-        return "XX"
-
-
-def extract_phone_digits(phone):
-    """
-    Extract first 2 and last 2 digits from phone number
-    
-    Args:
-        phone (str): Phone number like "63*********91"
-        
-    Returns:
-        tuple: (first_2_digits, last_2_digits)
-    """
-    if not phone:
-        return "00", "00"
-    
-    # Extract only digits
-    digits = re.sub(r'[^\d]', '', str(phone))
-    
-    if len(digits) >= 4:
-        return digits[:2], digits[-2:]
-    elif len(digits) >= 2:
-        return digits[:2], digits[:2]  # Use first 2 for both if less than 4 digits
-    else:
-        return "00", "00"
-
-
-def generate_platform_customer_id(first_name, phone):
-    """
-        ACTUALLY just retrieve the buyer_id from the lazada_multiple_order_items_raw.json
-    """
-    name_chars = clean_name(first_name)
-    first_2, last_2 = extract_phone_digits(phone)
-    
-    platform_customer_id = f"LZ{name_chars}{first_2}{last_2}"
-    return platform_customer_id
-
-
-def generate_shopee_platform_customer_id(buyer_user_id, buyer_username=None, phone=None, order_sn=None, create_time=None):
-    """
-    Generate platform_customer_id using Shopee buyer_user_id from API
-    For buyer_user_id=0, generates unique synthetic ID based on order_sn + timestamp
-    Falls back to username+phone format if buyer_user_id is not available
-    
-    Args:
-        buyer_user_id (int/str): Shopee buyer_user_id from API (preferred)
-        buyer_username (str): Shopee buyer username (fallback)
-        phone (str): Customer phone number (fallback)
-        order_sn (str): Order number for generating unique ID when buyer_user_id=0
-        create_time (int): Unix timestamp for generating unique ID when buyer_user_id=0
-        
-    Returns:
-        str: platform_customer_id - raw buyer_user_id or synthetic format
-    """
-    # Use buyer_user_id if available AND not 0 (preferred method - raw value)
-    # buyer_user_id=0 indicates missing/anonymous customer data
-    if buyer_user_id is not None and buyer_user_id != 0:
-        return str(buyer_user_id)
-    
-    # Special handling for buyer_user_id=0: Generate unique synthetic ID
-    # This prevents aggregating all anonymous orders into a single customer
-    if buyer_user_id == 0 and order_sn and create_time:
-        # Create unique ID using: last 6 digits of order_sn + last 6 digits of timestamp
-        # Extract only numeric characters to avoid letters
-        order_digits = ''.join(filter(str.isdigit, str(order_sn)))
-        order_suffix = order_digits[-6:] if len(order_digits) >= 6 else order_digits.zfill(6)
-        time_suffix = str(create_time)[-6:] if create_time else "000000"
-        return f"{order_suffix}{time_suffix}"
-    
-    # Fallback to old method if buyer_user_id not available
-    if buyer_username and phone:
-        name_chars = clean_username_for_id(buyer_username)  # Use the new cleaning function
-        first_2, last_2 = extract_phone_digits(phone)
-        return f"SP{name_chars}{first_2}{last_2}"
-    
-    # Last resort fallback
-    return f"SP_UNKNOWN_{hash(str(buyer_username or '') + str(phone or '') + str(order_sn or ''))}"
 
 
 def extract_customers_from_lazada_orders(orders_data):
     """
-    Extract unique customers from Lazada orders and calculate metrics
-    Uses comprehensive approach: buyer_id from order items + generated IDs from orders
+    Extract unique customers from Lazada orders using buyer_id directly as platform_customer_id
+    Strictly follows DIM_CUSTOMER_COLUMNS from config - no extra columns.
     
     Args:
         orders_data (list): Raw Lazada orders from API
         
     Returns:
-        DataFrame: Harmonized customer dimension records
+        DataFrame: Harmonized customer dimension records following config schema
     """
-    # First, create a lookup of order_id -> buyer_id from order items
+    # Build buyer_id lookup from order items
     print("📋 Building buyer_id lookup from lazada_multiple_order_items_raw.json...")
     staging_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Staging')
     order_items_file = os.path.join(staging_dir, 'lazada_multiple_order_items_raw.json')
@@ -329,660 +103,254 @@ def extract_customers_from_lazada_orders(orders_data):
         print(f"   ✓ Built lookup for {len(buyer_id_lookup)} orders with buyer_id")
         print(f"   ✓ Found {len(all_buyer_ids)} unique buyer_ids in order items")
     
-    customer_records = []
-    customer_order_tracking = {}  # Track orders per customer for analytics
-    generated_customer_ids = set()  # Track generated IDs to avoid duplicates
+    customer_stats = {}  # Track order statistics per customer
     processed_orders = set()  # Track processed orders to avoid duplicates
     
-    # Process orders and extract customers using multiple methods
+    # Process orders and extract customers using buyer_id only
     for order in orders_data:
         try:
-            # Skip if already processed
             order_id = str(order.get('order_id', ''))
             if order_id in processed_orders:
                 continue
             processed_orders.add(order_id)
             
-            # Extract customer information from shipping address
-            shipping_address = order.get('address_shipping', {})
-            first_name = order.get('customer_first_name', '')
-            phone = shipping_address.get('phone', '')
-            city = shipping_address.get('city', '')
-            
-            # Method 1: Get buyer_id from order items lookup (preferred)
+            # Get buyer_id from order items lookup (this is our platform_customer_id)
             buyer_id = buyer_id_lookup.get(order_id)
+            if not buyer_id:
+                continue  # Skip orders without buyer_id
+                
+            platform_customer_id = str(buyer_id)  # Use buyer_id directly as platform_customer_id
             
-            # Method 2: Generate customer ID from order data (always generate as comprehensive approach)
-            generated_customer_id = generate_platform_customer_id(first_name, phone)
-            generated_customer_id = clean_text_data(str(generated_customer_id))
-            generated_customer_ids.add(generated_customer_id)
-            
-            # Extract order date for customer analytics
+            # Extract order date
             created_at = order.get('created_at', '')
             order_date = None
             if created_at:
                 try:
                     order_date = datetime.strptime(created_at.split(' ')[0], '%Y-%m-%d').date()
                 except ValueError:
-                    order_date = None
+                    order_date = date.today()
+            else:
+                order_date = date.today()
             
-            # Process BOTH customer IDs if they're different (comprehensive approach)
-            customer_ids_to_process = []
+            # Track customer statistics
+            if platform_customer_id not in customer_stats:
+                customer_stats[platform_customer_id] = {
+                    'order_count': 0,
+                    'earliest_date': order_date,
+                    'latest_date': order_date
+                }
             
-            # Add buyer_id if available
-            if buyer_id:
-                customer_ids_to_process.append(buyer_id)
-            
-            # Always add generated ID to ensure comprehensive coverage
-            if generated_customer_id and generated_customer_id != buyer_id:
-                customer_ids_to_process.append(generated_customer_id)
-            
-            # If no IDs available, use a fallback
-            if not customer_ids_to_process:
-                customer_ids_to_process.append(f"UNKNOWN_{order_id}")
-            
-            # Process each customer ID
-            for platform_customer_id in customer_ids_to_process:
-                # Track customer orders for analytics
-                if platform_customer_id not in customer_order_tracking:
-                    customer_order_tracking[platform_customer_id] = {
-                        'first_name': first_name,
-                        'city': city,
-                        'phone': phone,
-                        'order_dates': [],
-                        'order_count': 0
-                    }
-                
-                if order_date:
-                    customer_order_tracking[platform_customer_id]['order_dates'].append(order_date)
-                customer_order_tracking[platform_customer_id]['order_count'] += 1
+            # Update statistics
+            customer_stats[platform_customer_id]['order_count'] += 1
+            if order_date < customer_stats[platform_customer_id]['earliest_date']:
+                customer_stats[platform_customer_id]['earliest_date'] = order_date
+            if order_date > customer_stats[platform_customer_id]['latest_date']:
+                customer_stats[platform_customer_id]['latest_date'] = order_date
             
         except Exception as e:
             print(f"⚠️ Error processing order {order.get('order_id', 'unknown')}: {e}")
             continue
     
-    # Also add any buyer_ids that don't appear in orders (orphaned buyer_ids)
-    processed_customer_ids = set(customer_order_tracking.keys())
+    # Add orphaned buyer_ids that don't appear in orders
+    processed_customer_ids = set(customer_stats.keys())
     orphaned_buyer_ids = all_buyer_ids - processed_customer_ids
     if orphaned_buyer_ids:
-        print(f"📋 Found {len(orphaned_buyer_ids)} orphaned buyer_ids in order items...")
+        print(f"📋 Adding {len(orphaned_buyer_ids)} orphaned buyer_ids from order items...")
         for buyer_id in orphaned_buyer_ids:
-            customer_order_tracking[buyer_id] = {
-                'first_name': 'Unknown',
-                'city': 'Unknown', 
-                'phone': 'Unknown',
-                'order_dates': [datetime(2020, 1, 1).date()],  # Default date
-                'order_count': 1  # Assume at least 1 order
+            customer_stats[buyer_id] = {
+                'order_count': 1,  # Assume at least 1 order
+                'earliest_date': date(2020, 1, 1),  # Default date
+                'latest_date': date(2020, 1, 1)
             }
     
-    print(f"📊 Customer extraction summary:")
-    print(f"   - Total customer IDs tracked: {len(customer_order_tracking)}")
-    print(f"   - Generated customer IDs from orders: {len(generated_customer_ids)}")
-    print(f"   - Orders with buyer_id lookup: {len(buyer_id_lookup)}")
-    print(f"   - Orphaned buyer_ids added: {len(orphaned_buyer_ids) if orphaned_buyer_ids else 0}")
+    # Create customer records following DIM_CUSTOMER_COLUMNS exactly
+    customer_records = []
+    for platform_customer_id, stats in customer_stats.items():
+        # Determine buyer segment
+        buyer_segment = "New Buyer" if stats['order_count'] == 1 else "Returning Buyer"
+        
+        customer_record = {
+            'platform_customer_id': platform_customer_id,
+            'buyer_segment': buyer_segment,
+            'total_orders': stats['order_count'],
+            'customer_since': stats['earliest_date'],
+            'last_order_date': stats['latest_date'],
+            'platform_key': 1  # Lazada platform
+        }
+        
+        customer_records.append(customer_record)
     
-    # Generate customer dimension records
-    for platform_customer_id, customer_info in customer_order_tracking.items():
-        try:
-            order_dates = customer_info['order_dates']
-            total_orders = customer_info['order_count']
-            
-            # Calculate customer_since and last_order_date
-            customer_since = min(order_dates) if order_dates else None
-            last_order_date = max(order_dates) if order_dates else None
-            
-            # Determine buyer segment
-            buyer_segment = "New Buyer" if total_orders == 1 else "Returning Buyer"
-            
-            customer_record = {
-                'customer_key': None,  # Will be generated centrally in main function
-                'platform_customer_id': platform_customer_id,
-                'buyer_segment': buyer_segment,
-                'total_orders': total_orders,
-                'customer_since': customer_since,
-                'last_order_date': last_order_date,
-                'platform_key': 1  # Always 1 for Lazada
-            }
-            
-            customer_records.append(customer_record)
-            
-        except Exception as e:
-            print(f"⚠️ Error creating customer record for {platform_customer_id}: {e}")
-            continue
-    
-    # Create DataFrame and apply data types
+    # Create DataFrame with only config columns
     customers_df = pd.DataFrame(customer_records)
     
-    # Apply data type conversions using the config function
-    if len(customers_df) > 0:
-        customers_df = apply_data_types(customers_df, 'dim_customer')
+    print(f"✓ Extracted {len(customers_df)} unique Lazada customers")
     
     return customers_df
 
 
 def extract_customers_from_shopee_orders(orders_data):
     """
-    Extract unique customers from Shopee orders and calculate metrics
+    Extract customer information from Shopee orders data using buyer_username directly as platform_customer_id
+    Strictly follows DIM_CUSTOMER_COLUMNS from config - no extra columns.
     
     Args:
-        orders_data (list): Raw Shopee orders from API
+        orders_data (list): List of Shopee order records
         
     Returns:
-        DataFrame: Harmonized customer dimension records
+        pd.DataFrame: DataFrame with customer information following config schema
     """
-    customer_records = []
-    customer_order_tracking = {}  # Track orders per customer for analytics
+    customer_stats = {}  # Track order statistics per customer
     
     for order in orders_data:
-        try:
-            # Extract customer information from order and recipient_address
-            recipient_address = order.get('recipient_address', {})
-            buyer_user_id = order.get('buyer_user_id')  # Primary ID from API
-            buyer_username = order.get('buyer_username', '')
-            phone = recipient_address.get('phone', '')
-            city = recipient_address.get('city', '')
-            order_sn = order.get('order_sn', '')  # For unique ID generation when buyer_user_id=0
-            create_time = order.get('create_time')  # For unique ID generation when buyer_user_id=0
-            
-            # Generate platform_customer_id using buyer_user_id (preferred)
-            # If buyer_user_id=0, generates unique synthetic ID to avoid aggregation
-            platform_customer_id = generate_shopee_platform_customer_id(
-                buyer_user_id=buyer_user_id,
-                buyer_username=buyer_username,
-                phone=phone,
-                order_sn=order_sn,
-                create_time=create_time
-            )
-            
-            # Extract order date for customer analytics (Shopee uses Unix timestamp)
-            create_time = order.get('create_time')
-            order_date = None
-            if create_time:
-                try:
-                    order_date = datetime.fromtimestamp(create_time).date()
-                except (ValueError, TypeError, OSError):
-                    order_date = None
-            
-            # Track customer orders for analytics
-            if platform_customer_id not in customer_order_tracking:
-                customer_order_tracking[platform_customer_id] = {
-                    'buyer_username': buyer_username,
-                    'city': city,
-                    'phone': phone,
-                    'order_dates': [],
-                    'order_count': 0
-                }
-            
-            if order_date:
-                customer_order_tracking[platform_customer_id]['order_dates'].append(order_date)
-            customer_order_tracking[platform_customer_id]['order_count'] += 1
-            
-        except Exception as e:
-            print(f"⚠️ Error processing order {order.get('order_sn', 'unknown')}: {e}")
-            continue
-    
-    # Generate customer dimension records
-    for platform_customer_id, customer_info in customer_order_tracking.items():
-        try:
-            order_dates = customer_info['order_dates']
-            total_orders = customer_info['order_count']
-            
-            # Calculate customer_since and last_order_date
-            customer_since = min(order_dates) if order_dates else None
-            last_order_date = max(order_dates) if order_dates else None
-            
-            # Determine buyer segment
-            buyer_segment = "New Buyer" if total_orders == 1 else "Returning Buyer"
-            
-            customer_record = {
-                'customer_key': None,  # Will be generated centrally in main function
-                'platform_customer_id': platform_customer_id,
-                'buyer_segment': buyer_segment,
-                'total_orders': total_orders,
-                'customer_since': customer_since,
-                'last_order_date': last_order_date,
-                'platform_key': 2  # Always 2 for Shopee
-            }
-            
-            customer_records.append(customer_record)
-            
-        except Exception as e:
-            print(f"⚠️ Error creating customer record for {platform_customer_id}: {e}")
-            continue
-    
-    # Create DataFrame
-    customers_df = pd.DataFrame(customer_records)
-    
-    return customers_df
-
-
-def harmonize_dim_customer():
-    """
-    Main function to harmonize Lazada and Shopee customer data into dimensional model
-    
-    Process:
-    1. Load all customer data into DataFrames
-    2. Perform cleansing and standardization
-    3. Sort by customer_since ascending
-    4. Generate incremental customer_key with platform-specific decimals
-    
-    Returns:
-        pd.DataFrame: Harmonized customer dimension table
-    """
-    print("🎯 Starting Customer Dimension Harmonization (Lazada + Shopee)...")
-    
-    # Get empty DataFrame with proper structure
-    dim_customer_df = get_empty_dataframe('dim_customer')
-    print(f"📋 Target schema: {list(dim_customer_df.columns)}")
-    
-    all_customers = []
-    
-    # Process Lazada customers
-    print("\n🔧 Processing Lazada customers...")
-    lazada_orders = load_lazada_orders_raw()
-    if lazada_orders:
-        lazada_customers = extract_customers_from_lazada_orders(lazada_orders)
-        if not lazada_customers.empty:
-            all_customers.append(lazada_customers)
-            print(f"   ✓ Extracted {len(lazada_customers)} Lazada customer records")
-    else:
-        print("   ⚠️ No Lazada orders available")
-    
-    # Process Shopee customers
-    print("\n🛍️ Processing Shopee customers...")
-    shopee_orders = load_shopee_orders_raw()
-    if shopee_orders:
-        shopee_customers = extract_customers_from_shopee_orders(shopee_orders)
-        if not shopee_customers.empty:
-            all_customers.append(shopee_customers)
-            print(f"   ✓ Extracted {len(shopee_customers)} Shopee customer records")
-    else:
-        print("   ⚠️ No Shopee orders available")
-    
-    # Combine all customer data
-    if not all_customers:
-        print("❌ No customer data from any platform")
-        return get_empty_dataframe('dim_customer')
-    
-    print(f"\n🔄 Creating unified DataFrame with {sum(len(df) for df in all_customers)} customers...")
-    customers_df = pd.concat(all_customers, ignore_index=True)
-    
-    # Step 1: Data Cleansing and Standardization
-    print("🧹 Performing data cleansing and standardization...")
-    
-    # Clean platform_customer_id from emojis and non-ASCII characters
-    print("🧼 Cleaning customer IDs from emojis and non-ASCII characters...")
-    customers_df['platform_customer_id'] = customers_df['platform_customer_id'].apply(lambda x: clean_text_data(str(x)) if pd.notna(x) else x)
-    
-    # Handle missing/null customer_since dates - set to minimum date for sorting
-    min_date = pd.to_datetime('1900-01-01').date()
-    customers_df['customer_since'] = customers_df['customer_since'].fillna(min_date)
-    
-    # Ensure platform_customer_id is string and not empty
-    customers_df['platform_customer_id'] = customers_df['platform_customer_id'].astype(str)
-    customers_df = customers_df[customers_df['platform_customer_id'] != '']
-    
-    # Clean and standardize buyer_segment
-    customers_df['buyer_segment'] = customers_df['buyer_segment'].apply(lambda x: clean_text_data(str(x)) if pd.notna(x) else x)
-    customers_df['buyer_segment'] = customers_df['buyer_segment'].fillna('').astype(str).str.strip()
-    
-    # Handle total_orders - ensure integer
-    customers_df['total_orders'] = pd.to_numeric(customers_df['total_orders'], errors='coerce').fillna(0).astype(int)
-    
-    # Remove duplicates based on platform and customer ID
-    initial_count = len(customers_df)
-    customers_df = customers_df.drop_duplicates(subset=['platform_key', 'platform_customer_id'], keep='first')
-    final_count = len(customers_df)
-    if initial_count != final_count:
-        print(f"📝 Removed {initial_count - final_count} duplicate customers")
-    
-    # Step 2: Sort by customer_since ascending
-    print("📅 Sorting by customer_since ascending...")
-    customers_df = customers_df.sort_values(['customer_since', 'platform_key', 'platform_customer_id'], ascending=[True, True, True])
-    customers_df = customers_df.reset_index(drop=True)
-    
-    # Step 3: Generate incremental customer_key with platform-specific decimals
-    print("🔢 Generating incremental customer_key with platform decimals...")
-    customer_key_counter = 10001  # Start from 10001
-    
-    # Generate customer_key with platform decimals
-    customer_keys = []
-    for _, row in customers_df.iterrows():
-        platform_key = row['platform_key']
-        if platform_key == 1:  # Lazada
-            customer_key = f"{customer_key_counter}.1"
-        elif platform_key == 2:  # Shopee
-            customer_key = f"{customer_key_counter}.2"
+        # Use buyer_username directly as platform_customer_id (no generation, no cleaning)
+        buyer_username = order.get('buyer_username')  # Note: it's buyer_username in orders, buyer_user_name in payment details
+        
+        if not buyer_username or pd.isna(buyer_username) or str(buyer_username).strip() == '':
+            platform_customer_id = "Deleted User"
         else:
-            customer_key = f"{customer_key_counter}.0"  # Fallback
+            platform_customer_id = str(buyer_username).strip()  # Use as-is, no transformation
         
-        customer_keys.append(float(customer_key))
-        customer_key_counter += 1
-    
-    customers_df['customer_key'] = customer_keys
-    
-    # Step 4: Apply data types
-    print("🔄 Applying data types...")
-    customers_df = apply_data_types(customers_df, 'dim_customer')
-    
-    # Remove the temporary raw_platform_customer_id column if it exists
-    if 'raw_platform_customer_id' in customers_df.columns:
-        customers_df = customers_df.drop(columns=['raw_platform_customer_id'])
-    
-    print(f"\n✅ Harmonized {len(customers_df)} total customers")
-    print(f"📊 Data Summary:")
-    print(f"   - Total customers: {len(customers_df)}")
-    
-    # Platform breakdown
-    lazada_count = len(customers_df[customers_df['platform_key'] == 1])
-    shopee_count = len(customers_df[customers_df['platform_key'] == 2])
-    print(f"   - Lazada customers: {lazada_count} (keys: {lazada_count} with .1 decimals)")
-    print(f"   - Shopee customers: {shopee_count} (keys: {shopee_count} with .2 decimals)")
-    
-    # Date range
-    if not customers_df['customer_since'].isna().all():
-        valid_dates = customers_df[customers_df['customer_since'] != min_date]['customer_since']
-        if len(valid_dates) > 0:
-            print(f"   - Customers with valid dates: {len(valid_dates)}")
-            print(f"   - Date range: {valid_dates.min()} to {valid_dates.max()}")
-    
-    # Customer key ranges
-    lazada_keys = customers_df[customers_df['platform_key'] == 1]['customer_key']
-    shopee_keys = customers_df[customers_df['platform_key'] == 2]['customer_key']
-    if len(lazada_keys) > 0:
-        print(f"   - Lazada keys: {lazada_keys.min()} to {lazada_keys.max()}")
-    if len(shopee_keys) > 0:
-        print(f"   - Shopee keys: {shopee_keys.min()} to {shopee_keys.max()}")
-    
-    # Sample records
-    print(f"\n📋 Sample of earliest customers (by customer_since):")
-    print(customers_df[['customer_key', 'platform_customer_id', 'buyer_segment', 'customer_since', 'platform_key']].head(3).to_string(index=False))
-    
-    # Buyer segment breakdown
-    print(f"\n📈 Customer Analytics:")
-    print(f"   Buyer Segments:")
-    new_buyers = len(customers_df[customers_df['buyer_segment'] == 'New Buyer'])
-    returning_buyers = len(customers_df[customers_df['buyer_segment'] == 'Returning Buyer'])
-    print(f"   - New Buyers: {new_buyers}")
-    print(f"   - Returning Buyers: {returning_buyers}")
-    print(f"   - Average Orders per Customer: {customers_df['total_orders'].mean():.1f}")
-    
-    # Add anonymous customer placeholders for missing customer references
-    print(f"\n🔄 Adding anonymous customer placeholders...")
-    
-    # Get the next customer key counter
-    if not customers_df.empty:
-        max_customer_key = customers_df['customer_key'].max()
-        next_key_counter = int(max_customer_key) + 1
-    else:
-        next_key_counter = 1
-    
-    # Add Anonymous Lazada Customer
-    anonymous_lazada = {
-        'customer_key': float(f"{next_key_counter}.1"),
-        'platform_customer_id': 'ANONYMOUS_LAZADA', 
-        'buyer_segment': 'Anonymous',
-        'total_orders': 0,
-        'customer_since': datetime(2020, 1, 1).date(),
-        'last_order_date': datetime(2025, 12, 31).date(),
-        'platform_key': 1
-    }
-    
-    # Add Anonymous Shopee Customer  
-    anonymous_shopee = {
-        'customer_key': float(f"{next_key_counter + 1}.2"),
-        'platform_customer_id': '0',
-        'buyer_segment': 'Anonymous', 
-        'total_orders': 0,
-        'customer_since': datetime(2020, 1, 1).date(),
-        'last_order_date': datetime(2025, 12, 31).date(),
-        'platform_key': 2
-    }
-    
-    # Add anonymous customers to the dataframe
-    anonymous_customers = pd.DataFrame([anonymous_lazada, anonymous_shopee])
-    customers_df = pd.concat([customers_df, anonymous_customers], ignore_index=True)
-    
-    print(f"✅ Added anonymous customers:")
-    print(f"   - Anonymous Lazada customer: {anonymous_lazada['customer_key']} (platform_customer_id: 'ANONYMOUS_LAZADA')")
-    print(f"   - Anonymous Shopee customer: {anonymous_shopee['customer_key']} (platform_customer_id: '0')")
-    
-    # Apply data types again for the new records
-    customers_df = apply_data_types(customers_df, 'dim_customer')
-    
-    # Find and add any missing customers from raw data
-    customers_df = find_and_add_missing_customers(customers_df)
-    
-    return customers_df
-
-
-def find_and_add_missing_customers(customers_df):
-    """
-    Find customer references from raw data that are missing from the current customer dimension
-    and add them as placeholder customers
-    
-    Args:
-        customers_df (pd.DataFrame): Current customer dimension table
+        # Parse order date
+        create_time = order.get('create_time', 0)
+        if create_time:
+            try:
+                order_date = datetime.fromtimestamp(create_time).date()
+            except (ValueError, TypeError, OSError):
+                order_date = date.today()
+        else:
+            order_date = date.today()
         
-    Returns:
-        pd.DataFrame: Updated customer dimension table with missing customers added
-    """
-    print("\n🔍 Finding missing customers from raw data...")
-    
-    # Get existing platform_customer_ids from dimension table
-    existing_lazada_customers = set(customers_df[customers_df['platform_key'] == 1]['platform_customer_id'].astype(str))
-    existing_shopee_customers = set(customers_df[customers_df['platform_key'] == 2]['platform_customer_id'].astype(str))
-    
-    print(f"📊 Current dimension coverage:")
-    print(f"   - Lazada customers: {len(existing_lazada_customers)}")
-    print(f"   - Shopee customers: {len(existing_shopee_customers)}")
-    
-    # Collect all customer references from raw files
-    staging_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Staging')
-    
-    # Track customer references from raw data
-    raw_customers = {
-        'lazada_orders': set(),
-        'lazada_order_items': set(),
-        'shopee_orders': set(),
-    }
-    
-    # Check Lazada orders
-    try:
-        orders_file = os.path.join(staging_dir, 'lazada_orders_raw.json')
-        if os.path.exists(orders_file):
-            with open(orders_file, 'r', encoding='utf-8') as f:
-                orders = json.load(f)
-            
-            for order in orders:
-                # Method 1: Generate platform_customer_id from order data (like in extraction)
-                first_name = order.get('customer_first_name', '')
-                shipping_address = order.get('address_shipping', {})
-                phone = shipping_address.get('phone', '')
-                generated_customer_id = generate_platform_customer_id(first_name, phone)
-                
-                # Clean the generated customer ID
-                if generated_customer_id:
-                    generated_customer_id = clean_text_data(str(generated_customer_id))
-                    raw_customers['lazada_orders'].add(str(generated_customer_id))
-            
-            print(f"📊 Lazada order customers (generated IDs) in raw: {len(raw_customers['lazada_orders'])}")
-    except Exception as e:
-        print(f"⚠️ Error reading lazada_orders_raw.json: {e}")
-    
-    # Check Lazada order items for buyer_id
-    try:
-        order_items_file = os.path.join(staging_dir, 'lazada_multiple_order_items_raw.json')
-        if os.path.exists(order_items_file):
-            with open(order_items_file, 'r', encoding='utf-8') as f:
-                items = json.load(f)
-            
-            for order in items:
-                order_items = order.get('order_items', [])
-                for item in order_items:
-                    buyer_id = item.get('buyer_id')
-                    if buyer_id:
-                        # Clean the buyer_id
-                        cleaned_buyer_id = clean_text_data(str(buyer_id))
-                        raw_customers['lazada_order_items'].add(cleaned_buyer_id)
-            
-            print(f"📊 Lazada order item buyer_ids in raw: {len(raw_customers['lazada_order_items'])}")
-    except Exception as e:
-        print(f"⚠️ Error reading lazada_multiple_order_items_raw.json: {e}")
-    
-    # Check Shopee orders
-    try:
-        orders_file = os.path.join(staging_dir, 'shopee_orders_raw.json')
-        if os.path.exists(orders_file):
-            with open(orders_file, 'r', encoding='utf-8') as f:
-                orders = json.load(f)
-            
-            for order in orders:
-                buyer_user_id = order.get('buyer_user_id')
-                buyer_username = order.get('buyer_username', '')
-                recipient_address = order.get('recipient_address', {})
-                phone = recipient_address.get('phone', '')
-                order_sn = order.get('order_sn', '')
-                create_time = order.get('create_time')
-                
-                # Generate platform_customer_id as done in extraction
-                customer_id = generate_shopee_platform_customer_id(
-                    buyer_user_id=buyer_user_id,
-                    buyer_username=buyer_username,
-                    phone=phone,
-                    order_sn=order_sn,
-                    create_time=create_time
-                )
-                # Clean the generated customer ID
-                if customer_id:
-                    customer_id = clean_text_data(str(customer_id))
-                    raw_customers['shopee_orders'].add(str(customer_id))
-            
-            print(f"📊 Shopee order customers in raw: {len(raw_customers['shopee_orders'])}")
-    except Exception as e:
-        print(f"⚠️ Error reading shopee_orders_raw.json: {e}")
-    
-    # Find missing customers
-    all_lazada_customers = raw_customers['lazada_orders'] | raw_customers['lazada_order_items']
-    all_shopee_customers = raw_customers['shopee_orders']
-    
-    missing_lazada = all_lazada_customers - existing_lazada_customers
-    missing_shopee = all_shopee_customers - existing_shopee_customers
-    
-    print(f"\n🔍 Missing customer analysis:")
-    print(f"   - Missing Lazada customers: {len(missing_lazada)}")
-    if missing_lazada and len(missing_lazada) <= 10:
-        print(f"     Customers: {sorted(list(missing_lazada))}")
-    elif missing_lazada:
-        print(f"     Sample: {sorted(list(missing_lazada))[:10]}")
-    
-    print(f"   - Missing Shopee customers: {len(missing_shopee)}")
-    if missing_shopee and len(missing_shopee) <= 10:
-        print(f"     Customers: {sorted(list(missing_shopee))}")
-    elif missing_shopee:
-        print(f"     Sample: {sorted(list(missing_shopee))[:10]}")
-    
-    # If no missing customers, return unchanged dataframe
-    if not missing_lazada and not missing_shopee:
-        print("✅ No missing customers found! All raw data customers are covered.")
-        return customers_df
-    
-    # Create placeholder entries for missing customers
-    print(f"\n🔧 Creating placeholder entries for missing customers...")
-    
-    new_customers = []
-    
-    # Get next available customer keys
-    if not customers_df.empty:
-        max_customer_key = customers_df['customer_key'].max()
-        next_key_counter = int(max_customer_key) + 1
-    else:
-        next_key_counter = 10001
-    
-    # Process missing Lazada customers
-    if missing_lazada:
-        print(f"🔧 Processing {len(missing_lazada)} missing Lazada customers...")
-        
-        for customer_id in sorted(missing_lazada):
-            customer_key = float(f"{next_key_counter}.1")
-            
-            new_customer = {
-                'customer_key': customer_key,
-                'platform_customer_id': customer_id,
-                'buyer_segment': 'Unknown',
-                'total_orders': 0,  # Unknown order count
-                'customer_since': datetime(2020, 1, 1).date(),  # Default date
-                'last_order_date': datetime(2025, 12, 31).date(),  # Default date
-                'platform_key': 1
+        # Track customer statistics
+        if platform_customer_id not in customer_stats:
+            customer_stats[platform_customer_id] = {
+                'order_count': 0,
+                'earliest_date': order_date,
+                'latest_date': order_date
             }
-            new_customers.append(new_customer)
-            next_key_counter += 1
-    
-    # Process missing Shopee customers
-    if missing_shopee:
-        print(f"🔧 Processing {len(missing_shopee)} missing Shopee customers...")
         
-        for customer_id in sorted(missing_shopee):
-            customer_key = float(f"{next_key_counter}.2")
-            
-            new_customer = {
-                'customer_key': customer_key,
-                'platform_customer_id': customer_id,
-                'buyer_segment': 'Unknown',
-                'total_orders': 0,  # Unknown order count
-                'customer_since': datetime(2020, 1, 1).date(),  # Default date
-                'last_order_date': datetime(2025, 12, 31).date(),  # Default date
-                'platform_key': 2
-            }
-            new_customers.append(new_customer)
-            next_key_counter += 1
+        # Update statistics
+        customer_stats[platform_customer_id]['order_count'] += 1
+        if order_date < customer_stats[platform_customer_id]['earliest_date']:
+            customer_stats[platform_customer_id]['earliest_date'] = order_date
+        if order_date > customer_stats[platform_customer_id]['latest_date']:
+            customer_stats[platform_customer_id]['latest_date'] = order_date
     
-    # Add new customers to dataframe
-    if new_customers:
-        print(f"📊 Adding {len(new_customers)} missing customers...")
-        new_customers_df = pd.DataFrame(new_customers)
-        customers_df = pd.concat([customers_df, new_customers_df], ignore_index=True)
+    # Create customer records following DIM_CUSTOMER_COLUMNS exactly
+    customers = []
+    for customer_id, stats in customer_stats.items():
+        # Determine buyer segment
+        buyer_segment = "New Buyer" if stats['order_count'] == 1 else "Returning Buyer"
         
-        # Apply data types to new records
-        customers_df = apply_data_types(customers_df, 'dim_customer')
+        customer_record = {
+            'platform_customer_id': customer_id,
+            'buyer_segment': buyer_segment,
+            'total_orders': stats['order_count'],
+            'customer_since': stats['earliest_date'],
+            'last_order_date': stats['latest_date'],
+            'platform_key': 2  # Shopee platform
+        }
+        
+        customers.append(customer_record)
     
-    print(f"\n✅ Missing Customers Summary:")
-    print(f"   - Lazada missing customers: {len([c for c in new_customers if c['platform_key'] == 1])}")
-    print(f"   - Shopee missing customers: {len([c for c in new_customers if c['platform_key'] == 2])}")
-    print(f"   - Total new customers: {len(new_customers)}")
+    # Convert to DataFrame with only config columns
+    customers_df = pd.DataFrame(customers)
+    
+    print(f"✓ Extracted {len(customers_df)} unique Shopee customers from {len(orders_data)} orders")
+    print(f"  - Real customers: {len([c for c in customers_df['platform_customer_id'] if c != 'Deleted User'])}")
+    print(f"  - Deleted users: {len([c for c in customers_df['platform_customer_id'] if c == 'Deleted User'])}")
     
     return customers_df
 
 
 def save_dim_customer(df, filename='dim_customer.csv'):
     """
-    Save harmonized customer dimension to CSV file
+    Save customer dimension DataFrame to CSV file
+    Strictly follows DIM_CUSTOMER_COLUMNS from config
     
     Args:
-        df (DataFrame): Harmonized customer dataframe
+        df (DataFrame): Customer dimension data
         filename (str): Output filename
     """
     if df.empty:
-        print("⚠️ No data to save")
+        print("⚠️ No customer data to save")
         return
-        
-    output_path = os.path.join(os.path.dirname(__file__), '..', 'Transformed', filename)
     
-    try:
-        df.to_csv(output_path, index=False)
-        print(f"✅ Customer Dimension saved to: {output_path}")
-        print(f"📁 Records saved: {len(df)}")
-    except Exception as e:
-        print(f"❌ Error saving file: {e}")
+    # Ensure we only have the required columns from config
+    required_columns = DIM_CUSTOMER_COLUMNS
+    
+    # Make sure all required columns exist (they should from our functions above)
+    for col in required_columns:
+        if col not in df.columns:
+            print(f"⚠️ Missing required column: {col}")
+            return
+    
+    # Keep only the required columns in the correct order
+    df_final = df[required_columns].copy()
+    
+    # Apply data types
+    df_final = apply_data_types(df_final, 'dim_customer')
+    
+    # Save to file
+    output_path = os.path.join(os.path.dirname(__file__), '..', 'Transformed', filename)
+    df_final.to_csv(output_path, index=False)
+    
+    print(f"✅ Saved {len(df_final)} customers to {filename}")
+    print(f"📊 Columns: {list(df_final.columns)}")
+    print(f"📊 Platform breakdown:")
+    print(f"   - Lazada (platform_key=1): {len(df_final[df_final['platform_key'] == 1])}")
+    print(f"   - Shopee (platform_key=2): {len(df_final[df_final['platform_key'] == 2])}")
+    print(f"   - Deleted User records: {len(df_final[df_final['platform_customer_id'] == 'Deleted User'])}")
+
+
+def harmonize_dim_customer():
+    """
+    Main function to harmonize customer dimension from both platforms
+    Strictly follows DIM_CUSTOMER_COLUMNS from config schema
+    """
+    print("🔄 Starting customer dimension harmonization...")
+    print(f"📋 Required columns: {DIM_CUSTOMER_COLUMNS}")
+    
+    # Initialize empty DataFrame with proper schema
+    customers_df = get_empty_dataframe('dim_customer')
+    
+    # Process Lazada customers
+    print("📋 Processing Lazada customers...")
+    lazada_orders = load_lazada_orders_raw()
+    if lazada_orders:
+        lazada_customers = extract_customers_from_lazada_orders(lazada_orders)
+        customers_df = pd.concat([customers_df, lazada_customers], ignore_index=True)
+    
+    # Process Shopee customers
+    print("📋 Processing Shopee customers...")
+    shopee_orders = load_shopee_orders_raw()
+    if shopee_orders:
+        shopee_customers = extract_customers_from_shopee_orders(shopee_orders)
+        customers_df = pd.concat([customers_df, shopee_customers], ignore_index=True)
+    
+    # Generate customer_key (sequential numbering)
+    if not customers_df.empty:
+        # Sort by platform_key, then by platform_customer_id for consistent ordering
+        customers_df = customers_df.sort_values(['platform_key', 'platform_customer_id']).reset_index(drop=True)
+        
+        # Generate sequential customer_key starting from 1 with platform decimals
+        customers_df['customer_key'] = range(1, len(customers_df) + 1)
+        customers_df['customer_key'] = customers_df['customer_key'].astype(str) + '.' + customers_df['platform_key'].astype(str)
+        
+        # Apply proper data types
+        customers_df = apply_data_types(customers_df, 'dim_customer')
+        
+        print(f"✅ Successfully harmonized {len(customers_df)} customers")
+        print(f"   - Lazada customers: {len(customers_df[customers_df['platform_key'] == 1])}")
+        print(f"   - Shopee customers: {len(customers_df[customers_df['platform_key'] == 2])}")
+        
+        # Validate and save
+        save_dim_customer(customers_df)
+        
+        return customers_df
+    else:
+        print("⚠️ No customer data found")
+        return customers_df
 
 
 if __name__ == "__main__":
-    # Run the harmonization
-    customers_df = harmonize_dim_customer()
-    
-    # Save results
-    if not customers_df.empty:
-        save_dim_customer(customers_df)
-    else:
-        print("❌ No data to save")
-
+    harmonize_dim_customer()

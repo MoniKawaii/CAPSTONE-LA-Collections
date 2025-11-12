@@ -456,6 +456,7 @@ def harmonize_dim_order():
     
     for order in shopee_orders_data:
         order_sn = str(order.get('order_sn', ''))
+        
         if order_sn and order_sn not in shopee_orders_dict:
             harmonized = harmonize_shopee_order_record(order)
             harmonized['raw_platform_order_id'] = order_sn  # Keep original for deduplication

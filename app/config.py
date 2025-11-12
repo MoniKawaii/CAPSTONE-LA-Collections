@@ -48,7 +48,7 @@ def load_lazada_tokens():
                     file_tokens = json.load(f)
                     tokens.update(file_tokens)
                     tokens_loaded = True
-                    print(f"✅ Lazada tokens loaded from: {tokens_file}")
+                    print(f"Lazada tokens loaded from: {tokens_file}")
                     break
             except (json.JSONDecodeError, IOError) as e:
                 print(f"Warning: Could not load Lazada tokens from {tokens_file}: {e}")
