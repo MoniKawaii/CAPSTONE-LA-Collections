@@ -469,19 +469,7 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_lookups, 
                 
             customer_key = customer_key_lookup.get(platform_customer_id)
             
-            # Debug customer key lookup for the first few records
-            if order_item_key_counter <= 3:
-                print(f"🔍 Debug order {platform_order_id}:")
-                print(f"   - buyer_id from lookup: {buyer_id}")
-                print(f"   - first_name: '{first_name}'")
-                print(f"   - phone: '{phone}'")
-                print(f"   - platform_customer_id: '{platform_customer_id}'")
-                print(f"   - found customer_key: {customer_key}")
-                if customer_key is None:
-                    # Show some sample customer IDs to help debug
-                    sample_customers = list(customer_key_lookup.keys())[:5]
-                    print(f"   - Sample customer IDs in lookup: {sample_customers}")
-            
+            # Customer key lookup
             if customer_key is None:
                 # Use anonymous customer fallback for failed lookups
                 anonymous_platform_customer_id = "ANONYMOUS_LAZADA"
@@ -520,14 +508,9 @@ def extract_order_items_from_lazada(order_items_data, orders_data, dim_lookups, 
                             variant_row = variant_df[variant_df['platform_sku_id'] == sku_id]
                             if not variant_row.empty:
                                 product_key = variant_row.iloc[0]['product_key']
-                                if order_item_key_counter <= 3:
-                                    print(f"🎯 FOUND via variants: Lazada item {product_item_id} (sku_id: {sku_id}) -> product_key: {product_key}")
                     
                     # If still not found, skip the item
                     if product_key is None:
-                        if order_item_key_counter <= 3:
-                            print(f"⚠️ Skipping Lazada item without product_key for product_item_id '{product_item_id}' (from sku '{sku}') in order {platform_order_id}")
-                            print(f"   Available product IDs: {list(product_key_lookup.keys())[:5]}")
                         continue
                     
                     # Get product_variant_key from sku_id
@@ -683,8 +666,6 @@ def extract_order_items_from_shopee(orders_data, payment_details_data, dim_looku
             
             # Skip orders with anonymous customers (buyer_user_id=0) since they're not in dimension table
             if platform_customer_id is None:
-                if order_item_key_counter <= 3:
-                    print(f"🔍 Skipping anonymous customer order {platform_order_id} (buyer_user_id={buyer_user_id})")
                 continue
                 
             customer_key = customer_key_lookup.get(platform_customer_id)
@@ -904,15 +885,11 @@ def extract_order_items_from_shopee_multiple_items(order_items_data, payment_det
             # Use buyer_user_name directly to match platform_customer_id format
             payment_buyer_lookup[order_sn] = str(buyer_user_name)
     
-    print(f"📊 Created buyer lookup from payment details for {len(payment_buyer_lookup)} orders")
-    
     # Get lookup dictionaries
     order_key_lookup = dim_lookups.get('order', {})
     customer_key_lookup = dim_lookups.get('customer', {})
     product_key_lookup = dim_lookups.get('product', {})
     variant_key_lookup = dim_lookups.get('product_variant', {})
-    
-    print(f"📊 Processing {len(order_items_data)} Shopee order items (flattened format) with FIXED discount logic...")
     
     processed_count = 0
     skipped_count = 0
@@ -921,17 +898,9 @@ def extract_order_items_from_shopee_multiple_items(order_items_data, payment_det
         try:
             order_sn = str(item.get('order_sn', ''))
             
-            # DEBUG: Track problematic orders
-            debug_orders = ["210511BGWNB0FQ", "221019RJQ1CBAG"]  # Bundle deal cases from sample_order.txt
-            is_debug_order = order_sn in debug_orders
-            if is_debug_order:
-                print(f"🔍 DEBUG: Processing REAL problematic order {order_sn}")
-            
             # Get orders_key from dimension table
             orders_key = order_key_lookup.get(order_sn)
             if orders_key is None:
-                if is_debug_order:
-                    print(f"🔍 DEBUG: Order {order_sn} - no orders_key found, skipping")
                 skipped_count += 1
                 continue
             
@@ -991,16 +960,8 @@ def extract_order_items_from_shopee_multiple_items(order_items_data, payment_det
             order_income = payment_detail.get('order_income', {})
             payment_items = order_income.get('items', [])
             
-            if is_debug_order:
-                print(f"🔍 DEBUG: Order {order_sn} - payment_detail exists: {bool(payment_detail)}")
-                print(f"🔍 DEBUG: Order {order_sn} - order_income exists: {bool(order_income)}")
-                print(f"🔍 DEBUG: Order {order_sn} - payment_items count: {len(payment_items)}")
-                if order_income:
-                    print(f"🔍 DEBUG: Order {order_sn} - voucher_from_shopee: {order_income.get('voucher_from_shopee')}")
-                    print(f"🔍 DEBUG: Order {order_sn} - order_seller_discount: {order_income.get('order_seller_discount')}")
-                    print(f"🔍 DEBUG: Order {order_sn} - actual_shipping_fee: {order_income.get('actual_shipping_fee')}")
-            
-            # --- CORRECTED SHOPEE PRICING LOGIC ---
+            # --- UNIT-LEVEL GRANULARITY IMPLEMENTATION ---
+            # Create individual records for each unit (item_quantity=1)
             
             # Find matching payment item for this order item
             current_item_key = f"{item_id}_{model_id}"
@@ -1012,35 +973,27 @@ def extract_order_items_from_shopee_multiple_items(order_items_data, payment_det
                     matching_payment_item = p
                     break
             
-            if is_debug_order:
-                print(f"🔍 DEBUG: Order {order_sn} - Looking for payment item with key: {current_item_key}")
-                print(f"🔍 DEBUG: Order {order_sn} - Found matching payment item: {bool(matching_payment_item)}")
-            
             # Set pricing based on available data sources
             if matching_payment_item:
-                # Use payment details as primary source (most accurate for bundle deals)
-                original_unit_price = float(matching_payment_item.get('original_price', unit_original))
-                discounted_unit_price = float(matching_payment_item.get('discounted_price', original_unit_price))
+                # Use model_original_price from orders_raw as PRIMARY source for original_unit_price
+                original_unit_price = unit_original
+                
+                # Use payment details for discounts and final price calculation
+                discounted_total_price = float(matching_payment_item.get('discounted_price', 0.0))
                 
                 # Get individual item discounts (exclude shipping discounts per user requirement)
                 item_seller_discount = float(matching_payment_item.get('seller_discount', 0.0))
                 item_platform_discount = float(matching_payment_item.get('shopee_discount', 0.0)) + \
-                                       float(matching_payment_item.get('discount_from_coin', 0.0))
+                                       float(matching_payment_item.get('discount_from_coin', 0.0)) + \
+                                       float(matching_payment_item.get('discount_from_voucher_shopee', 0.0))
                 
-                # Calculate per-unit amounts (item discounts are total for the line item)
+                # Calculate per-unit amounts (payment discounts are total for the line item)
                 voucher_seller_per_unit = item_seller_discount / quantity if quantity > 0 else 0.0
                 voucher_platform_per_unit = item_platform_discount / quantity if quantity > 0 else 0.0
                 
-                # Final paid price should be discounted_price divided by quantity (per-unit price)
-                # discounted_price from payment details is total line amount, divide for per-unit
-                final_paid_price = discounted_unit_price / quantity if quantity > 0 else discounted_unit_price
-                
-                if is_debug_order:
-                    print(f"🔍 PAYMENT ITEM PRICING - Order {order_sn}, Item {item_id}:")
-                    print(f"    original_price: {original_unit_price}, discounted_price: {discounted_unit_price}")
-                    print(f"    seller_discount: {item_seller_discount}, shopee_discount: {item_platform_discount}")
-                    print(f"    per_unit: seller_voucher={voucher_seller_per_unit}, platform_voucher={voucher_platform_per_unit}")
-                    print(f"    final_paid_price: {final_paid_price}")
+                # FIXED: Calculate per-unit paid price using proper formula
+                # paid_price = original_unit_price - voucher_platform_amount - voucher_seller_amount
+                final_paid_price = original_unit_price - voucher_platform_per_unit - voucher_seller_per_unit
                 
             else:
                 # Fallback to order item data (for cases without payment details)
@@ -1048,53 +1001,46 @@ def extract_order_items_from_shopee_multiple_items(order_items_data, payment_det
                 voucher_seller_per_unit = 0.0
                 voucher_platform_per_unit = 0.0
                 final_paid_price = original_unit_price  # No discounts applied
-                
-                if is_debug_order:
-                    print(f"⚠️ FALLBACK PRICING - Order {order_sn}, Item {item_id}: Using model_original_price {original_unit_price}")
             
-            # Shipping fee calculation from payment details
+            # Shipping fee calculation from payment details (use buyer_paid_shipping_fee)
             shipping_per_unit = 0.0
             if order_income:
-                order_shipping_fee = float(order_income.get('actual_shipping_fee', 0.0))
-                # Distribute shipping proportionally across all items
-                total_items = sum(p.get('quantity_purchased', 1) for p in payment_items) if payment_items else 1
-                shipping_per_unit = (order_shipping_fee / total_items) if total_items > 0 else 0.0
-            
-            if is_debug_order:
-                print(f"🔍 DEBUG: Order {order_sn} - NEW PRICING LOGIC COMPLETE")
-                print(f"🔍 DEBUG: Order {order_sn} - quantity: {quantity}")
-                print(f"🔍 DEBUG: Order {order_sn} - voucher_platform_per_unit: {voucher_platform_per_unit}")
-                print(f"🔍 DEBUG: Order {order_sn} - voucher_seller_per_unit: {voucher_seller_per_unit}")
-                print(f"🔍 DEBUG: Order {order_sn} - shipping_per_unit: {shipping_per_unit}")
-                print(f"🔍 DEBUG: Order {order_sn} - final_paid_price: {final_paid_price}")
-                print(f"🔍 DEBUG: Order {order_sn} - original_unit_price: {original_unit_price}")
-                total_vouchers = voucher_platform_per_unit + voucher_seller_per_unit
-                print(f"🔍 DEBUG: Order {order_sn} - total_vouchers_per_unit: {total_vouchers}")
-                print(f"🔍 DEBUG: Order {order_sn} - Formula check (paid = orig - vouchers): {final_paid_price} = {original_unit_price} - {total_vouchers}")
-            # ---------------------------------------------
+                # Use buyer_paid_shipping_fee as per sample_order.txt requirements
+                order_shipping_fee = float(order_income.get('buyer_paid_shipping_fee', 0.0))
+                # Calculate total units in order for shipping proration
+                total_units_in_order = 0
+                for other_item in order_items_data:
+                    if str(other_item.get('order_sn', '')) == order_sn:
+                        total_units_in_order += other_item.get('model_quantity_purchased', 1)
+                
+                shipping_per_unit = (order_shipping_fee / total_units_in_order) if total_units_in_order > 0 else 0.0
             
             # Get time_key
             create_time = item.get('create_time')
             time_key = generate_time_key_from_timestamp(create_time) if create_time else 20220101
             
-            # Create fact record
-            fact_record = {
-                'order_item_key': None,  # Will be generated after sorting
-                'orders_key': orders_key,
-                'product_key': product_key,
-                'product_variant_key': product_variant_key,
-                'time_key': time_key,
-                'customer_key': customer_key,
-                'platform_key': 2,  # Always 2 for Shopee
-                'item_quantity': quantity,
-                'paid_price': final_paid_price,
-                'original_unit_price': original_unit_price,
-                'voucher_platform_amount': voucher_platform_per_unit,
-                'voucher_seller_amount': voucher_seller_per_unit,
-                'shipping_fee_paid_by_buyer': shipping_per_unit
-            }
+            # --- UNIT-LEVEL RECORD CREATION ---
+            # Create individual records for each unit (item_quantity=1 always)
+            for unit_index in range(quantity):
+                fact_record = {
+                    'order_item_key': None,  # Will be generated after sorting
+                    'orders_key': orders_key,
+                    'product_key': product_key,
+                    'product_variant_key': product_variant_key,
+                    'time_key': time_key,
+                    'customer_key': customer_key,
+                    'platform_key': 2,  # Always 2 for Shopee
+                    'item_quantity': 1,  # Always 1 for unit-level granularity
+                    'paid_price': final_paid_price,
+                    'original_unit_price': original_unit_price,
+                    'voucher_platform_amount': voucher_platform_per_unit,
+                    'voucher_seller_amount': voucher_seller_per_unit,
+                    'shipping_fee_paid_by_buyer': shipping_per_unit
+                }
+                
+                fact_orders_records.append(fact_record)
             
-            fact_orders_records.append(fact_record)
+            # Count this line item as processed (regardless of quantity)
             processed_count += 1
             
         except Exception as e:

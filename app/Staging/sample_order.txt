@@ -875,9 +875,607 @@ from shopee_orders_raw.json
   },
 
   the logic might be fetching the model_discounted_price from shopee_orders_raw.json as the paid_price,
-  but it should be discounted_price from the shopee_paymentdetail_raw.json then multiply by its quantity.
+  but it should be discounted_price from the shopee_paymentdetail_raw.json 
   it should get the original_price from shopee_paymentdetail_raw.json as the original_unit_price.
   then seller_discount as voucher_seller_amount and shopee_discount as voucher_platform_amount. 
   DO NOT INCLUDE seller_shipping_discount in voucher_seller_amount .
   as for price_total in harmonizing dim_order , it should get directly from total_amount in shopee_orders_raw.json
   shipping_fee from shopee_paymentdetail_raw.json is shipping_fee_paid_by_buyer
+
+
+
+ALSO ANALYZE:
+order_sn 230708E6R03S6G with orders_key 28277.2
+the price_total shown is 2277 with total_item_count of 2 from dim_order 
+but upon checking the fact it is like this:
+
+S00033515	28277.2	31.2	245.2	20230708	26895.2	2	3	790	2370	0	0	9.5
+S00033516	28277.2	28.2	220.2	20230708	26895.2	2	1	0	180	0	180	9.5
+
+here is the data from shopee_orders_raw.json :
+
+  {
+    "actual_shipping_fee": 38,
+    "actual_shipping_fee_confirmed": true,
+    "advance_package": false,
+    "booking_sn": "",
+    "buyer_cancel_reason": "",
+    "buyer_cpf_id": null,
+    "buyer_user_id": 26173316,
+    "buyer_username": "joanne.sope",
+    "cancel_by": "",
+    "cancel_reason": "",
+    "cod": false,
+    "create_time": 1688789084,
+    "currency": "PHP",
+    "days_to_ship": 2,
+    "dropshipper": null,
+    "dropshipper_phone": null,
+    "estimated_shipping_fee": 38,
+    "fulfillment_flag": "fulfilled_by_local_seller",
+    "goods_to_declare": false,
+    "hot_listing_order": false,
+    "invoice_data": null,
+    "is_buyer_shop_collection": false,
+    "item_list": [
+      {
+        "add_on_deal": true,
+        "add_on_deal_id": 207736952,
+        "consultation_id": "",
+        "hot_listing_item": false,
+        "image_info": {
+          "image_url": "https://cf.shopee.ph/file/ph-11134207-7qul9-lfj9yc17roxg83_tn"
+        },
+        "is_b2c_owned_item": false,
+        "is_prescription_item": false,
+        "item_id": 18878439578,
+        "item_name": "(COD) Pure Oil Reed Diffuser by L.A. Collections",
+        "item_sku": "RD",
+        "main_item": true,
+        "model_discounted_price": 790,
+        "model_id": 204203312896,
+        "model_name": "Fresh Bamboo,100mL",
+        "model_original_price": 790,
+        "model_quantity_purchased": 3,
+        "model_sku": "RDB100",
+        "order_item_id": 18878439578,
+        "product_location_id": [
+          "PHZ"
+        ],
+        "promotion_group_id": 207736952,
+        "promotion_id": 207736952,
+        "promotion_type": "add_on_free_gift_main",
+        "weight": 0.5,
+        "wholesale": false
+      },
+      {
+        "add_on_deal": true,
+        "add_on_deal_id": 207736952,
+        "consultation_id": "",
+        "hot_listing_item": false,
+        "image_info": {
+          "image_url": "https://cf.shopee.ph/file/79615f6beed28f501e356b023e11f900_tn"
+        },
+        "is_b2c_owned_item": false,
+        "is_prescription_item": false,
+        "item_id": 6181752848,
+        "item_name": "10 mL Hanging Diffusers",
+        "item_sku": "",
+        "main_item": false,
+        "model_discounted_price": 0,
+        "model_id": 38264414539,
+        "model_name": "Okada",
+        "model_original_price": 180,
+        "model_quantity_purchased": 1,
+        "model_sku": "OHD",
+        "order_item_id": 6181752848,
+        "product_location_id": [
+          "PHZ"
+        ],
+        "promotion_group_id": 207736952,
+        "promotion_id": 207736952,
+        "promotion_type": "add_on_free_gift_sub",
+        "weight": 0.3,
+        "wholesale": false
+      }
+    ],
+    "message_to_seller": "",
+    "note": "",
+    "note_update_time": 0,
+    "order_sn": "230708E6R03S6G",
+    "order_status": "COMPLETED",
+    "package_list": [
+      {
+        "package_number": "OFG142488284263753",
+        "group_shipment_id": null,
+        "logistics_status": "LOGISTICS_DELIVERY_DONE",
+        "shipping_carrier": "SPX Express",
+        "item_list": [
+          {
+            "item_id": 18878439578,
+            "model_id": 204203312896,
+            "model_quantity": 3,
+            "order_item_id": 18878439578,
+            "promotion_group_id": 207736952,
+            "product_location_id": ""
+          },
+          {
+            "item_id": 6181752848,
+            "model_id": 38264414539,
+            "model_quantity": 1,
+            "order_item_id": 6181752848,
+            "promotion_group_id": 207736952,
+            "product_location_id": ""
+          }
+        ],
+        "parcel_chargeable_weight_gram": 1800,
+        "allow_self_design_awb": true,
+        "logistics_channel_id": 40066,
+        "sorting_group": ""
+      }
+    ],
+    "pay_time": 1688789087,
+    "payment_method": "ShopeePay Balance",
+    "pickup_done_time": 1688965599,
+    "recipient_address": {
+      "name": "****",
+      "phone": "****",
+      "town": "****",
+      "district": "****",
+      "city": "****",
+      "state": "****",
+      "region": "****",
+      "zipcode": "****",
+      "full_address": "****"
+    },
+    "region": "PH",
+    "reverse_shipping_fee": 0,
+    "ship_by_date": 1689048288,
+    "shipping_carrier": "SPX Express",
+    "split_up": false,
+    "total_amount": 2277,
+    "update_time": 1689382166
+  },
+
+and then from the shopee_paymentdetail_raw.json :
+
+  {
+    "buyer_payment_info": {
+      "bulky_handling_fee": 0,
+      "buyer_paid_extended_warranty": 0,
+      "buyer_paid_installation_fee": 0,
+      "buyer_payment_method": "ShopeePay Balance",
+      "buyer_service_fee": 0,
+      "buyer_tax_amount": 0,
+      "buyer_total_amount": 2277,
+      "credit_card_promotion": 0,
+      "footwear_tax": 0,
+      "icms_tax_amount": 0,
+      "import_processing_charge": 0,
+      "import_tax_amount": 0,
+      "initial_buyer_txn_fee": 0,
+      "insurance_premium": 144,
+      "iof_tax_amount": 0,
+      "is_paid_by_credit_card": false,
+      "merchant_subtotal": 2370,
+      "seller_voucher": 0,
+      "shipping_fee": 0,
+      "shipping_fee_sst_amount": 0,
+      "shopee_coins_redeemed": 0,
+      "shopee_voucher": -237,
+      "total_tax_and_fees_amount": 0,
+      "trade_in_bonus": 0,
+      "trade_in_discount": 0,
+      "vat": 0
+    },
+    "buyer_user_name": "joanne.sope",
+    "order_income": {
+      "actual_installation_fee": 0,
+      "actual_shipping_fee": 38,
+      "buyer_paid_extended_warranty": 0,
+      "buyer_paid_shipping_fee": 0,
+      "buyer_payment_method": "ShopeePay Balance",
+      "buyer_total_amount": 2277,
+      "buyer_transaction_fee": 0,
+      "campaign_fee": 0,
+      "coins": 0,
+      "commission_fee": 95,
+      "cost_of_goods_sold": 2370,
+      "credit_card_promotion": 0,
+      "credit_card_transaction_fee": 48,
+      "cross_border_tax": 0,
+      "delivery_seller_protection_fee_premium_amount": 0,
+      "drc_adjustable_refund": 0,
+      "escrow_amount": 1977,
+      "escrow_import_tax": 0,
+      "escrow_tax": 0,
+      "estimated_shipping_fee": 38,
+      "final_escrow_product_gst": 0,
+      "final_escrow_shipping_gst": 0,
+      "final_product_protection": 144,
+      "final_product_vat_tax": 0,
+      "final_return_to_seller_shipping_fee": 0,
+      "final_shipping_fee": -38,
+      "final_shipping_vat_tax": 0,
+      "fsf_seller_protection_fee_claim_amount": 0,
+      "installation_fee_paid_by_buyer": 0,
+      "instalment_plan": "N/A",
+      "items": [
+        {
+          "activity_id": 207736952,
+          "activity_type": "add_on_deal",
+          "ams_commission_fee": 0,
+          "buyer_paid_extended_warranty": 0,
+          "discount_from_coin": 0,
+          "discount_from_voucher_seller": 0,
+          "discount_from_voucher_shopee": 0,
+          "discounted_price": 0,
+          "installation_fee_paid_by_buyer": 0,
+          "is_b2c_shop_item": false,
+          "is_main_item": false,
+          "item_id": 6181752848,
+          "item_name": "10 mL Hanging Diffusers",
+          "item_sku": "",
+          "model_id": 38264414539,
+          "model_name": "Okada",
+          "model_sku": "OHD",
+          "original_price": 180,
+          "promotion_list": [
+            {
+              "promotion_id": 207736952,
+              "promotion_type": "add_on_deal_sub"
+            }
+          ],
+          "quantity_purchased": 1,
+          "seller_discount": 180,
+          "seller_order_processing_fee": 0,
+          "selling_price": 0,
+          "shopee_discount": 0
+        },
+        {
+          "activity_id": 207736952,
+          "activity_type": "add_on_deal",
+          "ams_commission_fee": 0,
+          "buyer_paid_extended_warranty": 0,
+          "discount_from_coin": 0,
+          "discount_from_voucher_seller": 0,
+          "discount_from_voucher_shopee": 237,
+          "discounted_price": 2370,
+          "installation_fee_paid_by_buyer": 0,
+          "is_b2c_shop_item": false,
+          "is_main_item": true,
+          "item_id": 18878439578,
+          "item_name": "(COD) Pure Oil Reed Diffuser by L.A. Collections",
+          "item_sku": "RD",
+          "model_id": 204203312896,
+          "model_name": "Fresh Bamboo,100mL",
+          "model_sku": "RDB100",
+          "original_price": 2370,
+          "promotion_list": [
+            {
+              "promotion_id": 207736952,
+              "promotion_type": "add_on_deal_main"
+            }
+          ],
+          "quantity_purchased": 3,
+          "seller_discount": 0,
+          "seller_order_processing_fee": 0,
+          "selling_price": 2370,
+          "shopee_discount": 0
+        }
+      ],
+      "order_ams_commission_fee": 0,
+      "order_chargeable_weight": 0,
+      "order_discounted_price": 2370,
+      "order_original_price": 2550,
+      "order_seller_discount": 180,
+      "order_selling_price": 2370,
+      "original_cost_of_goods_sold": 2370,
+      "original_price": 2550,
+      "original_shopee_discount": 0,
+      "overseas_return_service_fee": 0,
+      "payment_promotion": 0,
+      "prorated_coins_value_offset_return_items": 0,
+      "prorated_payment_channel_promo_bank_offset_return_items": 0,
+      "prorated_payment_channel_promo_shopee_offset_return_items": 0,
+      "prorated_seller_voucher_offset_return_items": 0,
+      "prorated_shopee_voucher_offset_return_items": 0,
+      "reverse_shipping_fee": 0,
+      "reverse_shipping_fee_sst": 0,
+      "rsf_seller_protection_fee_claim_amount": 0,
+      "sales_tax_on_lvg": 0,
+      "seller_coin_cash_back": 0,
+      "seller_discount": 180,
+      "seller_lost_compensation": 0,
+      "seller_order_processing_fee": 0,
+      "seller_return_refund": 0,
+      "seller_shipping_discount": 38,
+      "seller_transaction_fee": 48,
+      "seller_voucher_code": [],
+      "service_fee": 212,
+      "shipping_fee_discount_from_3pl": 0,
+      "shipping_fee_sst": 0,
+      "shipping_seller_protection_fee_amount": 0,
+      "shopee_discount": 0,
+      "shopee_shipping_rebate": 0,
+      "tax_registration_code": "",
+      "tenure_info_list": [
+        {
+          "instalment_plan": "N/A"
+        }
+      ],
+      "trade_in_bonus_by_seller": 0,
+      "vat_on_imported_goods": 0,
+      "voucher_from_seller": 0,
+      "voucher_from_shopee": 237,
+      "withholding_pit_tax": 0,
+      "withholding_tax": 0,
+      "withholding_vat_tax": 0
+    },
+    "order_sn": "230708E6R03S6G",
+    "return_order_sn_list": []
+  },
+
+noticed the insurance_premium which should be mapped into dim_order as a new column called "insurance_premium_and_fees" 
+
+Shopee Data Harmonization Instructions (Copy-Paste Text)
+1. Granularity and Record CreationTo begin, you must enforce unit-level granularity. 
+This means that every single product unit sold must be represented by its own record, 
+with the item_quantity field always set to 1. 
+If the raw order data shows an item with a quantity greater than one (e.g., the 3 Reed Diffusers where item_list[*].model_quantity_purchased is 3), 
+you must duplicate that item's line-item data three times to create three separate unit records. 
+You must generate a unique identifier for each unit record to populate the order_item_key field.
+
+2. Core Revenue Formula: The net amount the buyer paid for the product unit, recorded in the paid_price column, 
+is determined by subtracting all applied discounts from the original selling price. 
+Note that the voucher fields themselves should store the positive value of the discount.
+The formula is: paid_price = original_unit_price - voucher_platform_amount - voucher_seller_amount.
+
+3. Field Mappings and Extraction LogicMap your fields by collecting the following data points from the raw JSON files:
+original_unit_price: Extract this directly from the order data as shopee_orders_raw.json to item_list to model_original_price (e.g., 790 or 180).
+voucher_seller_amount: This represents the item-level discount funded by the seller. Extract it from shopee_paymentdetail_raw.json to order_income to items to seller_discount (e.g., 180 for the Hanging Diffuser, 0 for the Reed Diffuser).
+voucher_platform_amount: This represents the platform (Shopee) funded discount. You must prorate the discount for accuracy. Extract the total line-item discount from shopee_paymentdetail_raw.json to order_income to items to discount_from_voucher_shopee, then divide it by the model_quantity_purchased for that item to get the per-unit amount. (e.g., $237 / 3 = 79$ per unit).
+shipping_fee_paid_by_buyer: This is a header-level charge and should be prorated to the unit. get the order_income.buyer_paid_shipping_fee and divide it among the items . 
+paid_price: Calculate this using the subtraction formula defined above (e.g., $790 - 79 - 0 = 711$ per unit for the Reed Diffuser).
+
+4. Fee Handling (Insurance Premium)Confirming your decision, the 144 insurance_premium must be excluded from the Fact_Orders table. It is a charge, not a discount, and is not product revenue. You must extract it from shopee_paymentdetail_raw.json buyer_payment_info to insurance_premium and map it to a field in your Dim_Order "insurance_premium_and_fees" table to maintain financial integrity.
+
+update also the config for the schema and mappings updates.
+
+also noticed a lot of wrongs in the earlier shopee records. validate them.
+
+update the sales_aggregate harmonization as well to capture the data correctly.
+
+
+_-------------
+
+in items.selling_price , according to the API documentation: For non-bundle deal case, this value will be same like item original_price; For bundle deal case, this value will be price of sum of item price before bundle deal promo but after item promo. It returns the subtotal of that specific item if quantity exceeds 1 (Only display for non cb sip affiliate shop.)
+whereas items.discounted_price :The after-discount price of the item in the listing currency. It returns the subtotal of that specific item if quantity exceeds 1. If there is no discount, this value will be the same as that of original_price.
+=-----------
+
+
+cross check how this is being done in the orders_key 18184.2 order_sn 22110331NRG31Q :
+
+shopee_paymentdetail_raw.json:
+{
+    "buyer_payment_info": {
+      "bulky_handling_fee": 0,
+      "buyer_paid_extended_warranty": 0,
+      "buyer_paid_installation_fee": 0,
+      "buyer_payment_method": "Cash on Delivery",
+      "buyer_service_fee": 0,
+      "buyer_tax_amount": 0,
+      "buyer_total_amount": 925,
+      "credit_card_promotion": 0,
+      "footwear_tax": 0,
+      "icms_tax_amount": 0,
+      "import_processing_charge": 0,
+      "import_tax_amount": 0,
+      "initial_buyer_txn_fee": 0,
+      "insurance_premium": 0,
+      "iof_tax_amount": 0,
+      "is_paid_by_credit_card": false,
+      "merchant_subtotal": 930,
+      "seller_voucher": -10,
+      "shipping_fee": 5,
+      "shipping_fee_sst_amount": 0,
+      "shopee_coins_redeemed": 0,
+      "shopee_voucher": 0,
+      "total_tax_and_fees_amount": 0,
+      "trade_in_bonus": 0,
+      "trade_in_discount": 0,
+      "vat": 0
+    },
+    "buyer_user_name": "ayigeverjuan",
+    "order_income": {
+      "actual_installation_fee": 0,
+      "actual_shipping_fee": 50,
+      "buyer_paid_extended_warranty": 0,
+      "buyer_paid_shipping_fee": 5,
+      "buyer_payment_method": "Cash on Delivery",
+      "buyer_total_amount": 925,
+      "buyer_transaction_fee": 0,
+      "campaign_fee": 0,
+      "coins": 0,
+      "commission_fee": 10,
+      "cost_of_goods_sold": 930,
+      "credit_card_promotion": 0,
+      "credit_card_transaction_fee": 21,
+      "cross_border_tax": 0,
+      "delivery_seller_protection_fee_premium_amount": 0,
+      "drc_adjustable_refund": 0,
+      "escrow_amount": 827,
+      "escrow_import_tax": 0,
+      "escrow_tax": 0,
+      "estimated_shipping_fee": 50,
+      "final_escrow_product_gst": 0,
+      "final_escrow_shipping_gst": 0,
+      "final_product_protection": 0,
+      "final_product_vat_tax": 0,
+      "final_return_to_seller_shipping_fee": 0,
+      "final_shipping_fee": -5,
+      "final_shipping_vat_tax": 0,
+      "fsf_seller_protection_fee_claim_amount": 0,
+      "installation_fee_paid_by_buyer": 0,
+      "instalment_plan": "N/A",
+      "items": [
+        {
+          "activity_id": 24455714,
+          "activity_type": "bundle_deal",
+          "ams_commission_fee": 0,
+          "buyer_paid_extended_warranty": 0,
+          "discount_from_coin": 0,
+          "discount_from_voucher_seller": 2,
+          "discount_from_voucher_shopee": 0,
+          "discounted_price": 310,
+          "installation_fee_paid_by_buyer": 0,
+          "is_main_item": false,
+          "item_id": 3561704640,
+          "item_name": "(COD) 1L ShangriLa Hotels Water Based Humidifier & Diffuser Scent / Room and Linen Spray",
+          "item_sku": "",
+          "model_id": 80454474894,
+          "model_name": "Shangri-La,1000mL (1L)",
+          "model_sku": "",
+          "original_price": 350,
+          "promotion_list": [
+            {
+              "promotion_id": 24455714,
+              "promotion_type": "bundle_deal"
+            },
+            {
+              "promotion_id": 684491779773524,
+              "promotion_type": "seller_discount"
+            }
+          ],
+          "quantity_purchased": 1,
+          "seller_discount": 40,
+          "seller_order_processing_fee": 0,
+          "selling_price": 333,
+          "shopee_discount": 0
+        },
+        {
+          "activity_id": 24455714,
+          "activity_type": "bundle_deal",
+          "ams_commission_fee": 0,
+          "buyer_paid_extended_warranty": 0,
+          "discount_from_coin": 0,
+          "discount_from_voucher_seller": 4,
+          "discount_from_voucher_shopee": 0,
+          "discounted_price": 310,
+          "installation_fee_paid_by_buyer": 0,
+          "is_main_item": false,
+          "item_id": 6772995515,
+          "item_name": "(COD) 1L OKADA Waterbased Humidifier Scents",
+          "item_sku": "",
+          "model_id": 0,
+          "model_name": "",
+          "model_sku": "",
+          "original_price": 350,
+          "promotion_list": [
+            {
+              "promotion_id": 24455714,
+              "promotion_type": "bundle_deal"
+            },
+            {
+              "promotion_id": 684491779773524,
+              "promotion_type": "seller_discount"
+            }
+          ],
+          "quantity_purchased": 1,
+          "seller_discount": 40,
+          "seller_order_processing_fee": 0,
+          "selling_price": 333,
+          "shopee_discount": 0
+        },
+        {
+          "activity_id": 24455714,
+          "activity_type": "bundle_deal",
+          "ams_commission_fee": 0,
+          "buyer_paid_extended_warranty": 0,
+          "discount_from_coin": 0,
+          "discount_from_voucher_seller": 4,
+          "discount_from_voucher_shopee": 0,
+          "discounted_price": 310,
+          "installation_fee_paid_by_buyer": 0,
+          "is_main_item": false,
+          "item_id": 9540916930,
+          "item_name": "(COD) 1L Marriott Hotel Waterbased Essential Oil for Diffusers/Humidifiers",
+          "item_sku": "",
+          "model_id": 0,
+          "model_name": "",
+          "model_sku": "",
+          "original_price": 350,
+          "promotion_list": [
+            {
+              "promotion_id": 24455714,
+              "promotion_type": "bundle_deal"
+            },
+            {
+              "promotion_id": 684491779773524,
+              "promotion_type": "seller_discount"
+            }
+          ],
+          "quantity_purchased": 1,
+          "seller_discount": 40,
+          "seller_order_processing_fee": 0,
+          "selling_price": 333,
+          "shopee_discount": 0
+        }
+      ],
+      "order_ams_commission_fee": 0,
+      "order_chargeable_weight": 0,
+      "order_discounted_price": 930,
+      "order_original_price": 1050,
+      "order_seller_discount": 120,
+      "order_selling_price": 999,
+      "original_cost_of_goods_sold": 930,
+      "original_price": 999,
+      "original_shopee_discount": 0,
+      "overseas_return_service_fee": 0,
+      "payment_promotion": 0,
+      "prorated_coins_value_offset_return_items": 0,
+      "prorated_payment_channel_promo_bank_offset_return_items": 0,
+      "prorated_payment_channel_promo_shopee_offset_return_items": 0,
+      "prorated_seller_voucher_offset_return_items": 0,
+      "prorated_shopee_voucher_offset_return_items": 0,
+      "reverse_shipping_fee": 0,
+      "reverse_shipping_fee_sst": 0,
+      "rsf_seller_protection_fee_claim_amount": 0,
+      "sales_tax_on_lvg": 0,
+      "seller_coin_cash_back": 0,
+      "seller_discount": 69,
+      "seller_lost_compensation": 0,
+      "seller_order_processing_fee": 0,
+      "seller_return_refund": 0,
+      "seller_shipping_discount": 0,
+      "seller_transaction_fee": 21,
+      "seller_voucher_code": [
+        "SFP-444966674497536"
+      ],
+      "service_fee": 62,
+      "shipping_fee_discount_from_3pl": 0,
+      "shipping_fee_sst": 0,
+      "shipping_seller_protection_fee_amount": 0,
+      "shopee_discount": 0,
+      "shopee_shipping_rebate": 45,
+      "tax_registration_code": "",
+      "tenure_info_list": [
+        {
+          "instalment_plan": "N/A"
+        }
+      ],
+      "trade_in_bonus_by_seller": 0,
+      "vat_on_imported_goods": 0,
+      "voucher_from_seller": 10,
+      "voucher_from_shopee": 0,
+      "withholding_pit_tax": 0,
+      "withholding_tax": 0,
+      "withholding_vat_tax": 0
+    },
+    "order_sn": "22110331NRG31Q",
+    "return_order_sn_list": []
+  },
+
+  how is this shipping fee being calculated?
+
+  

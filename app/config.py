@@ -187,7 +187,7 @@ DIM_PRODUCT_VARIANT_COLUMNS = [
 # Order Dimension
 DIM_ORDER_COLUMNS = [
     'orders_key', 'platform_order_id', 'order_status', 'order_date',
-    'updated_at', 'price_total', 'total_item_count', 'payment_method',
+    'updated_at', 'price_total', 'insurance_premium_and_fees', 'total_item_count', 'payment_method',
     'shipping_city', 'platform_key'
 ]
 
@@ -677,6 +677,7 @@ COLUMN_DATA_TYPES = {
         'order_date': 'datetime64[D]',  # Date only, not datetime
         'updated_at': 'datetime64[D]',  # Date only, not datetime
         'price_total': 'float64',  # Decimal equivalent in pandas
+        'insurance_premium_and_fees': 'float64',  # Decimal equivalent in pandas
         'total_item_count': 'int',
         'payment_method': 'str',
         'shipping_city': 'str',

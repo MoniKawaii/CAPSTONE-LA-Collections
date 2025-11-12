@@ -40,32 +40,41 @@ def generate_sales_aggregate(dim_time, dim_customer, dim_product, fact_orders):
     """Generate sales aggregate with proper grain: Time x Platform x Customer x Product"""
     print(f"\n🔄 Generating Sales Aggregate with granularity: Time x Platform x Customer x Product")
     
+    # Validate fact_orders has expected columns
+    required_cols = ['time_key', 'platform_key', 'customer_key', 'product_key', 'orders_key', 
+                    'item_quantity', 'paid_price', 'voucher_platform_amount', 'voucher_seller_amount']
+    missing_cols = [col for col in required_cols if col not in fact_orders.columns]
+    if missing_cols:
+        print(f"⚠️  Warning: Missing columns in fact_orders: {missing_cols}")
+        print(f"Available columns: {list(fact_orders.columns)}")
+    
     # Group fact_orders by the grain dimensions and aggregate metrics
+    # Note: With unit-level granularity, item_quantity should always be 1, but we sum for robustness
     sales_agg = fact_orders.groupby([
         'time_key', 'platform_key', 'customer_key', 'product_key'
     ]).agg({
-        'orders_key': 'nunique',
-        'item_quantity': 'sum',
-        'paid_price': 'sum',
-        'voucher_platform_amount': 'sum',
-        'voucher_seller_amount': 'sum'
+        'orders_key': 'nunique',  # Count unique orders (handles multiple units from same order)
+        'item_quantity': 'sum',   # Sum quantities (should equal record count due to unit-level granularity)
+        'paid_price': 'sum',      # Total revenue after all discounts
+        'voucher_platform_amount': 'sum',  # Platform-provided discounts
+        'voucher_seller_amount': 'sum'     # Seller-provided discounts
     }).reset_index()
     
     # Rename columns to match schema
     sales_agg.columns = [
         'time_key', 'platform_key', 'customer_key', 'product_key',
-        'total_orders', 'total_items_sold', 'gross_revenue', 
+        'total_orders', 'total_items_sold', 'net_sales', 
         'platform_discounts', 'seller_discounts'
     ]
     
     # Calculate derived metrics
     sales_agg['total_discounts'] = sales_agg['platform_discounts'] + sales_agg['seller_discounts']
-    sales_agg['net_sales'] = sales_agg['gross_revenue'] - sales_agg['total_discounts']
     
-    # Drop intermediate columns
-    sales_agg = sales_agg.drop(['platform_discounts', 'seller_discounts'], axis=1)
+    # Calculate gross revenue (revenue before discounts)
+    # gross_revenue = net_sales + total_discounts
+    sales_agg['gross_revenue'] = sales_agg['net_sales'] + sales_agg['total_discounts']
     
-    # Define the columns we actually have (simplified schema - no shipping_revenue)
+    # Define the columns we want in final output (matching expected schema)
     final_columns = [
         'time_key', 'platform_key', 'customer_key', 'product_key',
         'total_orders', 'total_items_sold', 'gross_revenue',
@@ -81,31 +90,64 @@ def generate_sales_aggregate(dim_time, dim_customer, dim_product, fact_orders):
     print(f"   📦 Covering {sales_agg['product_key'].nunique():,} unique products")
     print(f"   🏪 Covering {sales_agg['platform_key'].nunique():,} platforms")
     
+    # Show unit-level validation
+    total_records = len(fact_orders)
+    total_items_agg = sales_agg['total_items_sold'].sum()
+    print(f"   🔍 Unit-level validation: {total_records:,} records → {total_items_agg:,} items")
+    if total_records == total_items_agg:
+        print(f"      ✅ Perfect unit-level granularity maintained")
+    else:
+        print(f"      ⚠️  Granularity discrepancy detected")
+    
     return sales_agg
 
 def validate_sales_aggregate(sales_agg, fact_orders):
     """Validate the sales aggregate against source data"""
     print(f"\n🔍 Validating Sales Aggregate...")
     
-    # Validation 1: Total revenue should match
-    source_revenue = fact_orders['paid_price'].sum()
-    agg_revenue = sales_agg['gross_revenue'].sum()
+    # Validation 1: Net revenue should match (paid_price is already net after discounts)
+    source_net_revenue = fact_orders['paid_price'].sum()
+    agg_net_revenue = sales_agg['net_sales'].sum()
     
-    print(f"   💰 Revenue validation:")
-    print(f"      Source total: ${source_revenue:,.2f}")
-    print(f"      Aggregate total: ${agg_revenue:,.2f}")
-    print(f"      Match: {'✅' if abs(source_revenue - agg_revenue) < 0.01 else '❌'}")
+    print(f"   💰 Net revenue validation:")
+    print(f"      Source total (paid_price): ${source_net_revenue:,.2f}")
+    print(f"      Aggregate total (net_sales): ${agg_net_revenue:,.2f}")
+    print(f"      Match: {'✅' if abs(source_net_revenue - agg_net_revenue) < 0.01 else '❌'}")
     
-    # Validation 2: Total items should match
+    # Validation 2: Gross revenue calculation validation
+    source_vouchers = fact_orders['voucher_platform_amount'].sum() + fact_orders['voucher_seller_amount'].sum()
+    agg_gross_revenue = sales_agg['gross_revenue'].sum()
+    agg_total_discounts = sales_agg['total_discounts'].sum()
+    calculated_gross = source_net_revenue + source_vouchers
+    
+    print(f"   💵 Gross revenue validation:")
+    print(f"      Calculated gross (net + vouchers): ${calculated_gross:,.2f}")
+    print(f"      Aggregate gross_revenue: ${agg_gross_revenue:,.2f}")
+    print(f"      Aggregate total_discounts: ${agg_total_discounts:,.2f}")
+    print(f"      Match: {'✅' if abs(calculated_gross - agg_gross_revenue) < 0.01 else '❌'}")
+    
+    # Validation 3: Total items should match (with unit-level granularity)
     source_items = fact_orders['item_quantity'].sum()
+    source_records = len(fact_orders)
     agg_items = sales_agg['total_items_sold'].sum()
     
-    print(f"   📦 Items validation:")
-    print(f"      Source total: {source_items:,}")
-    print(f"      Aggregate total: {agg_items:,}")
-    print(f"      Match: {'✅' if source_items == agg_items else '❌'}")
+    print(f"   📦 Items/Units validation:")
+    print(f"      Source records (unit-level): {source_records:,}")
+    print(f"      Source item_quantity sum: {source_items:,}")
+    print(f"      Aggregate total_items_sold: {agg_items:,}")
+    print(f"      Unit-level consistency: {'✅' if source_items == source_records else '❌'}")
+    print(f"      Aggregate match: {'✅' if source_items == agg_items else '❌'}")
     
-    # Validation 3: Check for null values
+    # Validation 4: Orders count validation  
+    source_unique_orders = fact_orders['orders_key'].nunique()
+    agg_total_orders = sales_agg['total_orders'].sum()
+    
+    print(f"   📋 Orders validation:")
+    print(f"      Source unique orders: {source_unique_orders:,}")
+    print(f"      Aggregate total_orders sum: {agg_total_orders:,}")
+    print(f"      Note: Aggregate sum may be higher due to cross-dimensional counting")
+    
+    # Validation 5: Check for null values
     null_counts = sales_agg.isnull().sum()
     print(f"   🔍 Null value check:")
     for col, count in null_counts.items():
@@ -113,6 +155,12 @@ def validate_sales_aggregate(sales_agg, fact_orders):
             print(f"      ⚠️  {col}: {count} nulls")
     if null_counts.sum() == 0:
         print(f"      ✅ No null values found")
+    
+    # Validation 6: Revenue consistency check
+    revenue_diff = abs(agg_gross_revenue - agg_total_discounts - agg_net_revenue)
+    print(f"   🧮 Revenue math validation:")
+    print(f"      Gross - Discounts - Net = {revenue_diff:.2f}")
+    print(f"      Math consistency: {'✅' if revenue_diff < 0.01 else '❌'}")
 
 def main():
     """Main execution function"""
@@ -130,10 +178,6 @@ def main():
         # Step 2: Generate sales aggregate
         print(f"\n🔄 Step 2: Generating sales aggregate...")
         sales_agg = generate_sales_aggregate(dim_time, dim_customer, dim_product, fact_orders)
-        
-        # Step 3: Validate results
-        print(f"\n� Step 3: Validating results...")
-        validate_sales_aggregate(sales_agg, fact_orders)
         
         # Step 3: Validate results
         print(f"\n🔍 Step 3: Validating results...")

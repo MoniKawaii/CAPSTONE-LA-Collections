@@ -57,14 +57,16 @@ def load_shopee_orders():
     Load Shopee order data from raw JSON files
     
     Returns:
-        list: orders_data as list of dictionaries
+        tuple: (orders_data, payment_details_data) as lists of dictionaries
     """
     staging_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Staging')
     
     # Load orders raw data
     orders_file = os.path.join(staging_dir, 'shopee_orders_raw.json')
+    payment_details_file = os.path.join(staging_dir, 'shopee_paymentdetail_raw.json')
     
     orders_data = []
+    payment_details_data = []
     
     if os.path.exists(orders_file):
         with open(orders_file, 'r', encoding='utf-8') as f:
@@ -73,7 +75,14 @@ def load_shopee_orders():
     else:
         print(f"⚠️ File not found: {orders_file}")
     
-    return orders_data
+    if os.path.exists(payment_details_file):
+        with open(payment_details_file, 'r', encoding='utf-8') as f:
+            payment_details_data = json.load(f)
+        print(f"✅ Loaded {len(payment_details_data)} payment details from shopee_paymentdetail_raw.json")
+    else:
+        print(f"⚠️ File not found: {payment_details_file}")
+    
+    return orders_data, payment_details_data
 
 def standardize_order_status(status):
     """
@@ -273,11 +282,12 @@ def harmonize_order_record(order_data, source_file):
     
     # Set fields that are not in mapping but required
     harmonized_record['orders_key'] = None  # Will be generated as surrogate key
+    harmonized_record['insurance_premium_and_fees'] = None  # Lazada doesn't have insurance premiums
     harmonized_record['platform_key'] = 1  # Lazada platform key
     
     # Ensure all required columns exist with default values if missing
     required_columns = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 
-                       'updated_at', 'price_total', 'total_item_count', 'payment_method', 
+                       'updated_at', 'price_total', 'insurance_premium_and_fees', 'total_item_count', 'payment_method', 
                        'shipping_city', 'platform_key']
     
     for col in required_columns:
@@ -286,7 +296,7 @@ def harmonize_order_record(order_data, source_file):
                 harmonized_record[col] = None
             elif col in ['platform_order_id', 'order_status', 'payment_method', 'shipping_city']:
                 harmonized_record[col] = ''
-            elif col in ['price_total']:
+            elif col in ['price_total', 'insurance_premium_and_fees']:
                 harmonized_record[col] = None
             elif col in ['total_item_count', 'platform_key']:
                 harmonized_record[col] = 0
@@ -295,13 +305,14 @@ def harmonize_order_record(order_data, source_file):
     
     return harmonized_record
 
-def harmonize_shopee_order_record(order_data):
+def harmonize_shopee_order_record(order_data, payment_details_dict=None):
     """
     Harmonize a single order record from Shopee format to dimensional model
     Uses SHOPEE_TO_UNIFIED_MAPPING from config.py
     
     Args:
         order_data (dict): Raw order data from Shopee API
+        payment_details_dict (dict): Payment details by order_sn for insurance premium lookup
         
     Returns:
         dict: Harmonized order record
@@ -312,7 +323,7 @@ def harmonize_shopee_order_record(order_data):
     # Apply field mappings from config.py
     for shopee_field, unified_field in SHOPEE_TO_UNIFIED_MAPPING.items():
         if unified_field in ['orders_key', 'platform_order_id', 'order_status', 'order_date', 
-                            'updated_at', 'price_total', 'total_item_count', 'payment_method', 
+                            'updated_at', 'price_total', 'insurance_premium_and_fees', 'total_item_count', 'payment_method', 
                             'shipping_city', 'platform_key']:
             
             if shopee_field == 'order_sn':
@@ -374,13 +385,31 @@ def harmonize_shopee_order_record(order_data):
                         shipping_city = 'N/A'
                 harmonized_record['shipping_city'] = shipping_city
     
+    # Extract insurance premium from payment details if available
+    insurance_premium_and_fees = None
+    if payment_details_dict:
+        order_sn = str(order_data.get('order_sn', ''))
+        if order_sn in payment_details_dict:
+            payment_detail = payment_details_dict[order_sn]
+            # Look for insurance premium in buyer_payment_info
+            buyer_payment_info = payment_detail.get('buyer_payment_info', {})
+            if isinstance(buyer_payment_info, dict):
+                insurance_premium = buyer_payment_info.get('insurance_premium')
+                if insurance_premium is not None:
+                    try:
+                        insurance_premium_and_fees = float(insurance_premium)
+                    except (ValueError, TypeError):
+                        insurance_premium_and_fees = None
+    
+    harmonized_record['insurance_premium_and_fees'] = insurance_premium_and_fees
+    
     # Set fields that are not in mapping but required
     harmonized_record['orders_key'] = None  # Will be generated as surrogate key
     harmonized_record['platform_key'] = 2  # Shopee platform key
     
     # Ensure all required columns exist with default values if missing
     required_columns = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 
-                       'updated_at', 'price_total', 'total_item_count', 'payment_method', 
+                       'updated_at', 'price_total', 'insurance_premium_and_fees', 'total_item_count', 'payment_method', 
                        'shipping_city', 'platform_key']
     
     for col in required_columns:
@@ -389,7 +418,7 @@ def harmonize_shopee_order_record(order_data):
                 harmonized_record[col] = None
             elif col in ['platform_order_id', 'order_status', 'payment_method', 'shipping_city']:
                 harmonized_record[col] = ''
-            elif col in ['price_total']:
+            elif col in ['price_total', 'insurance_premium_and_fees']:
                 harmonized_record[col] = None
             elif col in ['total_item_count', 'platform_key']:
                 harmonized_record[col] = 0
@@ -422,7 +451,14 @@ def harmonize_dim_order():
     orders_data, order_items_data = load_lazada_orders()
     
     print("\n📥 Loading Shopee data...")
-    shopee_orders_data = load_shopee_orders()
+    shopee_orders_data, shopee_payment_details_data = load_shopee_orders()
+    
+    # Create payment details lookup dictionary
+    payment_details_dict = {}
+    for payment_detail in shopee_payment_details_data:
+        order_sn = str(payment_detail.get('order_sn', ''))
+        if order_sn:
+            payment_details_dict[order_sn] = payment_detail
     
     # Process all data into a single DataFrame for unified processing
     all_orders = []
@@ -458,7 +494,7 @@ def harmonize_dim_order():
         order_sn = str(order.get('order_sn', ''))
         
         if order_sn and order_sn not in shopee_orders_dict:
-            harmonized = harmonize_shopee_order_record(order)
+            harmonized = harmonize_shopee_order_record(order, payment_details_dict)
             harmonized['raw_platform_order_id'] = order_sn  # Keep original for deduplication
             shopee_orders_dict[order_sn] = harmonized
     
@@ -525,7 +561,7 @@ def harmonize_dim_order():
         # Step 5: Ensure correct column order according to DIM_ORDER_COLUMNS
         print("🔄 Ensuring correct column order...")
         target_columns = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 
-                         'updated_at', 'price_total', 'total_item_count', 'payment_method', 
+                         'updated_at', 'price_total', 'insurance_premium_and_fees', 'total_item_count', 'payment_method', 
                          'shipping_city', 'platform_key']
         
         # Reorder columns to match schema
@@ -546,6 +582,7 @@ def harmonize_dim_order():
         
         print(f"   - Orders with valid dates: {len(dim_order_df[dim_order_df['order_date'] != min_date])}")
         print(f"   - Orders with prices: {len(dim_order_df[dim_order_df['price_total'].notna()])}")
+        print(f"   - Orders with insurance premiums: {len(dim_order_df[dim_order_df['insurance_premium_and_fees'].notna()])}")
         print(f"   - Unique order statuses: {dim_order_df['order_status'].nunique()}")
         print(f"   - Unique payment methods: {dim_order_df['payment_method'].nunique()}")
         
@@ -562,16 +599,24 @@ def harmonize_dim_order():
         print("\n📋 Sample of earliest Lazada orders (by date):")
         lazada_df = dim_order_df[dim_order_df['platform_key'] == 1]
         if not lazada_df.empty:
-            sample_cols = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 'price_total', 'total_item_count']
+            sample_cols = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 'price_total', 'insurance_premium_and_fees', 'total_item_count']
             available_cols = [col for col in sample_cols if col in lazada_df.columns]
             print(lazada_df[available_cols].head(3).to_string(index=False))
         
         print("\n📋 Sample of earliest Shopee orders (by date):")
         shopee_df = dim_order_df[dim_order_df['platform_key'] == 2]
         if not shopee_df.empty:
-            sample_cols = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 'price_total', 'total_item_count']
+            sample_cols = ['orders_key', 'platform_order_id', 'order_status', 'order_date', 'price_total', 'insurance_premium_and_fees', 'total_item_count']
             available_cols = [col for col in sample_cols if col in shopee_df.columns]
             print(shopee_df[available_cols].head(3).to_string(index=False))
+        
+        # Show insurance premium statistics for Shopee
+        shopee_with_insurance = shopee_df[shopee_df['insurance_premium_and_fees'].notna()] if not shopee_df.empty else pd.DataFrame()
+        if not shopee_with_insurance.empty:
+            print(f"\n💰 Insurance Premium Statistics (Shopee only):")
+            print(f"   - Orders with insurance: {len(shopee_with_insurance)}")
+            print(f"   - Average premium: ₱{shopee_with_insurance['insurance_premium_and_fees'].mean():.2f}")
+            print(f"   - Total premiums: ₱{shopee_with_insurance['insurance_premium_and_fees'].sum():.2f}")
         
         # Show order status distribution by platform
         print(f"\n📊 Order Status Distribution by Platform:")
@@ -648,6 +693,7 @@ if __name__ == "__main__":
         'create_time': 'order_date', 
         'update_time': 'updated_at',
         'total_amount': 'price_total',
+        'payment_details.buyer_payment_info.insurance_premium': 'insurance_premium_and_fees',
         'len(item_list)': 'total_item_count',
         'payment_method': 'payment_method',
         'recipient_address.city': 'shipping_city'
@@ -756,6 +802,7 @@ if __name__ == "__main__":
         'create_time': 'order_date', 
         'update_time': 'updated_at',
         'total_amount': 'price_total',
+        'payment_details.buyer_payment_info.insurance_premium': 'insurance_premium_and_fees',
         'len(item_list)': 'total_item_count',
         'payment_method': 'payment_method',
         'recipient_address.city': 'shipping_city'
